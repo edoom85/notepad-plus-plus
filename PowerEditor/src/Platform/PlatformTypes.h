@@ -56,24 +56,32 @@
   #define NPP_EXPORT __declspec(dllexport)
   #define NPP_IMPORT __declspec(dllimport)
 
-// ─── Linux: stubs y equivalentes GTK4/GLib ───────────────────────────────────
+// ─── Linux: equivalentes Qt6 ─────────────────────────────────────────────────
 
 #elif defined(NPP_PLATFORM_LINUX)
 
   #include <cstdint>
-  #include <gtk/gtk.h>
 
-  // Handles de ventana: en GTK el equivalente es GtkWidget*
-  // Usamos void* para mantener compatibilidad con código que solo guarda/compara handles.
-  // En implementaciones GTK concretas se hace cast a GtkWidget*.
-  using NppHwnd     = GtkWidget*;
-  using NppHinst    = GApplication*;
-  using NppHmenu    = GMenuModel*;
-  using NppHdc      = cairo_t*;
-  using NppHfont    = PangoFontDescription*;
-  using NppHbrush   = void*;      // sin equivalente directo, usar cairo pattern
-  using NppHbitmap  = GdkPixbuf*;
-  using NppHicon    = GdkPixbuf*;
+  // Forward declarations de Qt — evita incluir headers pesados aquí.
+  // Los archivos .cpp que necesiten la API completa incluyen los headers Qt directamente.
+  class QWidget;
+  class QApplication;
+  class QMenu;
+  class QPainter;
+  class QFont;
+  class QBrush;
+  class QPixmap;
+  class QIcon;
+
+  // Handles de ventana: en Qt el equivalente es QWidget*
+  using NppHwnd     = QWidget*;
+  using NppHinst    = QApplication*;
+  using NppHmenu    = QMenu*;
+  using NppHdc      = QPainter*;
+  using NppHfont    = QFont*;
+  using NppHbrush   = QBrush*;
+  using NppHbitmap  = QPixmap*;
+  using NppHicon    = QIcon*;
   using NppHandle   = void*;
   using NppColorRef = uint32_t;   // 0x00BBGGRR (igual que Win32 COLORREF)
   using NppUint     = unsigned int;
@@ -92,6 +100,7 @@
   // Macro de visibilidad de símbolo (para plugins Linux .so)
   #define NPP_EXPORT __attribute__((visibility("default")))
   #define NPP_IMPORT
+
 
   // ── Compatibilidad: tipos Win32 como aliases ────────────────────────────────
   // Estos aliases permiten que código existente que usa HWND/HINSTANCE/etc.

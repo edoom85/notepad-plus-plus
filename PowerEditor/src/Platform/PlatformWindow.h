@@ -115,62 +115,59 @@ inline void PlatformWindow::grabFocus() const {
 
 #elif defined(NPP_PLATFORM_LINUX)
 
-// Implementación Linux — delega a GTK4
+// Implementación Linux — delega a Qt6 QWidget
+// NOTA: Los archivos .cpp que incluyan este header deben incluir <QWidget> primero.
+
+#include <QWidget>
+
 inline void PlatformWindow::display(bool toShow) const {
     if (!_hSelf) return;
-    gtk_widget_set_visible(_hSelf, toShow ? TRUE : FALSE);
+    _hSelf->setVisible(toShow);
 }
-inline void PlatformWindow::redraw(bool /*forceUpdate*/) const {
-    if (_hSelf) gtk_widget_queue_draw(_hSelf);
+inline void PlatformWindow::redraw(bool forceUpdate) const {
+    if (!_hSelf) return;
+    if (forceUpdate)
+        _hSelf->repaint();
+    else
+        _hSelf->update();
 }
 inline void PlatformWindow::reSizeTo(RECT& rc) {
     if (!_hSelf) return;
-    // En GTK4 el tamaño preferido se expresa mediante size_request
-    gtk_widget_set_size_request(_hSelf, rc.right, rc.bottom);
-    redraw();
+    _hSelf->setGeometry(rc.left, rc.top, rc.right, rc.bottom);
 }
 inline void PlatformWindow::reSizeToWH(RECT& rc) {
     if (!_hSelf) return;
-    gtk_widget_set_size_request(_hSelf, rc.right - rc.left, rc.bottom - rc.top);
-    redraw();
+    _hSelf->setGeometry(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top);
 }
 inline void PlatformWindow::getClientRect(RECT& rc) const {
     if (!_hSelf) { rc = {}; return; }
     rc.left   = 0;
     rc.top    = 0;
-    rc.right  = gtk_widget_get_width(_hSelf);
-    rc.bottom = gtk_widget_get_height(_hSelf);
+    rc.right  = _hSelf->width();
+    rc.bottom = _hSelf->height();
 }
 inline void PlatformWindow::getWindowRect(RECT& rc) const {
-    // En GTK4 la posición absoluta en pantalla requiere traducir coordenadas
     if (!_hSelf) { rc = {}; return; }
-    GtkWidget* toplevel = GTK_WIDGET(gtk_widget_get_root(_hSelf));
-    int ox = 0, oy = 0;
-    if (toplevel) {
-        graphene_point_t origin = GRAPHENE_POINT_INIT(0.f, 0.f);
-        graphene_point_t pt_out;
-        gtk_widget_compute_point(_hSelf, toplevel, &origin, &pt_out);
-        ox = static_cast<int>(pt_out.x);
-        oy = static_cast<int>(pt_out.y);
-    }
-    rc.left   = ox;
-    rc.top    = oy;
-    rc.right  = ox + gtk_widget_get_width(_hSelf);
-    rc.bottom = oy + gtk_widget_get_height(_hSelf);
+    // mapToGlobal convierte coordenadas locales a de pantalla
+    QPoint topLeft = _hSelf->mapToGlobal(QPoint(0, 0));
+    rc.left   = topLeft.x();
+    rc.top    = topLeft.y();
+    rc.right  = topLeft.x() + _hSelf->width();
+    rc.bottom = topLeft.y() + _hSelf->height();
 }
-
 inline int PlatformWindow::getWidth() const {
-    return _hSelf ? gtk_widget_get_width(_hSelf) : 0;
+    return _hSelf ? _hSelf->width() : 0;
 }
 inline int PlatformWindow::getHeight() const {
-    if (!_hSelf || !gtk_widget_get_visible(_hSelf)) return 0;
-    return gtk_widget_get_height(_hSelf);
+    if (!_hSelf || !_hSelf->isVisible()) return 0;
+    return _hSelf->height();
 }
 inline bool PlatformWindow::isVisible() const {
-    return _hSelf && gtk_widget_get_visible(_hSelf);
+    return _hSelf && _hSelf->isVisible();
 }
 inline void PlatformWindow::grabFocus() const {
-    if (_hSelf) gtk_widget_grab_focus(_hSelf);
+    if (_hSelf) _hSelf->setFocus();
 }
 
 #endif // NPP_PLATFORM_LINUX
+

@@ -1,12 +1,13 @@
-// Platform/PlatformMsg.cpp — Implementación del NppMsgBus (Linux)
+// Platform/PlatformMsg.cpp — Implementación del NppMsgBus (Linux/Qt6)
 // Copyright (C) Notepad++ contributors. GPL v3+
 
 #include "PlatformMsg.h"
 
 #ifdef NPP_PLATFORM_LINUX
 
-#include <gtk/gtk.h>
-#include <cstdint>
+#include <QMetaObject>
+#include <QCoreApplication>
+#include <Qt>
 
 // ─── NppMsgBus ───────────────────────────────────────────────────────────────
 
@@ -48,24 +49,16 @@ NppLresult NppMsgBus::send(NppMsg msg, NppWparam wp, NppLparam lp) {
     return result;
 }
 
-// Estructura para pasar datos al idle callback del main loop GTK
-struct PostedMsg {
-    NppMsgBus* bus;
-    NppMsg     msg;
-    NppWparam  wp;
-    NppLparam  lp;
-};
-
-static gboolean dispatch_posted_msg(gpointer data) {
-    auto* pm = static_cast<PostedMsg*>(data);
-    pm->bus->send(pm->msg, pm->wp, pm->lp);
-    delete pm;
-    return G_SOURCE_REMOVE; // ejecutar solo una vez
-}
-
 void NppMsgBus::post(NppMsg msg, NppWparam wp, NppLparam lp) {
-    // Encola en el main loop GTK (equivalente a PostMessage en Win32)
-    g_idle_add(dispatch_posted_msg, new PostedMsg{this, msg, wp, lp});
+    // Equivalente a PostMessage en Win32:
+    // Encola la ejecución en el event loop de Qt (main thread)
+    QMetaObject::invokeMethod(
+        QCoreApplication::instance(),
+        [this, msg, wp, lp]() {
+            this->send(msg, wp, lp);
+        },
+        Qt::QueuedConnection
+    );
 }
 
 #endif // NPP_PLATFORM_LINUX
