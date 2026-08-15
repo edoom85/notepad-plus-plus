@@ -21,7 +21,16 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <map>
 #include <vector>
 #include <assert.h>
+#include <cstring>   // strlen, strcmp, strncpy
+#include <cstdio>    // snprintf
+#ifdef _WIN32
 #include <windows.h>
+#else
+// _itoa es una extensión MSVC; en Linux usamos snprintf
+#ifndef _itoa
+#define _itoa(val, buf, base) snprintf((buf), 32, ((base)==16 ? "%x" : "%d"), (val))
+#endif
+#endif
 
 #include "ILexer.h"
 #include "LexAccessor.h"
