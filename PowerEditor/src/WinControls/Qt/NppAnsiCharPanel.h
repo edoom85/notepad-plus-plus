@@ -37,8 +37,12 @@ public:
         layout->addWidget(_lblInfo);
         connect(_table, &QTableWidget::itemClicked, [this](QTableWidgetItem* item) {
             _lblInfo->setText(item->toolTip());
-            emit charSelected(item->text());
+            int r = item->row();
+            int c = item->column();
+            int code = r * 16 + c;
+            emit charSelected(QString(QChar(code)));
         });
+
     }
     NppDockWidget* createDock(QWidget* parent) {
         auto* dock = new NppDockWidget("Panel de Caracteres", parent, NppDockWidget::DockPosition::Right);

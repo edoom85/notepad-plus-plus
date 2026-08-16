@@ -50,6 +50,12 @@ public:
         connect(btnGen, &QPushButton::clicked, this, &NppMD5Dlg::onGenerate);
         connect(btnCopy, &QPushButton::clicked, [this](){ QApplication::clipboard()->setText(_result->text()); });
     }
+
+    void setInputText(const QString& text) {
+        if (_input) _input->setPlainText(text);
+        onGenerate();
+    }
+
 private slots:
     void onGenerate() {
         QByteArray data = _input->toPlainText().toUtf8();

@@ -269,7 +269,61 @@ private:
             ed->endUndoAction();
             statusBar()->showMessage(QString("Reemplazar todo: %1 coincidencia(s) reemplazada(s)").arg(count), 4000);
         });
+
+        connect(dlg, &NppFindReplaceDlg::markAll, [this, dlg](const QString& target) {
+            auto* ed = activeEditor();
+            if (!ed || target.isEmpty()) return;
+            ed->beginUndoAction();
+            int count = 0;
+            bool caseSens = dlg->isMatchCase();
+            bool wholeWord = dlg->isMatchWholeWord();
+            bool regex = (dlg->searchMode() == 2);
+            if (ed->findFirst(target, regex, caseSens, wholeWord, true, true, 0, 0)) {
+                int line, col;
+                ed->getCursorPosition(&line, &col);
+                ed->markerAdd(line, 0);
+                count++;
+                while (ed->findNext()) {
+                    ed->getCursorPosition(&line, &col);
+                    ed->markerAdd(line, 0);
+                    count++;
+                }
+            }
+            ed->endUndoAction();
+            statusBar()->showMessage(QString("Marcar todo: %1 coincidencia(s) marcadas").arg(count), 4000);
+        });
+
+        connect(dlg, &NppFindReplaceDlg::clearAllMarks, [this]() {
+            if (auto* ed = activeEditor()) {
+                ed->markerDeleteAll(-1);
+                statusBar()->showMessage("Marcas eliminadas", 3000);
+            }
+        });
+
+        connect(dlg, &NppFindReplaceDlg::replaceInOpenDocs, [this, dlg](const QString& target, const QString& replacement) {
+            if (target.isEmpty()) return;
+            int totalCount = 0;
+            for (int i = 0; i < _mainTabs->count(); ++i) {
+                if (auto* ed = qobject_cast<QsciScintilla*>(_mainTabs->widget(i))) {
+                    ed->beginUndoAction();
+                    bool caseSens = dlg->isMatchCase();
+                    bool wholeWord = dlg->isMatchWholeWord();
+                    bool regex = (dlg->searchMode() == 2);
+                    if (ed->findFirst(target, regex, caseSens, wholeWord, true, true, 0, 0)) {
+                        ed->replace(replacement);
+                        totalCount++;
+                        while (ed->findNext()) {
+                            ed->replace(replacement);
+                            totalCount++;
+                        }
+                    }
+                    ed->endUndoAction();
+                }
+            }
+            statusBar()->showMessage(QString("Reemplazar en documentos abiertos: %1 coincidencia(s)").arg(totalCount), 4000);
+        });
     }
+
 
 
 public:
@@ -562,26 +616,32 @@ private:
             connect(dlg, &NppColumnEditor::columnEditRequested, [this](bool isText, const QString& text, int start, int inc, int fmt) {
                 auto* ed = activeEditor();
                 if (!ed) return;
+                int lineFrom, colFrom, lineTo, colTo;
+                ed->getSelection(&lineFrom, &colFrom, &lineTo, &colTo);
+                if (lineFrom < 0 || lineTo < 0) {
+                    ed->getCursorPosition(&lineFrom, &colFrom);
+                    lineTo = ed->lines() - 1;
+                }
                 ed->beginUndoAction();
-                int lines = ed->lines();
                 int currentVal = start;
-                for (int i = 0; i < lines; ++i) {
+                for (int i = lineFrom; i <= lineTo; ++i) {
+                    QString toInsert;
                     if (isText) {
-                        ed->insertAt(text, i, 0);
+                        toInsert = text;
                     } else {
-                        QString numStr;
-                        if (fmt == 1) numStr = QString::number(currentVal, 8);
-                        else if (fmt == 2) numStr = QString::number(currentVal, 16).toUpper();
-                        else if (fmt == 3) numStr = QString::number(currentVal, 2);
-                        else numStr = QString::number(currentVal);
-                        ed->insertAt(numStr, i, 0);
+                        if (fmt == 1)      toInsert = QString::number(currentVal, 8);
+                        else if (fmt == 2) toInsert = QString::number(currentVal, 16).toUpper();
+                        else if (fmt == 3) toInsert = QString::number(currentVal, 2);
+                        else               toInsert = QString::number(currentVal, 10);
                         currentVal += inc;
                     }
+                    ed->insertAt(toInsert, i, colFrom);
                 }
                 ed->endUndoAction();
             });
             dlg->show();
         });
+
         editMenu->addAction("Panel de caracteres", [this]() {
             auto* panel = new NppAnsiCharPanel(this);
             connect(panel, &NppAnsiCharPanel::charSelected, [this](const QString& ch) {
@@ -814,19 +874,30 @@ private:
 
         viewMenu->addAction("Resumen...", [this]() {
             auto* dlg = new NppSummaryDlg(this);
+            int idx = _mainTabs->currentIndex();
+            QString path = (idx >= 0) ? QString::fromStdString(_mainTabs->tabFilePath(idx)) : "";
+            QString text = activeEditor() ? activeEditor()->text() : "";
+            dlg->setSummary(path, text);
             dlg->show();
         });
+
         viewMenu->addSeparator();
 
         QMenu* projMenu = viewMenu->addMenu("Proyecto");
         projMenu->addAction("Panel de proyecto 1", [this]() {
-            (new NppProjectPanel("Proyecto 1", this))->show();
+            auto* p = new NppProjectPanel("Proyecto 1", this);
+            connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
+            p->show();
         });
         projMenu->addAction("Panel de proyecto 2", [this]() {
-            (new NppProjectPanel("Proyecto 2", this))->show();
+            auto* p = new NppProjectPanel("Proyecto 2", this);
+            connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
+            p->show();
         });
         projMenu->addAction("Panel de proyecto 3", [this]() {
-            (new NppProjectPanel("Proyecto 3", this))->show();
+            auto* p = new NppProjectPanel("Proyecto 3", this);
+            connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
+            p->show();
         });
 
         viewMenu->addAction("Carpeta como área de trabajo", [this]() {
@@ -1043,8 +1114,12 @@ private:
         
         langMenu->addAction("Definido por el usuario...", [this]() {
             auto* dlg = new NppUserDefineDlg(this);
+            connect(dlg, &NppUserDefineDlg::userLanguageDefined, [this](const QString& name, const QStringList& /*keywords*/) {
+                statusBar()->showMessage("Lenguaje UDL '" + name + "' registrado exitosamente.", 4000);
+            });
             dlg->show();
         });
+
 
 
         // ── 7. Configuración ──
@@ -1054,6 +1129,10 @@ private:
             connect(dlg, &NppPreferenceDlg::toolbarVisibilityChanged, [this](bool visible) {
                 if (_toolbar) _toolbar->setVisible(visible);
             });
+            connect(dlg, &NppPreferenceDlg::toolbarPresetChanged, [this](int iconSizePixels) {
+                if (_toolbar) _toolbar->setIconSizePreset(iconSizePixels);
+            });
+
 
             connect(dlg, &NppPreferenceDlg::statusbarVisibilityChanged, [this](bool visible) {
                 if (statusBar()) statusBar()->setVisible(visible);
@@ -1067,6 +1146,9 @@ private:
             connect(dlg, &NppPreferenceDlg::tabUseSpacesChanged, [this](bool useSpaces) {
                 if (auto* ed = activeEditor()) ed->setIndentationsUseTabs(!useSpaces);
             });
+            connect(dlg, &NppPreferenceDlg::autoIndentChanged, [this](bool enable) {
+                if (auto* ed = activeEditor()) ed->setAutoIndent(enable);
+            });
             connect(dlg, &NppPreferenceDlg::indentGuidesChanged, [this](bool show) {
                 if (auto* ed = activeEditor()) ed->setIndentationGuides(show);
             });
@@ -1076,8 +1158,26 @@ private:
             connect(dlg, &NppPreferenceDlg::wordWrapChanged, [this](bool wrap) {
                 if (auto* ed = activeEditor()) ed->setWrapMode(wrap ? QsciScintilla::WrapWord : QsciScintilla::WrapNone);
             });
+            connect(dlg, &NppPreferenceDlg::scrollPastEndChanged, [this](bool enable) {
+                if (auto* ed = activeEditor()) ed->setScrollWidthTracking(enable);
+            });
+            connect(dlg, &NppPreferenceDlg::darkModeToggled, [this](bool dark) {
+                _isDarkMode = dark;
+                if (dark)
+                    NppTheme::applyDarkTheme(qApp, _isOledTone);
+                else
+                    NppTheme::applyLightTheme(qApp);
+            });
+            connect(dlg, &NppPreferenceDlg::darkModeToneChanged, [this](int tone) {
+                _isOledTone = (tone == 1);
+                if (_isDarkMode)
+                    NppTheme::applyDarkTheme(qApp, _isOledTone);
+            });
             connect(dlg, &NppPreferenceDlg::lineNumbersVisibilityChanged, [this](bool show) {
                 if (auto* ed = activeEditor()) ed->setMarginLineNumbers(0, show);
+            });
+            connect(dlg, &NppPreferenceDlg::bookmarkMarginVisibilityChanged, [this](bool show) {
+                if (auto* ed = activeEditor()) ed->setMarginWidth(1, show ? 16 : 0);
             });
             connect(dlg, &NppPreferenceDlg::codeFoldingToggled, [this](bool fold) {
                 if (auto* ed = activeEditor()) ed->setFolding(fold ? QsciScintilla::PlainFoldStyle : QsciScintilla::NoFoldStyle);
@@ -1089,6 +1189,19 @@ private:
                     else if (mode == 2) ed->setEolMode(QsciScintilla::EolMac);
                 }
             });
+            connect(dlg, &NppPreferenceDlg::defaultEncodingChanged, [this](int encoding) {
+                if (auto* ed = activeEditor()) ed->setUtf8(encoding == 0 || encoding == 1);
+            });
+            connect(dlg, &NppPreferenceDlg::autoCompletionToggled, [this](bool enable) {
+                if (auto* ed = activeEditor()) ed->setAutoCompletionSource(enable ? QsciScintilla::AcsAll : QsciScintilla::AcsNone);
+            });
+            connect(dlg, &NppPreferenceDlg::autoCompletionThresholdChanged, [this](int val) {
+                if (auto* ed = activeEditor()) ed->setAutoCompletionThreshold(val);
+            });
+            connect(dlg, &NppPreferenceDlg::rememberSessionToggled, [this](bool enable) {
+                _rememberSession = enable;
+            });
+
             dlg->show();
         });
 
@@ -1172,8 +1285,16 @@ private:
         QMenu* runMenu = menuBar()->addMenu("&Ejecutar");
         runMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Run), "&Ejecutar...", QKeySequence(Qt::Key_F5), [this]() {
             auto* dlg = new NppRunDlg(this);
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0) {
+                NppString path = _mainTabs->tabFilePath(idx);
+                if (!path.empty()) {
+                    dlg->setFileInfo(QString::fromStdString(path));
+                }
+            }
             dlg->show();
         });
+
         runMenu->addSeparator();
         runMenu->addAction("Obtener ayuda en línea", [this]() {
             QDesktopServices::openUrl(QUrl("https://npp-user-manual.org/"));
@@ -1339,8 +1460,9 @@ private:
 
 public:
     void saveCurrentSession() {
-        if (!_mainTabs) return;
+        if (!_mainTabs || !_rememberSession) return;
         QStringList sessionFiles;
+
         for (int i = 0; i < _mainTabs->count(); ++i) {
             NppString path = _mainTabs->tabFilePath(i);
             if (!path.empty()) {
@@ -1495,15 +1617,43 @@ private slots:
             case 12: (new NppFindReplaceDlg(this))->show(); break;
             case 13: if (auto* ed = activeEditor()) ed->zoomIn(); break;
             case 14: if (auto* ed = activeEditor()) ed->zoomOut(); break;
-            case 15: (new NppFileBrowser(this))->show(); break;
+            case 15: {
+                auto* fb = new NppFileBrowser(this);
+                connect(fb, &NppFileBrowser::fileSelected, [this](const NppString& filePath) { openFile(filePath); });
+                fb->show();
+                break;
+            }
             case 16: {
                 auto* fl = new NppFunctionList(this);
-                if (activeEditor()) fl->parseDocument(activeEditor()->text());
+                if (activeEditor()) fl->parseDocument(activeEditor()->text(), "cpp");
+                connect(fl, &NppFunctionList::jumpToLineRequested, [this](int line) {
+                    if (auto* ed = activeEditor()) {
+                        ed->setCursorPosition(line - 1, 0);
+                        ed->ensureLineVisible(line - 1);
+                        ed->setFirstVisibleLine(std::max(0, line - 1 - 10));
+                    }
+                });
+                connect(fl, &NppFunctionList::refreshRequested, [this, fl]() {
+                    if (auto* ed = activeEditor()) fl->parseDocument(ed->text(), "cpp");
+                });
                 fl->show();
                 break;
             }
-            case 17: (new NppProjectPanel("Proyecto Main", this))->show(); break;
-            case 18: (new NppClipboardHistory(this))->show(); break;
+            case 17: {
+                auto* p = new NppProjectPanel("Proyecto Main", this);
+                connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
+                p->show();
+                break;
+            }
+            case 18: {
+                auto* history = new NppClipboardHistory(this);
+                connect(history, &NppClipboardHistory::pasteRequested, [this](const QString& text) {
+                    if (auto* ed = activeEditor()) ed->insert(text);
+                });
+                history->show();
+                break;
+            }
+
             case 19: (new NppPluginsAdmin(this))->show(); break;
             case 20: (new NppPreferenceDlg(this))->show(); break;
             case 21: (new NppAboutDlg(this))->exec(); break;
@@ -1518,6 +1668,11 @@ private:
     NppTabWidget*  _mainTabs  = nullptr;
     NppTabWidget*  _subTabs   = nullptr;
     NppStatusBar*  _statusBar = nullptr;
+    bool           _isDarkMode = true;
+    bool           _isOledTone = false;
+    bool           _rememberSession = true;
 };
 
 #endif // NPP_PLATFORM_LINUX
+
+

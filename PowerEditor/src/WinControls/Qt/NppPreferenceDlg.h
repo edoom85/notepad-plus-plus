@@ -44,20 +44,32 @@ public:
 
 signals:
     void toolbarVisibilityChanged(bool visible);
+    void toolbarPresetChanged(int iconSizePixels);
+
     void statusbarVisibilityChanged(bool visible);
     void menuBarVisibilityChanged(bool visible);
     void tabSizeChanged(int size);
     void tabUseSpacesChanged(bool useSpaces);
+    void autoIndentChanged(bool enable);
     void indentGuidesChanged(bool show);
     void caretLineHighlightChanged(bool show);
     void wordWrapChanged(bool wrap);
+    void scrollPastEndChanged(bool enable);
     void darkModeToggled(bool dark);
+    void darkModeToneChanged(int tone);
+
     void lineNumbersVisibilityChanged(bool show);
+    void bookmarkMarginVisibilityChanged(bool show);
     void codeFoldingToggled(bool fold);
     void eolModeChanged(int mode);
+    void defaultEncodingChanged(int encoding);
+    void autoCompletionToggled(bool enable);
+    void autoCompletionThresholdChanged(int val);
+    void rememberSessionToggled(bool enable);
 
 private:
     void buildUI() {
+
         auto* mainLayout = new QVBoxLayout(this);
         auto* contentLayout = new QHBoxLayout();
 
@@ -91,20 +103,20 @@ private:
         addCategory("Lista de paneles",          createPanelListPage());
         addCategory("Varios (MISC)",             createMiscPage());
 
+        connect(_categoryList, &QListWidget::currentRowChanged, _stackedWidget, &QStackedWidget::setCurrentIndex);
+        _categoryList->setCurrentRow(0);
+
         contentLayout->addWidget(_categoryList);
         contentLayout->addWidget(_stackedWidget, 1);
         mainLayout->addLayout(contentLayout);
 
         // ── Botón Cerrar ─────────────────────────────────────────────────────
-        auto* buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, this);
-        connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::accept);
-        mainLayout->addWidget(buttonBox);
-
-        // Conectar selección de categoría
-        connect(_categoryList, &QListWidget::currentRowChanged,
-                _stackedWidget, &QStackedWidget::setCurrentIndex);
-
-        _categoryList->setCurrentRow(0);
+        auto* btnLayout = new QHBoxLayout();
+        btnLayout->addStretch();
+        auto* btnClose = new QPushButton("Cerrar", this);
+        connect(btnClose, &QPushButton::clicked, this, &QDialog::accept);
+        btnLayout->addWidget(btnClose);
+        mainLayout->addLayout(btnLayout);
     }
 
     void addCategory(const QString& name, QWidget* page) {
@@ -152,6 +164,12 @@ private:
         auto* r4 = new QRadioButton("Iconos grandes con relleno", grp);
         auto* r5 = new QRadioButton("Iconos pequeños predeterminados", grp);
         r5->setChecked(true);
+
+        connect(r1, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(16); });
+        connect(r2, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(32); });
+        connect(r3, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(16); });
+        connect(r4, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(32); });
+        connect(r5, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(16); });
 
         v->addWidget(r1); v->addWidget(r2); v->addWidget(r3); v->addWidget(r4); v->addWidget(r5);
         layout->addWidget(grp);
@@ -202,7 +220,12 @@ private:
         h->addStretch();
         v->addLayout(h);
 
-        v->addWidget(new QCheckBox("Habilitar sangría automática inteligente", grp));
+        auto* chkSmart = new QCheckBox("Habilitar sangría automática inteligente", grp);
+        chkSmart->setChecked(true);
+        connect(chkSmart, &QCheckBox::toggled, [this](bool checked) {
+            emit autoIndentChanged(checked);
+        });
+        v->addWidget(chkSmart);
         
         auto* chkGuide = new QCheckBox("Mostrar guía de sangría vertical", grp);
         connect(chkGuide, &QCheckBox::toggled, [this](bool checked) {
@@ -234,7 +257,11 @@ private:
         });
         v->addWidget(chkWrap);
 
-        v->addWidget(new QCheckBox("Habilitar desplazamiento continuo más allá del final", grp));
+        auto* chkEnd = new QCheckBox("Habilitar desplazamiento continuo más allá del final", grp);
+        connect(chkEnd, &QCheckBox::toggled, [this](bool checked) {
+            emit scrollPastEndChanged(checked);
+        });
+        v->addWidget(chkEnd);
         layout->addWidget(grp);
         layout->addStretch();
         return page;
@@ -254,12 +281,24 @@ private:
         });
         v->addWidget(chkDark);
 
-        v->addWidget(new QRadioButton("Tono oscuro estándar (Dark Charcoal)", grp));
-        v->addWidget(new QRadioButton("Tono negro profundo (OLED Black)", grp));
+        auto* rCharcoal = new QRadioButton("Tono oscuro estándar (Dark Charcoal)", grp);
+        auto* rOled     = new QRadioButton("Tono negro profundo (OLED Black)", grp);
+        rCharcoal->setChecked(true);
+
+        connect(rCharcoal, &QRadioButton::toggled, [this](bool checked) {
+            if (checked) emit darkModeToneChanged(0);
+        });
+        connect(rOled, &QRadioButton::toggled, [this](bool checked) {
+            if (checked) emit darkModeToneChanged(1);
+        });
+
+        v->addWidget(rCharcoal);
+        v->addWidget(rOled);
         layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
+
 
     // 7. Margen, fuente y línea
     QWidget* createMarginPage() {
@@ -275,7 +314,12 @@ private:
         });
         v->addWidget(chkLines);
 
-        v->addWidget(new QCheckBox("Mostrar margen de marcadores (Bookmarks)", grp));
+        auto* chkBm = new QCheckBox("Mostrar margen de marcadores (Bookmarks)", grp);
+        chkBm->setChecked(true);
+        connect(chkBm, &QCheckBox::toggled, [this](bool checked) {
+            emit bookmarkMarginVisibilityChanged(checked);
+        });
+        v->addWidget(chkBm);
 
         auto* chkFold = new QCheckBox("Habilitar árbol de plegado de código", grp);
         chkFold->setChecked(true);
@@ -311,6 +355,9 @@ private:
         hEnc->addWidget(new QLabel("Codificación predeterminada:", grp));
         auto* cbEnc = new QComboBox(grp);
         cbEnc->addItems({"UTF-8 sin BOM", "UTF-8 con BOM", "ANSI"});
+        connect(cbEnc, &QComboBox::currentIndexChanged, [this](int idx) {
+            emit defaultEncodingChanged(idx);
+        });
         hEnc->addWidget(cbEnc);
         hEnc->addStretch();
         v->addLayout(hEnc);
@@ -434,7 +481,13 @@ private:
         auto* grp = new QGroupBox("Auto-completado de Código", page);
         auto* v = new QVBoxLayout(grp);
         
-        v->addWidget(new QCheckBox("Habilitar autocompletado en cada entrada de texto", grp));
+        auto* chkAC = new QCheckBox("Habilitar autocompletado en cada entrada de texto", grp);
+        chkAC->setChecked(true);
+        connect(chkAC, &QCheckBox::toggled, [this](bool checked) {
+            emit autoCompletionToggled(checked);
+        });
+        v->addWidget(chkAC);
+
         v->addWidget(new QCheckBox("Cierre automático de comillas \"\" y ''", grp));
         v->addWidget(new QCheckBox("Cierre automático de paréntesis () y corchetes []", grp));
         v->addWidget(new QCheckBox("Cierre automático de etiquetas HTML/XML </>", grp));
@@ -443,6 +496,9 @@ private:
         h->addWidget(new QLabel("Escribir caracteres desde:", grp));
         auto* spin = new QSpinBox(grp);
         spin->setRange(1, 9); spin->setValue(2);
+        connect(spin, &QSpinBox::valueChanged, [this](int val) {
+            emit autoCompletionThresholdChanged(val);
+        });
         h->addWidget(spin);
         h->addStretch();
         v->addLayout(h);
@@ -520,11 +576,19 @@ private:
         auto* v = new QVBoxLayout(grp);
         v->addWidget(new QCheckBox("Minimizar a la bandeja del sistema (System Tray)", grp));
         v->addWidget(new QCheckBox("Comprobar actualizaciones automáticamente al iniciar", grp));
-        v->addWidget(new QCheckBox("Recordar sesión actual de archivos al reiniciar", grp));
+
+        auto* chkSess = new QCheckBox("Recordar sesión actual de archivos al reiniciar", grp);
+        chkSess->setChecked(true);
+        connect(chkSess, &QCheckBox::toggled, [this](bool checked) {
+            emit rememberSessionToggled(checked);
+        });
+        v->addWidget(chkSess);
+
         layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
+
 
 private:
     QListWidget*    _categoryList  = nullptr;

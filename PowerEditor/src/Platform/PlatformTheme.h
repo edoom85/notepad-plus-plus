@@ -85,19 +85,22 @@ public:
     }
 
 
-    /// Aplica el tema oscuro VS Code a toda la aplicación Qt.
-    static void applyDarkTheme(QApplication* app) {
+    /// Aplica el tema oscuro a toda la aplicación Qt (Charcoal u OLED Black).
+    static void applyDarkTheme(QApplication* app, bool oledBlack = false) {
         app->setStyle("Fusion");
 
         QPalette dark;
-        dark.setColor(QPalette::Window,          QColor(0x1E, 0x1E, 0x1E));
+        QColor bg = oledBlack ? QColor(0x00, 0x00, 0x00) : QColor(0x1E, 0x1E, 0x1E);
+        QColor altBg = oledBlack ? QColor(0x0D, 0x0D, 0x0D) : QColor(0x25, 0x25, 0x26);
+
+        dark.setColor(QPalette::Window,          bg);
         dark.setColor(QPalette::WindowText,      QColor(0xD4, 0xD4, 0xD4));
-        dark.setColor(QPalette::Base,            QColor(0x1E, 0x1E, 0x1E));
-        dark.setColor(QPalette::AlternateBase,   QColor(0x25, 0x25, 0x26));
-        dark.setColor(QPalette::ToolTipBase,     QColor(0x25, 0x25, 0x26));
+        dark.setColor(QPalette::Base,            bg);
+        dark.setColor(QPalette::AlternateBase,   altBg);
+        dark.setColor(QPalette::ToolTipBase,     altBg);
         dark.setColor(QPalette::ToolTipText,     QColor(0xD4, 0xD4, 0xD4));
         dark.setColor(QPalette::Text,            QColor(0xD4, 0xD4, 0xD4));
-        dark.setColor(QPalette::Button,          QColor(0x33, 0x33, 0x33));
+        dark.setColor(QPalette::Button,          altBg);
         dark.setColor(QPalette::ButtonText,      QColor(0xD4, 0xD4, 0xD4));
         dark.setColor(QPalette::BrightText,      QColor(0xFF, 0x44, 0x44));
         dark.setColor(QPalette::Link,            QColor(0x56, 0x9C, 0xD6));
@@ -110,6 +113,7 @@ public:
 
         app->setPalette(dark);
     }
+
 
     /// Aplica el tema claro estándar.
     static void applyLightTheme(QApplication* app) {

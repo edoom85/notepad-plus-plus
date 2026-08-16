@@ -156,10 +156,19 @@ private:
         return page;
     }
 
+signals:
+    void userLanguageDefined(const QString& name, const QStringList& keywords);
+
 private slots:
     void onSave() {
+        if (_langCombo && _keywordsEdit) {
+            QString name = _langCombo->currentText();
+            QStringList kw = _keywordsEdit->toPlainText().split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+            emit userLanguageDefined(name, kw);
+        }
         accept();
     }
+
 
 private:
     QComboBox*        _langCombo        = nullptr;

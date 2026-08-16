@@ -34,17 +34,34 @@ public:
         connect(btnRun, &QPushButton::clicked, this, &NppRunDlg::onRun);
         connect(btnCancel, &QPushButton::clicked, this, &QDialog::reject);
     }
+    void setFileInfo(const QString& fullPath) {
+        _fullPath = fullPath;
+    }
+
 signals:
     void commandExecuted(const QString& cmd);
+
 private slots:
     void onRun() {
         QString cmd = _cmdCombo->currentText().trimmed();
         if (cmd.isEmpty()) return;
+
+        if (!_fullPath.isEmpty()) {
+            QFileInfo fi(_fullPath);
+            cmd.replace("$(FULL_CURRENT_PATH)", QString("\"%1\"").arg(_fullPath));
+            cmd.replace("$(CURRENT_DIRECTORY)", QString("\"%1\"").arg(fi.absolutePath()));
+            cmd.replace("$(FILE_NAME)", QString("\"%1\"").arg(fi.fileName()));
+            cmd.replace("$(NAME_PART)", QString("\"%1\"").arg(fi.completeBaseName()));
+        }
+
         QProcess::startDetached("/bin/bash", {"-c", cmd});
         emit commandExecuted(cmd);
         accept();
     }
+
 private:
     QComboBox* _cmdCombo = nullptr;
+    QString    _fullPath;
 };
+
 #endif

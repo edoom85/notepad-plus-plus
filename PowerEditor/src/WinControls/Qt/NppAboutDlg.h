@@ -19,7 +19,10 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QSysInfo>
+#include <QClipboard>
+#include <QApplication>
 #include <Qsci/qsciglobal.h>
+
 
 /// Diálogo "Acerca de" para Notepad++ Linux.
 class NppAboutDlg : public NppDialog {
@@ -105,20 +108,20 @@ private:
 
         // Botones
         auto* btnLayout = new QHBoxLayout();
-        auto* btnHomepage = new QPushButton("🌐 Sitio Web", this);
-        auto* btnGitHub   = new QPushButton("🐙 GitHub", this);
-        auto* btnClose    = new QPushButton("Cerrar", this);
+        auto* btnHomepage  = new QPushButton("🌐 Sitio Web", this);
+        auto* btnCopyDebug = new QPushButton("📋 Copiar Debug", this);
+        auto* btnClose     = new QPushButton("Cerrar", this);
 
         QString btnStyle =
             "QPushButton { background: #0E639C; color: #FFF; border: none; "
             "padding: 8px 16px; border-radius: 3px; }"
             "QPushButton:hover { background: #1177BB; }";
         btnHomepage->setStyleSheet(btnStyle);
-        btnGitHub->setStyleSheet(btnStyle);
+        btnCopyDebug->setStyleSheet(btnStyle);
         btnClose->setStyleSheet(btnStyle);
 
         btnLayout->addWidget(btnHomepage);
-        btnLayout->addWidget(btnGitHub);
+        btnLayout->addWidget(btnCopyDebug);
         btnLayout->addStretch();
         btnLayout->addWidget(btnClose);
         mainLayout->addLayout(btnLayout);
@@ -126,10 +129,16 @@ private:
         connect(btnHomepage, &QPushButton::clicked, []() {
             QDesktopServices::openUrl(QUrl("https://notepad-plus-plus.org"));
         });
-        connect(btnGitHub, &QPushButton::clicked, []() {
-            QDesktopServices::openUrl(QUrl("https://github.com/edoom85/notepad-plus-plus"));
+        connect(btnCopyDebug, &QPushButton::clicked, []() {
+            QString debugText = QString("Notepad++ v8.9.1 (Linux Native Port)\n")
+                + "Qt Version: " + qVersion() + "\n"
+                + "QScintilla Version: " + QSCINTILLA_VERSION_STR + "\n"
+                + "OS: " + QSysInfo::prettyProductName() + " (" + QSysInfo::kernelVersion() + ")\n"
+                + "Arch: " + QSysInfo::currentCpuArchitecture();
+            QApplication::clipboard()->setText(debugText);
         });
         connect(btnClose, &QPushButton::clicked, this, &QDialog::accept);
+
     }
 };
 
