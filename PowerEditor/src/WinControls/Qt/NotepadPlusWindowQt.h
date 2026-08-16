@@ -41,7 +41,22 @@
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexercpp.h>
 
+#include "../../Platform/PlatformIconProvider.h"
+#include "NppAboutDlg.h"
+#include "NppFindReplaceDlg.h"
+#include "NppPreferenceDlg.h"
+#include "NppShortcutMapper.h"
+#include "NppGoToLineDlg.h"
+#include "NppRunDlg.h"
+#include "NppPluginsAdmin.h"
+#include "NppFileBrowser.h"
+#include "NppFunctionList.h"
+#include "NppProjectPanel.h"
+#include "NppClipboardHistory.h"
+
 /// Ventana principal de Notepad++ en Qt6.
+
+
 
 /// Equivale a Notepad_plus_Window + Notepad_plus en la versión Win32.
 class NotepadPlusWindowQt : public QMainWindow {
@@ -150,50 +165,140 @@ protected:
 
 private:
     // ── Crear menús ─────────────────────────────────────────────────────────
+    /// Obtiene el widget QsciScintilla activo actualmente.
+    QsciScintilla* activeEditor() const {
+        QWidget* w = _mainTabs->currentWidget();
+        return qobject_cast<QsciScintilla*>(w);
+    }
+
+private:
+    // ── Crear menús ─────────────────────────────────────────────────────────
     void createMenus() {
-        // Archivo
+        // Desactivar el menú global nativo del sistema operativo (KDE/GNOME DBus AppMenu)
+        // para renderizar el menú directamente dentro de la ventana de Notepad++ y garantizar
+        // respuesta inmediata al clic sin interferencias externas de DBus.
+        menuBar()->setNativeMenuBar(false);
+
+        // ── Archivo ──
         QMenu* fileMenu = menuBar()->addMenu("&Archivo");
-        fileMenu->addAction("&Nuevo",    QKeySequence::New,  this, &NotepadPlusWindowQt::newDocument);
-        fileMenu->addAction("&Abrir...", QKeySequence::Open, this, &NotepadPlusWindowQt::onOpen);
+
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::New),  "&Nuevo",          QKeySequence::New,  this, &NotepadPlusWindowQt::newDocument);
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Open), "&Abrir...",       QKeySequence::Open, this, &NotepadPlusWindowQt::onOpen);
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Save), "&Guardar",        QKeySequence::Save, [this]() {
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0 && activeEditor()) {
+                NppString path = _mainTabs->tabFilePath(idx);
+                if (path.empty()) {
+                    QString selected = QFileDialog::getSaveFileName(this, "Guardar como");
+                    if (!selected.isEmpty()) {
+                        path = selected.toStdString();
+                        _mainTabs->setTabFilePath(idx, path);
+                        _mainTabs->setTabText(idx, QFileInfo(selected).fileName());
+                    }
+                }
+                if (!path.empty()) {
+                    QFile file(QString::fromStdString(path));
+                    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                        QTextStream out(&file);
+                        out << activeEditor()->text();
+                        file.close();
+                    }
+                }
+            }
+        });
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "Cerrar pestaña", QKeySequence::Close, [this]() {
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0) onCloseTab(idx);
+        });
         fileMenu->addSeparator();
-        fileMenu->addAction("&Salir",    QKeySequence::Quit, qApp, &QApplication::quit);
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "&Salir",        QKeySequence::Quit, qApp, &QApplication::quit);
 
-        // Editar
+        // ── Editar ──
         QMenu* editMenu = menuBar()->addMenu("&Editar");
-        editMenu->addAction("&Deshacer", QKeySequence::Undo,  [](){});
-        editMenu->addAction("&Rehacer",  QKeySequence::Redo,  [](){});
+        editMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Undo), "&Deshacer", QKeySequence::Undo, [this]() {
+            if (auto* ed = activeEditor()) ed->undo();
+        });
+        editMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Redo), "&Rehacer",  QKeySequence::Redo, [this]() {
+            if (auto* ed = activeEditor()) ed->redo();
+        });
         editMenu->addSeparator();
-        editMenu->addAction("&Cortar",   QKeySequence::Cut,   [](){});
-        editMenu->addAction("Co&piar",   QKeySequence::Copy,  [](){});
-        editMenu->addAction("&Pegar",    QKeySequence::Paste, [](){});
+        editMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Cut),   "&Cortar",   QKeySequence::Cut, [this]() {
+            if (auto* ed = activeEditor()) ed->cut();
+        });
+        editMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Copy),  "Co&piar",   QKeySequence::Copy, [this]() {
+            if (auto* ed = activeEditor()) ed->copy();
+        });
+        editMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Paste), "&Pegar",    QKeySequence::Paste, [this]() {
+            if (auto* ed = activeEditor()) ed->paste();
+        });
+        editMenu->addSeparator();
+        editMenu->addAction("Seleccionar &todo", QKeySequence::SelectAll, [this]() {
+            if (auto* ed = activeEditor()) ed->selectAll();
+        });
 
-        // Buscar
+        // ── Buscar ──
         QMenu* searchMenu = menuBar()->addMenu("&Buscar");
-        searchMenu->addAction("&Buscar...",     QKeySequence::Find,    [](){});
-        searchMenu->addAction("&Reemplazar...", QKeySequence::Replace, [](){});
+        searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Find),    "&Buscar...",     QKeySequence::Find, [this]() {
+            auto* dlg = new NppFindReplaceDlg(this);
+            dlg->show();
+        });
+        searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Replace), "&Reemplazar...", QKeySequence::Replace, [this]() {
+            auto* dlg = new NppFindReplaceDlg(this);
+            dlg->show();
+        });
+        searchMenu->addAction("Ir a &línea...", QKeySequence(Qt::CTRL | Qt::Key_G), [this]() {
+            auto* dlg = new NppGoToLineDlg(this);
+            if (activeEditor()) dlg->setInfo(activeEditor()->firstVisibleLine() + 1, activeEditor()->lines());
+            connect(dlg, &NppGoToLineDlg::goToLine, [this](int line) {
+                if (auto* ed = activeEditor()) ed->setCursorPosition(line - 1, 0);
+            });
+            dlg->show();
+        });
 
-
-        // Vista
+        // ── Vista ──
         QMenu* viewMenu = menuBar()->addMenu("&Vista");
+        viewMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::ZoomIn),  "Acercar &Zoom", QKeySequence::ZoomIn, [this]() {
+            if (auto* ed = activeEditor()) ed->zoomIn();
+        });
+        viewMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::ZoomOut), "Alejar Z&oom",  QKeySequence::ZoomOut, [this]() {
+            if (auto* ed = activeEditor()) ed->zoomOut();
+        });
+        viewMenu->addSeparator();
         viewMenu->addAction("Dividir &Horizontalmente", [this]() {
             _subTabs->setVisible(!_subTabs->isVisible());
             if (_subTabs->isVisible()) _splitter->setRatio(0.5);
         });
 
-        // Lenguaje
-        menuBar()->addMenu("&Lenguaje");
+        // ── Ejecutar / Herramientas ──
+        QMenu* runMenu = menuBar()->addMenu("&Ejecutar");
+        runMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Run), "&Ejecutar comando...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_R), [this]() {
+            auto* dlg = new NppRunDlg(this);
+            dlg->show();
+        });
 
-        // Plugins
-        menuBar()->addMenu("&Plugins");
+        // ── Plugins ──
+        QMenu* pluginsMenu = menuBar()->addMenu("&Plugins");
+        pluginsMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Plugins), "Administrador de &Plugins...", [this]() {
+            auto* dlg = new NppPluginsAdmin(this);
+            dlg->show();
+        });
 
-        // Ayuda
+        // ── Configuración ──
+        QMenu* configMenu = menuBar()->addMenu("&Configuración");
+        configMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Settings), "&Preferencias...", [this]() {
+            auto* dlg = new NppPreferenceDlg(this);
+            dlg->show();
+        });
+        configMenu->addAction("Mapeador de &Atajos...", [this]() {
+            auto* dlg = new NppShortcutMapper(this);
+            dlg->show();
+        });
+
+        // ── Ayuda ──
         QMenu* helpMenu = menuBar()->addMenu("A&yuda");
-        helpMenu->addAction("&Acerca de...", [this]() {
-            QMessageBox::about(this, "Acerca de Notepad++ Linux Port",
-                "Notepad++ Linux Port\n"
-                "Basado en Notepad++ por Don Ho\n"
-                "Port a Linux con Qt6 + QScintilla\n"
-                "Licencia: GPL v3");
+        helpMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::About), "&Acerca de Notepad++...", [this]() {
+            auto* dlg = new NppAboutDlg(this);
+            dlg->exec();
         });
 
         // Estilo oscuro para menús
@@ -219,6 +324,7 @@ private:
             "}"
         );
     }
+
 
     // ── Crear editor QsciScintilla real ─────────────────────────────────────
     QWidget* createEditor() {
@@ -338,12 +444,61 @@ private slots:
 
     void onToolbarCommand(int cmdId) {
         switch (cmdId) {
-            case 1: newDocument(); break;
-            case 2: onOpen(); break;
-            case 3: /* TODO: guardar */ break;
-            case 6: /* TODO: buscar */ break;
+            case 1:  newDocument(); break;
+            case 2:  onOpen(); break;
+            case 3:  {
+                int idx = _mainTabs->currentIndex();
+                if (idx >= 0 && activeEditor()) {
+                    NppString path = _mainTabs->tabFilePath(idx);
+                    if (path.empty()) {
+                        QString selected = QFileDialog::getSaveFileName(this, "Guardar como");
+                        if (!selected.isEmpty()) {
+                            path = selected.toStdString();
+                            _mainTabs->setTabFilePath(idx, path);
+                            _mainTabs->setTabText(idx, QFileInfo(selected).fileName());
+                        }
+                    }
+                    if (!path.empty()) {
+                        QFile file(QString::fromStdString(path));
+                        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                            QTextStream out(&file);
+                            out << activeEditor()->text();
+                            file.close();
+                        }
+                    }
+                }
+                break;
+            }
+            case 4:  /* Save All */ break;
+            case 5:  {
+                int idx = _mainTabs->currentIndex();
+                if (idx >= 0) onCloseTab(idx);
+                break;
+            }
+            case 6:  if (auto* ed = activeEditor()) ed->undo(); break;
+            case 7:  if (auto* ed = activeEditor()) ed->redo(); break;
+            case 8:  if (auto* ed = activeEditor()) ed->cut(); break;
+            case 9:  if (auto* ed = activeEditor()) ed->copy(); break;
+            case 10: if (auto* ed = activeEditor()) ed->paste(); break;
+            case 11:
+            case 12: (new NppFindReplaceDlg(this))->show(); break;
+            case 13: if (auto* ed = activeEditor()) ed->zoomIn(); break;
+            case 14: if (auto* ed = activeEditor()) ed->zoomOut(); break;
+            case 15: (new NppFileBrowser(this))->show(); break;
+            case 16: {
+                auto* fl = new NppFunctionList(this);
+                if (activeEditor()) fl->parseDocument(activeEditor()->text());
+                fl->show();
+                break;
+            }
+            case 17: (new NppProjectPanel("Proyecto Main", this))->show(); break;
+            case 18: (new NppClipboardHistory(this))->show(); break;
+            case 19: (new NppPluginsAdmin(this))->show(); break;
+            case 20: (new NppPreferenceDlg(this))->show(); break;
+            case 21: (new NppAboutDlg(this))->exec(); break;
         }
     }
+
 
     // ── Componentes ─────────────────────────────────────────────────────────
 private:

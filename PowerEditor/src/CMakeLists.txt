@@ -42,10 +42,18 @@ set(NPP_LINUX_SOURCES
 
 set(NPP_LINUX_HEADERS
     Platform/PlatformTypes.h
+    Platform/PlatformDesktopIntegration.h
+    Platform/PlatformDpiManager.h
+    Platform/PlatformIconProvider.h
     Platform/PlatformString.h
     Platform/PlatformMsg.h
     Platform/PlatformWindow.h
     Platform/PlatformPlugin.h
+    Platform/PlatformPluginManager.h
+    Platform/PlatformFileMonitor.h
+    Platform/PlatformFileDialog.h
+    Platform/PlatformTheme.h
+    Platform/PlatformCrashHandler.h
     WinControls/Qt/NotepadPlusWindowQt.h
     WinControls/Qt/NppStatusBar.h
     WinControls/Qt/NppTabBar.h
@@ -61,7 +69,24 @@ set(NPP_LINUX_HEADERS
     WinControls/Qt/NppFunctionList.h
     WinControls/Qt/NppProjectPanel.h
     WinControls/Qt/NppPluginsAdmin.h
+    WinControls/Qt/NppColourPicker.h
+    WinControls/Qt/NppDocumentMap.h
+    WinControls/Qt/NppClipboardHistory.h
+    WinControls/Qt/NppVerticalFileSwitcher.h
+    WinControls/Qt/NppAboutDlg.h
+    WinControls/Qt/NppGoToLineDlg.h
+    WinControls/Qt/NppRunDlg.h
+    WinControls/Qt/NppMD5Dlg.h
+    WinControls/Qt/NppAnsiCharPanel.h
+    WinControls/Qt/NppWindowsDlg.h
+    WinControls/Qt/NppColumnEditor.h
+    WinControls/Qt/NppSummaryDlg.h
+    WinControls/Qt/NppUserDefineDlg.h
+    WinControls/Qt/NppLocalization.h
+    WinControls/Qt/NppToolTip.h
+    WinControls/Qt/NppTrayIcon.h
 )
+
 
 # Qt MOC automático
 set(CMAKE_AUTOMOC ON)

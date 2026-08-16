@@ -10,6 +10,8 @@
 
 #include "../Platform/PlatformTypes.h"
 #include "../Platform/PlatformString.h"
+#include "../../Platform/PlatformIconProvider.h"
+
 
 #ifdef NPP_PLATFORM_LINUX
 
@@ -117,20 +119,37 @@ public:
         setIconSize(QSize(pixels, pixels));
     }
 
-    /// Crea botones estándar de Notepad++ con iconos del theme.
-    /// TODO: Llamar esto con iconos reales desde el recurso de imágenes
+    /// Crea la barra de herramientas completa de Notepad++ con iconos garantizados.
     void addStandardButtons() {
-        QStyle* style = this->style();
-
-        addButton({1, "Nuevo",   style->standardIcon(QStyle::SP_FileIcon)});
-        addButton({2, "Abrir",   style->standardIcon(QStyle::SP_DialogOpenButton)});
-        addButton({3, "Guardar", style->standardIcon(QStyle::SP_DialogSaveButton)});
+        addButton({1,  "Nuevo documento",                  NppIconProvider::get(NppIconProvider::IconType::New)});
+        addButton({2,  "Abrir archivo...",                 NppIconProvider::get(NppIconProvider::IconType::Open)});
+        addButton({3,  "Guardar",                          NppIconProvider::get(NppIconProvider::IconType::Save)});
+        addButton({4,  "Guardar todo",                     NppIconProvider::get(NppIconProvider::IconType::SaveAll)});
+        addButton({5,  "Cerrar documento actual",          NppIconProvider::get(NppIconProvider::IconType::Close)});
         addToolBarSeparator();
-        addButton({4, "Deshacer",style->standardIcon(QStyle::SP_ArrowBack)});
-        addButton({5, "Rehacer", style->standardIcon(QStyle::SP_ArrowForward)});
+        addButton({6,  "Deshacer",                         NppIconProvider::get(NppIconProvider::IconType::Undo)});
+        addButton({7,  "Rehacer",                          NppIconProvider::get(NppIconProvider::IconType::Redo)});
         addToolBarSeparator();
-        addButton({6, "Buscar",  style->standardIcon(QStyle::SP_FileDialogContentsView)});
+        addButton({8,  "Cortar",                           NppIconProvider::get(NppIconProvider::IconType::Cut)});
+        addButton({9,  "Copiar",                           NppIconProvider::get(NppIconProvider::IconType::Copy)});
+        addButton({10, "Pegar",                            NppIconProvider::get(NppIconProvider::IconType::Paste)});
+        addToolBarSeparator();
+        addButton({11, "Buscar...",                        NppIconProvider::get(NppIconProvider::IconType::Find)});
+        addButton({12, "Reemplazar...",                    NppIconProvider::get(NppIconProvider::IconType::Replace)});
+        addToolBarSeparator();
+        addButton({13, "Acercar Zoom",                     NppIconProvider::get(NppIconProvider::IconType::ZoomIn)});
+        addButton({14, "Alejar Zoom",                      NppIconProvider::get(NppIconProvider::IconType::ZoomOut)});
+        addToolBarSeparator();
+        addButton({15, "Explorador de Archivos",           NppIconProvider::get(NppIconProvider::IconType::FileBrowser)});
+        addButton({16, "Lista de Funciones",               NppIconProvider::get(NppIconProvider::IconType::FunctionList)});
+        addButton({17, "Panel de Proyectos",               NppIconProvider::get(NppIconProvider::IconType::ProjectPanel)});
+        addButton({18, "Historial del Portapapeles",       NppIconProvider::get(NppIconProvider::IconType::ClipboardHistory)});
+        addButton({19, "Administrador de Plugins",         NppIconProvider::get(NppIconProvider::IconType::Plugins)});
+        addToolBarSeparator();
+        addButton({20, "Preferencias...",                  NppIconProvider::get(NppIconProvider::IconType::Settings)});
+        addButton({21, "Acerca de Notepad++",              NppIconProvider::get(NppIconProvider::IconType::About)});
     }
+
 
 signals:
     /// Emitida cuando se hace clic en un botón (con su command ID).
