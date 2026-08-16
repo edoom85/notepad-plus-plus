@@ -1,7 +1,7 @@
 // WinControls/Qt/NppStyleConfigDlg.h — Diálogo "Configurador de estilos" (Qt6)
 // Reemplaza WordStyleDlg.cpp/.h (WordStyleDlgRes.h) en Linux.
 // Permite seleccionar temas (Default, zenburn, VS Code Dark, Monokai, Obsidian, Solarized),
-// lenguajes, estilos, colores de primer plano/fondo y fuentes.
+// lenguajes, estilos, colores de primer plano/fondo y fuentes con vista previa en tiempo real.
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -44,9 +44,8 @@ public:
         themeLayout->addWidget(new QLabel("Seleccione tema:"));
         _cbTheme = new QComboBox(this);
         _cbTheme->addItems({
-            "Default (Dark Mode)",
+            "VS Code Dark (Default)",
             "zenburn",
-            "VS Code Dark",
             "Monokai",
             "Obsidian",
             "Solarized Dark",
@@ -163,7 +162,7 @@ public:
 
         btnLayout->addStretch();
 
-        auto* btnSave = new QPushButton("Guardar & Cerrar", this);
+        auto* btnSave = new QPushButton("Guardar y Cerrar", this);
         auto* btnCancel = new QPushButton("Cancelar", this);
         btnSave->setDefault(true);
 
@@ -172,9 +171,33 @@ public:
 
         mainLayout->addLayout(btnLayout);
 
-        connect(btnSave, &QPushButton::clicked, this, &QDialog::accept);
+        // Conexiones de Eventos
+        connect(btnSave, &QPushButton::clicked, [this]() {
+            emit styleApplied(_cbTheme->currentText(), _fgPicker->color(), _bgPicker->color());
+            accept();
+        });
+
         connect(btnCancel, &QPushButton::clicked, this, &QDialog::reject);
+
+        connect(_cbTheme, &QComboBox::currentTextChanged, [this](const QString& themeName) {
+            emit styleApplied(themeName, _fgPicker->color(), _bgPicker->color());
+        });
+
+        connect(_fgPicker, &NppColourPicker::colorChanged, [this](const QColor& fg) {
+            emit styleApplied(_cbTheme->currentText(), fg, _bgPicker->color());
+        });
+
+        connect(_bgPicker, &NppColourPicker::colorChanged, [this](const QColor& bg) {
+            emit styleApplied(_cbTheme->currentText(), _fgPicker->color(), bg);
+        });
+
+        connect(sliderTransp, &QSlider::valueChanged, [this](int val) {
+            setWindowOpacity(val / 100.0);
+        });
     }
+
+signals:
+    void styleApplied(const QString& themeName, const QColor& fg, const QColor& bg);
 
 private:
     QComboBox*       _cbTheme   = nullptr;

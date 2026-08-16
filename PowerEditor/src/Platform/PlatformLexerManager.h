@@ -80,11 +80,14 @@ public:
 
         editor->setLexer(lexer);
         
-        // Re-estilizar márgenes tras cambiar el lexer para mantener integración estética del tema
-        QColor bg = NppTheme::marginBackgroundColor();
-        editor->setMarginsBackgroundColor(bg);
-        editor->setFoldMarginColors(bg, bg);
+        // Re-estilizar números de línea y márgenes tras cambiar el lexer
+        QColor marginBg = NppTheme::marginBackgroundColor();
+        QColor marginFg = NppTheme::marginForegroundColor();
+        editor->setMarginsBackgroundColor(marginBg);
+        editor->setMarginsForegroundColor(marginFg);
+        editor->setFoldMarginColors(marginBg, marginBg);
     }
+
 
     /// Auto-detecta el lenguaje basado en la extensión del archivo.
     static Language detectFromExtension(const QString& filePath) {

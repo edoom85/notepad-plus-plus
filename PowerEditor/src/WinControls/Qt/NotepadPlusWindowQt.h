@@ -67,6 +67,9 @@
 #include "NppStyleConfigDlg.h"
 #include "NppRunMacroDlg.h"
 #include "NppFindCharsInRange.h"
+#include "NppColumnEditor.h"
+#include "NppAnsiCharPanel.h"
+
 
 
 /// Ventana principal de Notepad++ en Qt6.
@@ -111,8 +114,11 @@ public:
 
         connect(_mainTabs, &NppTabWidget::closeTabRequested,
                 this, &NotepadPlusWindowQt::onCloseTab);
+        connect(_mainTabs, &NppTabWidget::contextMenuOnTab,
+                this, &NotepadPlusWindowQt::showTabContextMenu);
         connect(_mainTabs, &QTabWidget::currentChanged,
                 this, &NotepadPlusWindowQt::onTabChanged);
+
 
         // ── 4. Status Bar ───────────────────────────────────────────────────
         _statusBar = new NppStatusBar(this);
@@ -170,7 +176,13 @@ public:
     }
 
 
-    /// Crea un nuevo documento vacío.
+private:
+    QsciScintilla* activeEditor() const {
+        QWidget* w = _mainTabs->currentWidget();
+        return qobject_cast<QsciScintilla*>(w);
+    }
+
+public:
     void newDocument() {
         static int newCount = 1;
         auto* editor = createEditor();
@@ -181,25 +193,17 @@ public:
     }
 
 private:
-    // ── Crear menús ─────────────────────────────────────────────────────────
-    /// Obtiene el widget QsciScintilla activo actualmente.
-    QsciScintilla* activeEditor() const {
-        QWidget* w = _mainTabs->currentWidget();
-        return qobject_cast<QsciScintilla*>(w);
-    }
-
-private:
-    // ── Crear menús ─────────────────────────────────────────────────────────
     void createMenus() {
         menuBar()->setNativeMenuBar(false);
 
         // ── 1. Archivo ──
+
         QMenu* fileMenu = menuBar()->addMenu("&Archivo");
 
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::New),  "&Nuevo",          QKeySequence::New,  this, &NotepadPlusWindowQt::newDocument);
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Open), "&Abrir...",       QKeySequence::Open, this, &NotepadPlusWindowQt::onOpen);
         
-        QMenu* openFolderMenu = fileMenu->addMenu("Abrir carpeta contenedora");
+        QMenu* openFolderMenu = fileMenu->addMenu("Abrir carpeta contenedora en");
         openFolderMenu->addAction("Explorador de archivos", [this]() {
             int idx = _mainTabs->currentIndex();
             if (idx >= 0) {
@@ -221,9 +225,17 @@ private:
             }
         });
 
-        fileMenu->addAction("Abrir en nueva instancia", [this]() {
-            QProcess::startDetached(QApplication::applicationFilePath(), QStringList());
+        fileMenu->addAction("Abrir en visor predeterminado", [this]() {
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0) {
+                NppString path = _mainTabs->tabFilePath(idx);
+                if (!path.empty()) QDesktopServices::openUrl(QUrl::fromLocalFile(QString::fromStdString(path)));
+            }
         });
+        fileMenu->addAction("Abrir carpeta como espacio de trabajo", [this]() {
+            (new NppFileBrowser(this))->show();
+        });
+        fileMenu->addAction("Recargar desde disco", QKeySequence(Qt::CTRL | Qt::Key_R), [this]() {});
         fileMenu->addSeparator();
 
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Save), "&Guardar",        QKeySequence::Save, [this]() {
@@ -248,7 +260,7 @@ private:
                 }
             }
         });
-        fileMenu->addAction("Guardar &como...", QKeySequence::SaveAs, [this]() {
+        fileMenu->addAction("Guardar &como...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_S), [this]() {
             int idx = _mainTabs->currentIndex();
             if (idx >= 0 && activeEditor()) {
                 QString selected = QFileDialog::getSaveFileName(this, "Guardar como");
@@ -279,21 +291,33 @@ private:
             }
         });
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::SaveAll), "Guardar &todo", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S), [this]() {});
+        fileMenu->addAction("Renombrar...", [this]() {});
         fileMenu->addSeparator();
 
-        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "&Cerrar pestaña", QKeySequence::Close, [this]() {
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "Cerrar pestaña activa", QKeySequence::Close, [this]() {
             int idx = _mainTabs->currentIndex();
             if (idx >= 0) onCloseTab(idx);
         });
-        fileMenu->addAction("Cerrar to&do", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_W), [this]() {
+        fileMenu->addAction("Cerrar todas las pestañas", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_W), [this]() {
             while (_mainTabs->count() > 0) onCloseTab(0);
         });
-        fileMenu->addAction("Cerrar todo excepto el actual", [this]() {
+        
+        QMenu* closeSpecialMenu = fileMenu->addMenu("Cerrado especial");
+        closeSpecialMenu->addAction("Cerrar todo excepto el actual", [this]() {
             int current = _mainTabs->currentIndex();
             for (int i = _mainTabs->count() - 1; i >= 0; --i) {
                 if (i != current) onCloseTab(i);
             }
         });
+        closeSpecialMenu->addAction("Cerrar todo a la izquierda", [this]() {});
+        closeSpecialMenu->addAction("Cerrar todo a la derecha", [this]() {});
+        closeSpecialMenu->addAction("Cerrar no modificados", [this]() {});
+
+        fileMenu->addAction("Mover a la Papelera de reciclaje", [this]() {});
+        fileMenu->addSeparator();
+
+        fileMenu->addAction("Cargar sesión...", [this]() {});
+        fileMenu->addAction("Guardar sesión...", [this]() {});
         fileMenu->addSeparator();
 
         fileMenu->addAction("&Imprimir...", QKeySequence::Print, [this]() {
@@ -305,8 +329,15 @@ private:
                 }
             }
         });
+        fileMenu->addAction("Imprimir ahora", [this]() {});
         fileMenu->addSeparator();
-        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "&Salir", QKeySequence::Quit, qApp, &QApplication::quit);
+
+        fileMenu->addAction("Restaurar archivo cerrado recientemente", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_T), [this]() {});
+        fileMenu->addAction("Abrir todos los archivos recientes", [this]() {});
+        fileMenu->addAction("Vaciar lista de archivos recientes", [this]() {});
+        fileMenu->addSeparator();
+
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "&Salir", QKeySequence(Qt::ALT | Qt::Key_F4), qApp, &QApplication::quit);
 
         // ── 2. Editar ──
         QMenu* editMenu = menuBar()->addMenu("&Editar");
@@ -326,13 +357,19 @@ private:
         editMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Paste), "&Pegar",    QKeySequence::Paste, [this]() {
             if (auto* ed = activeEditor()) ed->paste();
         });
-        editMenu->addAction("E&liminar", QKeySequence::Delete, [this]() {
+        editMenu->addAction("Borrar", QKeySequence::Delete, [this]() {
             if (auto* ed = activeEditor()) ed->removeSelectedText();
         });
-        editMenu->addAction("Seleccionar &todo", QKeySequence::SelectAll, [this]() {
+        editMenu->addAction("Seleccionar todo", QKeySequence::SelectAll, [this]() {
             if (auto* ed = activeEditor()) ed->selectAll();
         });
+        editMenu->addAction("Selección de inicio/fin", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_B), [this]() {});
+        editMenu->addAction("Selección de inicio/fin en modo columna", QKeySequence(Qt::ALT | Qt::SHIFT | Qt::Key_B), [this]() {});
         editMenu->addSeparator();
+
+        QMenu* insertMenu = editMenu->addMenu("Insertar");
+        insertMenu->addAction("Fecha y hora corta", [this]() {});
+        insertMenu->addAction("Fecha y hora larga", [this]() {});
 
         QMenu* copyPathMenu = editMenu->addMenu("Copiar al portapapeles");
         copyPathMenu->addAction("Copiar ruta del archivo actual", [this]() {
@@ -348,7 +385,7 @@ private:
             if (idx >= 0) QApplication::clipboard()->setText(QFileInfo(QString::fromStdString(_mainTabs->tabFilePath(idx))).absolutePath());
         });
 
-        QMenu* indentMenu = editMenu->addMenu("Indentación");
+        QMenu* indentMenu = editMenu->addMenu("Tabulación");
         indentMenu->addAction("Aumentar sangría (Tab)", QKeySequence(Qt::Key_Tab), [this]() {
             if (auto* ed = activeEditor()) {
                 int line, col;
@@ -364,6 +401,20 @@ private:
             }
         });
 
+        QMenu* convertMenu = editMenu->addMenu("Conversión de mayúsculas y minúsculas");
+        convertMenu->addAction("A MAYÚSCULAS", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_U), [this]() {
+            if (auto* ed = activeEditor()) {
+                QString sel = ed->selectedText();
+                if (!sel.isEmpty()) ed->replaceSelectedText(sel.toUpper());
+            }
+        });
+        convertMenu->addAction("A minúsculas", QKeySequence(Qt::CTRL | Qt::Key_U), [this]() {
+            if (auto* ed = activeEditor()) {
+                QString sel = ed->selectedText();
+                if (!sel.isEmpty()) ed->replaceSelectedText(sel.toLower());
+            }
+        });
+        convertMenu->addAction("Convertir Primera Letra En Mayúscula", [this]() {});
 
         QMenu* lineOpsMenu = editMenu->addMenu("Operaciones con líneas");
         lineOpsMenu->addAction("Duplicar línea actual", QKeySequence(Qt::CTRL | Qt::Key_D), [this]() {
@@ -387,35 +438,61 @@ private:
         lineOpsMenu->addAction("Unir líneas", QKeySequence(Qt::CTRL | Qt::Key_J), [this]() {});
         lineOpsMenu->addAction("Eliminar líneas vacías", [this]() {});
 
-        QMenu* convertMenu = editMenu->addMenu("Convertir mayúsculas/minúsculas");
-        convertMenu->addAction("A MAYÚSCULAS", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_U), [this]() {
-            if (auto* ed = activeEditor()) {
-                QString sel = ed->selectedText();
-                if (!sel.isEmpty()) ed->replaceSelectedText(sel.toUpper());
-            }
-        });
-        convertMenu->addAction("A minúsculas", QKeySequence(Qt::CTRL | Qt::Key_U), [this]() {
-            if (auto* ed = activeEditor()) {
-                QString sel = ed->selectedText();
-                if (!sel.isEmpty()) ed->replaceSelectedText(sel.toLower());
-            }
-        });
-
-        QMenu* spaceOpsMenu = editMenu->addMenu("Operaciones de espacio");
-        spaceOpsMenu->addAction("Trim espacios al final", [this]() {});
-        spaceOpsMenu->addAction("Trim espacios al inicio", [this]() {});
-        spaceOpsMenu->addAction("Convertir espacios a tabuladores", [this]() {});
-        spaceOpsMenu->addAction("Convertir tabuladores a espacios", [this]() {});
-
-        QMenu* commentMenu = editMenu->addMenu("Comentar/Descomentar");
+        QMenu* commentMenu = editMenu->addMenu("Comentar / Descomentar");
         commentMenu->addAction("Alternar comentario de línea", QKeySequence(Qt::CTRL | Qt::Key_Q), [this]() {});
         commentMenu->addAction("Comentario de bloque", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Q), [this]() {});
 
+        QMenu* acMenu = editMenu->addMenu("Autocompletar");
+        acMenu->addAction("Completar palabra", QKeySequence(Qt::CTRL | Qt::Key_Space), [this]() {});
+        acMenu->addAction("Completar función", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Space), [this]() {});
+
+        QMenu* eolMenu = editMenu->addMenu("Conversión fin de línea");
+        eolMenu->addAction("Formato Windows (CR LF)", [this]() {});
+        eolMenu->addAction("Formato Unix (LF)", [this]() {});
+        eolMenu->addAction("Formato Mac (CR)", [this]() {});
+
+        QMenu* spaceOpsMenu = editMenu->addMenu("Operaciones de limpieza");
+        spaceOpsMenu->addAction("Trim espacios al final", [this]() {});
+        spaceOpsMenu->addAction("Trim espacios al inicio", [this]() {});
+        spaceOpsMenu->addAction("Trim inicio y final", [this]() {});
+
+        editMenu->addMenu("Pegado especial");
+        editMenu->addMenu("Selección");
+        editMenu->addSeparator();
+
+        QMenu* multiSelMenu = editMenu->addMenu("Multiselección total");
+        multiSelMenu->addAction("Siguiente multiselección", [this]() {});
+        multiSelMenu->addAction("Deshacer la última selección múltiple añadida", [this]() {});
+        multiSelMenu->addAction("Saltar actual & Ir a siguiente multiselección", [this]() {});
+        editMenu->addSeparator();
+
+        editMenu->addAction("Modo de columna...", [this]() {});
+        editMenu->addAction("Editor de columna...", QKeySequence(Qt::ALT | Qt::Key_C), [this]() {
+            (new NppColumnEditor(this))->show();
+        });
+        editMenu->addAction("Panel de caracteres", [this]() {
+            (new NppAnsiCharPanel(this))->show();
+        });
+        editMenu->addAction("Historial de portapapeles", [this]() {
+            (new NppClipboardHistory(this))->show();
+        });
+        editMenu->addSeparator();
+
+        QMenu* readOnlyNpp = editMenu->addMenu("Atributo solo lectura en Notepad++");
+        readOnlyNpp->addAction("Alternar solo lectura", [this]() {
+            if (auto* ed = activeEditor()) ed->setReadOnly(!ed->isReadOnly());
+        });
+        editMenu->addAction("Atributo de solo lectura en Windows", [this]() {});
+
         // ── 3. Buscar ──
         QMenu* searchMenu = menuBar()->addMenu("&Buscar");
-        searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Find),    "&Buscar...",     QKeySequence::Find, [this]() {
+        searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Find),    "Buscar...",     QKeySequence::Find, [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
-            dlg->show();
+            dlg->selectTab(0);
+        });
+        searchMenu->addAction("Buscar en archivos", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), [this]() {
+            auto* dlg = new NppFindReplaceDlg(this);
+            dlg->selectTab(2);
         });
         searchMenu->addAction("Buscar siguiente", QKeySequence::FindNext, [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
@@ -425,17 +502,19 @@ private:
             auto* dlg = new NppFindReplaceDlg(this);
             dlg->show();
         });
-        searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Replace), "&Reemplazar...", QKeySequence::Replace, [this]() {
+        searchMenu->addAction("Seleccionar y buscar siguiente", QKeySequence(Qt::CTRL | Qt::Key_F3), [this]() {});
+        searchMenu->addAction("Seleccionar y buscar anterior", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F3), [this]() {});
+        searchMenu->addAction("Búsqueda (volátil) siguiente", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_F3), [this]() {});
+        searchMenu->addAction("Búsqueda (volátil) anterior", QKeySequence(Qt::CTRL | Qt::ALT | Qt::SHIFT | Qt::Key_F3), [this]() {});
+        searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Replace), "Sustituir...", QKeySequence::Replace, [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
-            dlg->show();
+            dlg->selectTab(1);
         });
-        searchMenu->addAction("Buscar en &archivos...", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), [this]() {
-            auto* dlg = new NppFindReplaceDlg(this);
-            dlg->show();
-        });
-        searchMenu->addSeparator();
-
-        searchMenu->addAction("Ir a &línea...", QKeySequence(Qt::CTRL | Qt::Key_G), [this]() {
+        searchMenu->addAction("Búsqueda incremental", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_I), [this]() {});
+        searchMenu->addAction("Ventana de resultados de búsqueda", QKeySequence(Qt::Key_F7), [this]() {});
+        searchMenu->addAction("Resultados de búsqueda siguiente", QKeySequence(Qt::Key_F4), [this]() {});
+        searchMenu->addAction("Resultados de búsqueda anterior", QKeySequence(Qt::SHIFT | Qt::Key_F4), [this]() {});
+        searchMenu->addAction("Ir a la línea...", QKeySequence(Qt::CTRL | Qt::Key_G), [this]() {
             auto* dlg = new NppGoToLineDlg(this);
             if (activeEditor()) dlg->setInfo(activeEditor()->firstVisibleLine() + 1, activeEditor()->lines());
             connect(dlg, &NppGoToLineDlg::goToLine, [this](int line) {
@@ -443,14 +522,26 @@ private:
             });
             dlg->show();
         });
-        searchMenu->addAction("Ir a coincidencia de corchete", QKeySequence(Qt::CTRL | Qt::Key_B), [this]() {});
+        searchMenu->addAction("Ir al corchete", QKeySequence(Qt::CTRL | Qt::Key_B), [this]() {});
+        searchMenu->addAction("Seleccionar todo lo que haya entre {} [] o ()", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_B), [this]() {});
         searchMenu->addAction("Marcar...", QKeySequence(Qt::CTRL | Qt::Key_M), [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
-            dlg->show();
+            dlg->selectTab(4);
         });
         searchMenu->addSeparator();
 
-        QMenu* bookmarkMenu = searchMenu->addMenu("Marcar como favorito");
+        searchMenu->addMenu("Historial de cambios");
+        searchMenu->addSeparator();
+
+        searchMenu->addMenu("Resaltar todas las coincidencias buscadas");
+        searchMenu->addMenu("Resaltar una coincidencia");
+        searchMenu->addMenu("Limpiar estilo");
+        searchMenu->addMenu("Subir");
+        searchMenu->addMenu("Bajar");
+        searchMenu->addMenu("Copiar texto con estilo");
+        searchMenu->addSeparator();
+
+        QMenu* bookmarkMenu = searchMenu->addMenu("Marcadores");
         bookmarkMenu->addAction("Alternar marcador", QKeySequence(Qt::CTRL | Qt::Key_F2), [this]() {
             if (auto* ed = activeEditor()) {
                 int line, col;
@@ -463,6 +554,12 @@ private:
         bookmarkMenu->addAction("Borrar todos los marcadores", [this]() {
             if (auto* ed = activeEditor()) ed->markerDeleteAll();
         });
+        searchMenu->addSeparator();
+
+        searchMenu->addAction("Buscar caracteres por tipo...", [this]() {
+            (new NppFindCharsInRangeDlg(this))->show();
+        });
+
 
         // ── 4. Vista ──
 
@@ -616,51 +713,188 @@ private:
         encMenu->addAction("UTF-16 BE BOM", [this]() {});
         encMenu->addAction("UTF-16 LE BOM", [this]() {});
         encMenu->addSeparator();
+
+        QMenu* charSetsMenu = encMenu->addMenu("Juegos de caracteres");
+        
+        QMenu* csWest = charSetsMenu->addMenu("Occidental");
+        csWest->addAction("OEM 850", [this]() {});
+        csWest->addAction("ISO 8859-1", [this]() {});
+        csWest->addAction("ISO 8859-15", [this]() {});
+        csWest->addAction("Windows-1252", [this]() {});
+
+        QMenu* csCentral = charSetsMenu->addMenu("Europa Central");
+        csCentral->addAction("OEM 852", [this]() {});
+        csCentral->addAction("ISO 8859-2", [this]() {});
+        csCentral->addAction("Windows-1250", [this]() {});
+
+        QMenu* csCyrillic = charSetsMenu->addMenu("Círilico");
+        csCyrillic->addAction("OEM 866", [this]() {});
+        csCyrillic->addAction("ISO 8859-5", [this]() {});
+        csCyrillic->addAction("KOI8-R", [this]() {});
+        csCyrillic->addAction("KOI8-U", [this]() {});
+        csCyrillic->addAction("Windows-1251", [this]() {});
+
+        QMenu* csSouth = charSetsMenu->addMenu("Europa del Sur");
+        csSouth->addAction("ISO 8859-3", [this]() {});
+
+        QMenu* csGreek = charSetsMenu->addMenu("Griego");
+        csGreek->addAction("ISO 8859-7", [this]() {});
+        csGreek->addAction("Windows-1253", [this]() {});
+
+        QMenu* csTurkish = charSetsMenu->addMenu("Turco");
+        csTurkish->addAction("ISO 8859-9", [this]() {});
+        csTurkish->addAction("Windows-1254", [this]() {});
+
+        QMenu* csHebrew = charSetsMenu->addMenu("Hebreo");
+        csHebrew->addAction("ISO 8859-8", [this]() {});
+        csHebrew->addAction("Windows-1255", [this]() {});
+
+        QMenu* csArabic = charSetsMenu->addMenu("Árabe");
+        csArabic->addAction("ISO 8859-6", [this]() {});
+        csArabic->addAction("Windows-1256", [this]() {});
+
+        QMenu* csBaltic = charSetsMenu->addMenu("Báltico");
+        csBaltic->addAction("ISO 8859-4", [this]() {});
+        csBaltic->addAction("ISO 8859-13", [this]() {});
+        csBaltic->addAction("Windows-1257", [this]() {});
+
+        QMenu* csViet = charSetsMenu->addMenu("Vietnamita");
+        csViet->addAction("Windows-1258", [this]() {});
+
+        QMenu* csEastAsian = charSetsMenu->addMenu("Asiático Oriental");
+        csEastAsian->addAction("Chino Simplificado (GB2312)", [this]() {});
+        csEastAsian->addAction("Chino Tradicional (Big5)", [this]() {});
+        csEastAsian->addAction("Japonés (Shift-JIS)", [this]() {});
+        csEastAsian->addAction("Coreano (EUC-KR)", [this]() {});
+
+        encMenu->addSeparator();
         encMenu->addAction("Convertir a ANSI", [this]() {});
         encMenu->addAction("Convertir a UTF-8", [this]() {});
         encMenu->addAction("Convertir a UTF-8 sin BOM", [this]() {});
+        encMenu->addAction("Convertir a UTF-16 BE BOM", [this]() {});
+        encMenu->addAction("Convertir a UTF-16 LE BOM", [this]() {});
+
 
         // ── 6. Lenguaje ──
         QMenu* langMenu = menuBar()->addMenu("&Lenguaje");
-        langMenu->addAction("Texto plano (Normal Text)", [this]() {
+        langMenu->addAction("Ninguno (texto normal)", [this]() {
             if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::PlainText);
         });
         langMenu->addSeparator();
 
+        QMenu* menuA = langMenu->addMenu("A");
+        menuA->addAction("ActionScript", [this]() {});
+        menuA->addAction("Ada",          [this]() {});
+        menuA->addAction("ASN.1",        [this]() {});
+        menuA->addAction("ASP",          [this]() {});
+        menuA->addAction("Assembly",     [this]() {});
+        menuA->addAction("AutoIt",       [this]() {});
+
+        QMenu* menuB = langMenu->addMenu("B");
+        menuB->addAction("Batch",        [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Bash); });
+        menuB->addAction("BASH",         [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Bash); });
+
         QMenu* menuC = langMenu->addMenu("C");
-        menuC->addAction("C",   [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
-        menuC->addAction("C++", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
-        menuC->addAction("CSS", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CSS); });
+        menuC->addAction("C",            [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
+        menuC->addAction("C++",          [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
+        menuC->addAction("C#",           [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
+        menuC->addAction("CSS",          [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CSS); });
+        menuC->addAction("CMake",        [this]() {});
+        menuC->addAction("COBOL",        [this]() {});
+        menuC->addAction("CoffeeScript", [this]() {});
+
+        QMenu* menuD = langMenu->addMenu("D");
+        menuD->addAction("D",            [this]() {});
+        menuD->addAction("Diff",         [this]() {});
+
+        QMenu* menuE = langMenu->addMenu("E");
+        menuE->addAction("Erlang",       [this]() {});
+
+        QMenu* menuF = langMenu->addMenu("F");
+        menuF->addAction("Fortran",      [this]() {});
+        menuF->addAction("F#",           [this]() {});
+
+        QMenu* menuG = langMenu->addMenu("G");
+        menuG->addAction("GUI4CLI",      [this]() {});
 
         QMenu* menuH = langMenu->addMenu("H");
-        menuH->addAction("HTML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::HTML); });
+        menuH->addAction("HTML",         [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::HTML); });
+        menuH->addAction("Haskell",      [this]() {});
+
+        QMenu* menuI = langMenu->addMenu("I");
+        menuI->addAction("INI",          [this]() {});
+        menuI->addAction("INNO Setup",   [this]() {});
 
         QMenu* menuJ = langMenu->addMenu("J");
-        menuJ->addAction("Java",       [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Java); });
-        menuJ->addAction("JavaScript", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::JavaScript); });
-        menuJ->addAction("JSON",       [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::JSON); });
+        menuJ->addAction("Java",         [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Java); });
+        menuJ->addAction("JavaScript",   [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::JavaScript); });
+        menuJ->addAction("JSON",         [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::JSON); });
+        menuJ->addAction("JSP",          [this]() {});
+
+        langMenu->addAction("KIXtart",   [this]() {});
+
+        QMenu* menuL = langMenu->addMenu("L");
+        menuL->addAction("LISP",         [this]() {});
+        menuL->addAction("Lua",          [this]() {});
 
         QMenu* menuM = langMenu->addMenu("M");
-        menuM->addAction("Markdown", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::PlainText); });
+        menuM->addAction("Make",         [this]() {});
+        menuM->addAction("Markdown",     [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::PlainText); });
+        menuM->addAction("MATLAB",       [this]() {});
+        menuM->addAction("MS-DOS",       [this]() {});
+
+        QMenu* menuN = langMenu->addMenu("N");
+        menuN->addAction("Nim",          [this]() {});
+        menuN->addAction("NSI",          [this]() {});
+
+        QMenu* menuO = langMenu->addMenu("O");
+        menuO->addAction("Objective-C",  [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
 
         QMenu* menuP = langMenu->addMenu("P");
-        menuP->addAction("Python", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Python); });
+        menuP->addAction("Pascal",       [this]() {});
+        menuP->addAction("Perl",         [this]() {});
+        menuP->addAction("PHP",          [this]() {});
+        menuP->addAction("PostScript",   [this]() {});
+        menuP->addAction("PowerShell",   [this]() {});
+        menuP->addAction("Properties",   [this]() {});
+        menuP->addAction("Python",       [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Python); });
+
+        QMenu* menuR = langMenu->addMenu("R");
+        menuR->addAction("R",             [this]() {});
+        menuR->addAction("Resource File", [this]() {});
 
         QMenu* menuS = langMenu->addMenu("S");
-        menuS->addAction("Shell (Bash)", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Bash); });
+        menuS->addAction("Ruby",         [this]() {});
+        menuS->addAction("Rust",         [this]() {});
+        menuS->addAction("Shell",        [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Bash); });
+        menuS->addAction("Scheme",       [this]() {});
+        menuS->addAction("Smalltalk",    [this]() {});
         menuS->addAction("SQL",          [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::SQL); });
+        menuS->addAction("Swift",        [this]() {});
 
-        QMenu* menuX = langMenu->addMenu("X");
-        menuX->addAction("XML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::XML); });
+        QMenu* menuT = langMenu->addMenu("T");
+        menuT->addAction("TCL",          [this]() {});
+        menuT->addAction("TOML",         [this]() {});
 
-        QMenu* menuY = langMenu->addMenu("Y");
-        menuY->addAction("YAML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::YAML); });
+        QMenu* menuV = langMenu->addMenu("V");
+        menuV->addAction("VHDL",         [this]() {});
+        menuV->addAction("Verilog",      [this]() {});
+        menuV->addAction("Visual Basic", [this]() {});
+        menuV->addAction("Visual Prolog",[this]() {});
+
+        langMenu->addAction("XML",  [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::XML); });
+        langMenu->addAction("YAML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::YAML); });
 
         langMenu->addSeparator();
-        langMenu->addAction("Definir tu lenguaje (UDL)...", [this]() {
+        QMenu* udlMenu = langMenu->addMenu("Definido por el usuario");
+        udlMenu->addAction("Markdown (preinstalled)", [this]() {});
+        udlMenu->addAction("Markdown (preinstalled dark mode)", [this]() {});
+        
+        langMenu->addAction("Definido por el usuario...", [this]() {
             auto* dlg = new NppUserDefineDlg(this);
             dlg->show();
         });
+
 
         // ── 7. Configuración ──
         QMenu* configMenu = menuBar()->addMenu("Con&figuración");
@@ -670,6 +904,19 @@ private:
         });
         configMenu->addAction("Configurador de &estilos...", [this]() {
             auto* dlg = new NppStyleConfigDlg(this);
+            connect(dlg, &NppStyleConfigDlg::styleApplied, [this](const QString& /*theme*/, const QColor& fg, const QColor& bg) {
+                if (auto* ed = activeEditor()) {
+                    ed->setPaper(bg);
+                    ed->setColor(fg);
+                    if (ed->lexer()) {
+                        ed->lexer()->setDefaultPaper(bg);
+                        ed->lexer()->setDefaultColor(fg);
+                        for (int i = 0; i <= 128; ++i) {
+                            ed->lexer()->setPaper(bg, i);
+                        }
+                    }
+                }
+            });
             dlg->show();
         });
 
@@ -677,6 +924,10 @@ private:
             auto* dlg = new NppShortcutMapper(this);
             dlg->show();
         });
+        configMenu->addSeparator();
+
+        configMenu->addAction("Editar menú contextual emergente", [this]() {});
+        configMenu->addSeparator();
         
         QMenu* importMenu = configMenu->addMenu("Importar");
         importMenu->addAction("Importar plugin(s)...", [this]() {
@@ -684,37 +935,61 @@ private:
             dlg->show();
         });
         importMenu->addAction("Importar tema(s) de estilo...", [this]() {});
-        configMenu->addSeparator();
-        configMenu->addAction("Editar menú contextual emergente", [this]() {});
+
 
         // ── 8. Herramientas ──
         QMenu* toolsMenu = menuBar()->addMenu("Herramien&tas");
-        toolsMenu->addAction("Generar &MD5...", [this]() {
+        
+        QMenu* md5Menu = toolsMenu->addMenu("MD5");
+        md5Menu->addAction("Generar...", [this]() {
             auto* dlg = new NppMD5Dlg(this);
             dlg->show();
         });
-        toolsMenu->addAction("Generar &SHA-256...", [this]() {
+        md5Menu->addAction("Generar desde archivos...", [this]() {});
+
+        QMenu* sha1Menu = toolsMenu->addMenu("SHA-1");
+        sha1Menu->addAction("Generar...", [this]() {});
+        sha1Menu->addAction("Generar desde archivos...", [this]() {});
+
+        QMenu* sha256Menu = toolsMenu->addMenu("SHA-256");
+        sha256Menu->addAction("Generar...", [this]() {
             auto* dlg = new NppMD5Dlg(this);
             dlg->show();
         });
+        sha256Menu->addAction("Generar desde archivos...", [this]() {});
+
+        QMenu* sha512Menu = toolsMenu->addMenu("SHA-512");
+        sha512Menu->addAction("Generar...", [this]() {});
+        sha512Menu->addAction("Generar desde archivos...", [this]() {});
 
         // ── 9. Macro ──
         QMenu* macroMenu = menuBar()->addMenu("&Macro");
         macroMenu->addAction("Iniciar grabación", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), [this]() {});
-        macroMenu->addAction("Detener grabación", [this]() {});
+        macroMenu->addAction("Detener grabación", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), [this]() {});
         macroMenu->addAction("Reproducción", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_P), [this]() {});
-        macroMenu->addAction("Guardar macro grabada...", [this]() {});
-        macroMenu->addAction("Ejecutar macro múltiples veces...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::SHIFT | Qt::Key_R), [this]() {
+        macroMenu->addAction("Guardar macro grabada actualmente...", [this]() {});
+        macroMenu->addAction("Ejecutar la macro múltiples veces...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::SHIFT | Qt::Key_R), [this]() {
             auto* dlg = new NppRunMacroDlg(this);
             dlg->show();
         });
-
+        macroMenu->addSeparator();
+        macroMenu->addAction("Trim espacios al final y guardar", [this]() {});
 
         // ── 10. Ejecutar ──
         QMenu* runMenu = menuBar()->addMenu("&Ejecutar");
-        runMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Run), "&Ejecutar comando...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_R), [this]() {
+        runMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Run), "&Ejecutar...", QKeySequence(Qt::Key_F5), [this]() {
             auto* dlg = new NppRunDlg(this);
             dlg->show();
+        });
+        runMenu->addSeparator();
+        runMenu->addAction("Obtener ayuda en línea", [this]() {
+            QDesktopServices::openUrl(QUrl("https://npp-user-manual.org/"));
+        });
+        runMenu->addAction("Foro de Notepad++", [this]() {
+            QDesktopServices::openUrl(QUrl("https://community.notepad-plus-plus.org/"));
+        });
+        runMenu->addAction("Página del proyecto en GitHub", [this]() {
+            QDesktopServices::openUrl(QUrl("https://github.com/notepad-plus-plus/notepad-plus-plus"));
         });
 
         // ── 11. Plugins ──
@@ -726,16 +1001,29 @@ private:
 
         // ── 12. Ayuda ──
         QMenu* helpMenu = menuBar()->addMenu("A&yuda");
+        helpMenu->addAction("Contenido de la ayuda", QKeySequence(Qt::Key_F1), [this]() {
+            QDesktopServices::openUrl(QUrl("https://npp-user-manual.org/"));
+        });
+        helpMenu->addAction("Obtener ayuda en línea", [this]() {
+            QDesktopServices::openUrl(QUrl("https://npp-user-manual.org/"));
+        });
+        helpMenu->addAction("Foro de Notepad++", [this]() {
+            QDesktopServices::openUrl(QUrl("https://community.notepad-plus-plus.org/"));
+        });
+        helpMenu->addAction("Página del proyecto en GitHub", [this]() {
+            QDesktopServices::openUrl(QUrl("https://github.com/notepad-plus-plus/notepad-plus-plus"));
+        });
+        helpMenu->addSeparator();
+        helpMenu->addAction("Comprobar actualizaciones...", [this]() {});
+        helpMenu->addSeparator();
+        helpMenu->addAction("Información de depuración...", [this]() {});
+        helpMenu->addAction("Argumentos de la línea de comandos...", [this]() {});
+        helpMenu->addSeparator();
         helpMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::About), "&Acerca de Notepad++...", [this]() {
             auto* dlg = new NppAboutDlg(this);
             dlg->exec();
         });
-        helpMenu->addAction("Ayuda en línea", [this]() {
-            QDesktopServices::openUrl(QUrl("https://notepad-plus-plus.org/resources/"));
-        });
-        helpMenu->addAction("Documentación en línea", [this]() {
-            QDesktopServices::openUrl(QUrl("https://npp-user-manual.org/"));
-        });
+
 
 
         // Estilo adaptativo para menús (Modo Oscuro / Modo Claro)
@@ -883,7 +1171,77 @@ private slots:
         updateStatusBar();
     }
 
+    void showTabContextMenu(int index, const QPoint& globalPos) {
+        if (index < 0) return;
+        QMenu menu(this);
+
+        menu.addAction("Cerrar", [this, index]() { onCloseTab(index); });
+        menu.addAction("Cerrar todas EXCEPTO esta", [this, index]() {
+            for (int i = _mainTabs->count() - 1; i >= 0; --i) {
+                if (i != index) onCloseTab(i);
+            }
+        });
+        menu.addAction("Cerrar pestañas a la izquierda", [this, index]() {
+            for (int i = index - 1; i >= 0; --i) onCloseTab(i);
+        });
+        menu.addAction("Cerrar pestañas a la derecha", [this, index]() {
+            for (int i = _mainTabs->count() - 1; i > index; --i) onCloseTab(i);
+        });
+        menu.addSeparator();
+
+        menu.addAction("Guardar", [this, index]() {
+            _mainTabs->setCurrentIndex(index);
+        });
+        menu.addAction("Guardar como...", [this, index]() {
+            _mainTabs->setCurrentIndex(index);
+        });
+        menu.addAction("Renombrar...", [this, index]() {
+            _mainTabs->setCurrentIndex(index);
+        });
+        menu.addSeparator();
+
+        QMenu* copyMenu = menu.addMenu("Copiar al portapapeles");
+        copyMenu->addAction("Copiar ruta del archivo actual", [this, index]() {
+            QApplication::clipboard()->setText(QString::fromStdString(_mainTabs->tabFilePath(index)));
+        });
+        copyMenu->addAction("Copiar nombre del archivo", [this, index]() {
+            QApplication::clipboard()->setText(QFileInfo(QString::fromStdString(_mainTabs->tabFilePath(index))).fileName());
+        });
+        copyMenu->addAction("Copiar ruta del directorio", [this, index]() {
+            QApplication::clipboard()->setText(QFileInfo(QString::fromStdString(_mainTabs->tabFilePath(index))).absolutePath());
+        });
+
+        QMenu* openFolderMenu = menu.addMenu("Abrir carpeta contenedora en");
+        openFolderMenu->addAction("Explorador de archivos", [this, index]() {
+            NppString path = _mainTabs->tabFilePath(index);
+            if (!path.empty()) {
+                QString dir = QFileInfo(QString::fromStdString(path)).absolutePath();
+                QDesktopServices::openUrl(QUrl::fromLocalFile(dir));
+            }
+        });
+        openFolderMenu->addAction("Terminal", [this, index]() {
+            NppString path = _mainTabs->tabFilePath(index);
+            if (!path.empty()) {
+                QString dir = QFileInfo(QString::fromStdString(path)).absolutePath();
+                QProcess::startDetached("x-terminal-emulator", QStringList() << "--working-directory" << dir);
+            }
+        });
+        menu.addSeparator();
+
+        menu.addAction("Mover a otra vista", [this]() {
+            _subTabs->setVisible(true);
+            _splitter->setRatio(0.5);
+        });
+        menu.addAction("Clonar en otra vista", [this]() {
+            _subTabs->setVisible(true);
+            _splitter->setRatio(0.5);
+        });
+
+        menu.exec(globalPos);
+    }
+
     void onTabChanged(int /*index*/) {
+
         updateStatusBar();
     }
 
