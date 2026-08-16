@@ -40,16 +40,16 @@ inline constexpr int NPP_CP_BIG5 = 950;
 #endif
 
 
-#define NPP_INTERNAL_FUNCTION_STR L"Notepad++::InternalFunction"
+#define NPP_INTERNAL_FUNCTION_STR "Notepad++::InternalFunction"
 
 #define REBARBAND_SIZE sizeof(REBARBANDINFO)
 
 #define IDT_HIDE_TOOLTIP 1001
 
-#define NPP_UAC_SAVE_SIGN L"#UAC-SAVE#"
-#define NPP_UAC_SETFILEATTRIBUTES_SIGN L"#UAC-SETFILEATTRIBUTES#"
-#define NPP_UAC_MOVEFILE_SIGN L"#UAC-MOVEFILE#"
-#define NPP_UAC_CREATEEMPTYFILE_SIGN L"#UAC-CREATEEMPTYFILE#"
+#define NPP_UAC_SAVE_SIGN "#UAC-SAVE#"
+#define NPP_UAC_SETFILEATTRIBUTES_SIGN "#UAC-SETFILEATTRIBUTES#"
+#define NPP_UAC_MOVEFILE_SIGN "#UAC-MOVEFILE#"
+#define NPP_UAC_CREATEEMPTYFILE_SIGN "#UAC-CREATEEMPTYFILE#"
 
 enum class SubclassID : unsigned int
 {
@@ -294,7 +294,7 @@ inline constexpr int FINDREPLACE_MAXLENGTH = 16384; // the maximum length of the
 inline constexpr int FINDREPLACE_INSELECTION_THRESHOLD_DEFAULT = 1024;
 inline constexpr int FILL_FINDWHAT_THRESHOLD_DEFAULT = 1024;
 
-inline constexpr const wchar_t fontSizeStrs[][3]{ L"", L"5", L"6", L"7", L"8", L"9", L"10", L"11", L"12", L"14", L"16", L"18", L"20", L"22", L"24", L"26", L"28" };
+inline constexpr const NppChar fontSizeStrs[][3]{ "", "5", "6", "7", "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "26", "28" };
 
 enum FontStyle
 {
@@ -346,7 +346,7 @@ inline constexpr int MAX_EXTERNAL_LEXER_NAME_LEN = 128;
 inline constexpr int RECENTFILES_SHOWFULLPATH = -1;
 inline constexpr int RECENTFILES_SHOWONLYFILENAME = 0;
 
-inline constexpr const wchar_t nppLogNetworkDriveIssue[] = L"nppLogNetworkDriveIssue"; // issue xml/log file name
+inline constexpr const NppChar nppLogNetworkDriveIssue[] = "nppLogNetworkDriveIssue"; // issue xml/log file name
 
 // Parameters
 
@@ -374,30 +374,30 @@ inline constexpr int g_TabPinBtnSize_DM = 16;
 
 // Style names
 
-inline constexpr const wchar_t TABBAR_ACTIVEFOCUSEDINDCATOR[] = L"Active tab focused indicator";
-inline constexpr const wchar_t TABBAR_ACTIVEUNFOCUSEDINDCATOR[] = L"Active tab unfocused indicator";
-inline constexpr const wchar_t TABBAR_ACTIVETEXT[] = L"Active tab text";
-inline constexpr const wchar_t TABBAR_INACTIVETEXT[] = L"Inactive tabs";
+inline constexpr const NppChar TABBAR_ACTIVEFOCUSEDINDCATOR[] = "Active tab focused indicator";
+inline constexpr const NppChar TABBAR_ACTIVEUNFOCUSEDINDCATOR[] = "Active tab unfocused indicator";
+inline constexpr const NppChar TABBAR_ACTIVETEXT[] = "Active tab text";
+inline constexpr const NppChar TABBAR_INACTIVETEXT[] = "Inactive tabs";
 
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_1[] = L"Tab color 1";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_2[] = L"Tab color 2";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_3[] = L"Tab color 3";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_4[] = L"Tab color 4";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_5[] = L"Tab color 5";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_1[] = "Tab color 1";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_2[] = "Tab color 2";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_3[] = "Tab color 3";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_4[] = "Tab color 4";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_5[] = "Tab color 5";
 
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_DM_1[] = L"Tab color dark mode 1";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_DM_2[] = L"Tab color dark mode 2";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_DM_3[] = L"Tab color dark mode 3";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_DM_4[] = L"Tab color dark mode 4";
-inline constexpr const wchar_t TABBAR_INDIVIDUALCOLOR_DM_5[] = L"Tab color dark mode 5";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_DM_1[] = "Tab color dark mode 1";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_DM_2[] = "Tab color dark mode 2";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_DM_3[] = "Tab color dark mode 3";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_DM_4[] = "Tab color dark mode 4";
+inline constexpr const NppChar TABBAR_INDIVIDUALCOLOR_DM_5[] = "Tab color dark mode 5";
 
-inline constexpr const wchar_t VIEWZONE_DOCUMENTMAP[] = L"Document map";
+inline constexpr const NppChar VIEWZONE_DOCUMENTMAP[] = "Document map";
 
-inline constexpr const wchar_t FINDDLG_STAUSNOTFOUND_COLOR[] = L"Find status: Not found";
-inline constexpr const wchar_t FINDDLG_STAUSMESSAGE_COLOR[] = L"Find status: Message";
-inline constexpr const wchar_t FINDDLG_STAUSREACHED_COLOR[] = L"Find status: Search end reached";
+inline constexpr const NppChar FINDDLG_STAUSNOTFOUND_COLOR[] = "Find status: Not found";
+inline constexpr const NppChar FINDDLG_STAUSMESSAGE_COLOR[] = "Find status: Message";
+inline constexpr const NppChar FINDDLG_STAUSREACHED_COLOR[] = "Find status: Search end reached";
 
-inline constexpr const wchar_t g_npcStyleName[] = L"Non-printing characters custom color";
+inline constexpr const NppChar g_npcStyleName[] = "Non-printing characters custom color";
 
 // Style names
 

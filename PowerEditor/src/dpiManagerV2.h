@@ -138,7 +138,7 @@ public:
 		return getDefaultGUIFontForDpi(_dpi, type);
 	}
 
-	static void loadIcon(HINSTANCE hinst, const wchar_t* pszName, int cx, int cy, HICON* phico, UINT fuLoad = LR_DEFAULTCOLOR);
+	static void loadIcon(HINSTANCE hinst, const NppChar* pszName, int cx, int cy, HICON* phico, UINT fuLoad = LR_DEFAULTCOLOR);
 
 	[[nodiscard]] static DWORD getTextScaleFactor();
 

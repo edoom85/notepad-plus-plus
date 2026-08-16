@@ -33,13 +33,13 @@ protected:
 		return _isDescending;
 	}
 
-	std::wstring getSortKey(const std::wstring& input) {
+	NppString getSortKey(const NppString& input) {
 		if (isSortingSpecificColumns())
 		{
 			if (input.length() < _fromColumn)
 			{
 				// prevent an std::out_of_range exception
-				return L"";
+				return "";
 			}
 			else if (_fromColumn == _toColumn)
 			{
@@ -67,7 +67,7 @@ public:
 		assert(_fromColumn <= _toColumn);
 	}
 	virtual ~ISorter() {}
-	virtual void sort(std::vector<std::wstring>& lines) = 0;
+	virtual void sort(std::vector<NppString>& lines) = 0;
 };
 
 // Implementation of lexicographic sorting of lines.
@@ -76,13 +76,13 @@ class LexicographicSorter : public ISorter
 public:
 	LexicographicSorter(bool isDescending, size_t fromColumn, size_t toColumn) : ISorter(isDescending, fromColumn, toColumn) {}
 	
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		// Note that both branches here are equivalent in the sense that they always give the same answer.
 		// However, if we are *not* sorting specific columns, then we get a 40% speed improvement by not calling
 		// getSortKey() so many times.
 		if (isSortingSpecificColumns())
 		{
-			std::stable_sort(lines.begin(), lines.end(), [this](const std::wstring& a, const std::wstring& b)
+			std::stable_sort(lines.begin(), lines.end(), [this](const NppString& a, const NppString& b)
 			{
 				if (isDescending())
 				{
@@ -97,7 +97,7 @@ public:
 		}
 		else
 		{
-			std::sort(lines.begin(), lines.end(), [this](const std::wstring& a, const std::wstring& b)
+			std::sort(lines.begin(), lines.end(), [this](const NppString& a, const NppString& b)
 			{
 				if (isDescending())
 				{
@@ -118,13 +118,13 @@ class LexicographicCaseInsensitiveSorter : public ISorter
 public:
 	LexicographicCaseInsensitiveSorter(bool isDescending, size_t fromColumn, size_t toColumn) : ISorter(isDescending, fromColumn, toColumn) {}
 
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		// Note that both branches here are equivalent in the sense that they always give the same answer.
 		// However, if we are *not* sorting specific columns, then we get a 40% speed improvement by not calling
 		// getSortKey() so many times.
 		if (isSortingSpecificColumns())
 		{
-			std::stable_sort(lines.begin(), lines.end(), [this](const std::wstring& a, const std::wstring& b)
+			std::stable_sort(lines.begin(), lines.end(), [this](const NppString& a, const NppString& b)
 				{
 					if (isDescending())
 					{
@@ -138,7 +138,7 @@ public:
 		}
 		else
 		{
-			std::sort(lines.begin(), lines.end(), [this](const std::wstring& a, const std::wstring& b)
+			std::sort(lines.begin(), lines.end(), [this](const NppString& a, const NppString& b)
 				{
 					if (isDescending())
 					{
@@ -158,13 +158,13 @@ class IntegerSorter : public ISorter
 public:
 	IntegerSorter(bool isDescending, size_t fromColumn, size_t toColumn) : ISorter(isDescending, fromColumn, toColumn) {}
 
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		if (isSortingSpecificColumns())
 		{
-			std::stable_sort(lines.begin(), lines.end(), [this](std::wstring aIn, std::wstring bIn)
+			std::stable_sort(lines.begin(), lines.end(), [this](NppString aIn, NppString bIn)
 			{
-				std::wstring a = getSortKey(aIn);
-				std::wstring b = getSortKey(bIn);
+				NppString a = getSortKey(aIn);
+				NppString b = getSortKey(bIn);
 
 				long long compareResult = 0;
 				size_t aNumIndex = 0;
@@ -173,7 +173,7 @@ public:
 				{
 					if (aNumIndex >= a.length() || bNumIndex >= b.length())
 					{
-						compareResult = a.compare(std::min<size_t>(aNumIndex, a.length()), std::wstring::npos, b, std::min<size_t>(bNumIndex, b.length()), std::wstring::npos);
+						compareResult = a.compare(std::min<size_t>(aNumIndex, a.length()), NppString::npos, b, std::min<size_t>(bNumIndex, b.length()), NppString::npos);
 						break;
 					}
 
@@ -231,14 +231,14 @@ public:
 								bNumIndex++;
 							}
 
-							size_t aNumEnd = a.find_first_not_of(L"1234567890", aNumIndex);
-							if (aNumEnd == std::wstring::npos)
+							size_t aNumEnd = a.find_first_not_of("1234567890", aNumIndex);
+							if (aNumEnd == NppString::npos)
 							{
 								aNumEnd = a.length();
 							}
 
-							size_t bNumEnd = b.find_first_not_of(L"1234567890", bNumIndex);
-							if (bNumEnd == std::wstring::npos)
+							size_t bNumEnd = b.find_first_not_of("1234567890", bNumIndex);
+							if (bNumEnd == NppString::npos)
 							{
 								bNumEnd = b.length();
 							}
@@ -309,8 +309,8 @@ public:
 							bNumIndex++;
 						}
 
-						size_t aChunkEnd = a.find_first_of(L"1234567890-", aNumIndex);
-						size_t bChunkEnd = b.find_first_of(L"1234567890-", bNumIndex);
+						size_t aChunkEnd = a.find_first_of("1234567890-", aNumIndex);
+						size_t bChunkEnd = b.find_first_of("1234567890-", bNumIndex);
 						compareResult = a.compare(aNumIndex, aChunkEnd - aNumIndex, b, bNumIndex, bChunkEnd - bNumIndex);
 						aNumIndex = aChunkEnd;
 						bNumIndex = bChunkEnd;
@@ -329,10 +329,10 @@ public:
 		}
 		else
 		{
-			std::sort(lines.begin(), lines.end(), [this](std::wstring aIn, std::wstring bIn)
+			std::sort(lines.begin(), lines.end(), [this](NppString aIn, NppString bIn)
 			{
-				std::wstring a = aIn;
-				std::wstring b = bIn;
+				NppString a = aIn;
+				NppString b = bIn;
 
 				long long compareResult = 0;
 				size_t aNumIndex = 0;
@@ -341,7 +341,7 @@ public:
 				{
 					if (aNumIndex >= a.length() || bNumIndex >= b.length())
 					{
-						compareResult = a.compare(std::min<size_t>(aNumIndex, a.length()), std::wstring::npos, b, std::min<size_t>(bNumIndex, b.length()), std::wstring::npos);
+						compareResult = a.compare(std::min<size_t>(aNumIndex, a.length()), NppString::npos, b, std::min<size_t>(bNumIndex, b.length()), NppString::npos);
 						break;
 					}
 
@@ -400,14 +400,14 @@ public:
 								bNumIndex++;
 							}
 
-							size_t aNumEnd = a.find_first_not_of(L"1234567890", aNumIndex);
-							if (aNumEnd == std::wstring::npos)
+							size_t aNumEnd = a.find_first_not_of("1234567890", aNumIndex);
+							if (aNumEnd == NppString::npos)
 							{
 								aNumEnd = a.length();
 							}
 
-							size_t bNumEnd = b.find_first_not_of(L"1234567890", bNumIndex);
-							if (bNumEnd == std::wstring::npos)
+							size_t bNumEnd = b.find_first_not_of("1234567890", bNumIndex);
+							if (bNumEnd == NppString::npos)
 							{
 								bNumEnd = b.length();
 							}
@@ -478,8 +478,8 @@ public:
 							bNumIndex++;
 						}
 
-						size_t aChunkEnd = a.find_first_of(L"1234567890-", aNumIndex);
-						size_t bChunkEnd = b.find_first_of(L"1234567890-", bNumIndex);
+						size_t aChunkEnd = a.find_first_of("1234567890-", aNumIndex);
+						size_t bChunkEnd = b.find_first_of("1234567890-", bNumIndex);
 						compareResult = a.compare(aNumIndex, aChunkEnd - aNumIndex, b, bNumIndex, bChunkEnd - bNumIndex);
 						aNumIndex = aChunkEnd;
 						bNumIndex = bChunkEnd;
@@ -521,15 +521,15 @@ public:
 #endif
 	}
 	
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		// Note that empty lines are filtered out and added back manually to the output at the end.
 		std::vector<std::pair<size_t, T_Num>> nonEmptyInputAsNumbers;
-		std::vector<std::wstring> empties;
+		std::vector<NppString> empties;
 		nonEmptyInputAsNumbers.reserve(lines.size());
 		for (size_t lineIndex = 0; lineIndex < lines.size(); ++lineIndex)
 		{
-			const std::wstring originalLine = lines[lineIndex];
-			const std::wstring preparedLine = prepareStringForConversion(originalLine);
+			const NppString originalLine = lines[lineIndex];
+			const NppString preparedLine = prepareStringForConversion(originalLine);
 			if (considerStringEmpty(preparedLine))
 			{
 				empties.push_back(originalLine);
@@ -560,7 +560,7 @@ public:
 				}
 			});
 
-		std::vector<std::wstring> output;
+		std::vector<NppString> output;
 		output.reserve(lines.size());
 		if (!isDescending())
 		{
@@ -582,17 +582,17 @@ public:
 	}
 
 protected:
-	bool considerStringEmpty(const std::wstring& input) {
+	bool considerStringEmpty(const NppString& input) {
 		// String has something else than just whitespace.
-		return input.find_first_not_of(L" \t\r\n") == std::string::npos;
+		return input.find_first_not_of(" \t\r\n") == std::string::npos;
 	}
 
 	// Prepare the string for conversion to number.
-	virtual std::wstring prepareStringForConversion(const std::wstring& input) = 0;
+	virtual NppString prepareStringForConversion(const NppString& input) = 0;
 
 	// Should convert the input string to a number of the correct type.
 	// If unable to convert, throw either std::invalid_argument or std::out_of_range.
-	virtual T_Num convertStringToNumber(const std::wstring& input) = 0;
+	virtual T_Num convertStringToNumber(const NppString& input) = 0;
 
 	// We need a fixed locale so we get the same string-to-double behavior across all computers.
 	// This is the "enUS" locale.
@@ -606,12 +606,12 @@ public:
 	DecimalCommaSorter(bool isDescending, size_t fromColumn, size_t toColumn) : NumericSorter<double>(isDescending, fromColumn, toColumn) {}
 
 protected:
-	std::wstring prepareStringForConversion(const std::wstring& input) override {
-		std::wstring admissablePart = stringTakeWhileAdmissable(getSortKey(input), L" \t\r\n0123456789,-");
-		return stringReplace(admissablePart, L",", L".");
+	NppString prepareStringForConversion(const NppString& input) override {
+		NppString admissablePart = stringTakeWhileAdmissable(getSortKey(input), " \t\r\n0123456789,-");
+		return stringReplace(admissablePart, ",", ".");
 	}
 
-	double convertStringToNumber(const std::wstring& input) override {
+	double convertStringToNumber(const NppString& input) override {
 		return stodLocale(input, _usLocale);
 	}
 };
@@ -623,11 +623,11 @@ public:
 	DecimalDotSorter(bool isDescending, size_t fromColumn, size_t toColumn) : NumericSorter<double>(isDescending, fromColumn, toColumn) {}
 
 protected:
-	std::wstring prepareStringForConversion(const std::wstring& input) override {
-		return stringTakeWhileAdmissable(getSortKey(input), L" \t\r\n0123456789.-");
+	NppString prepareStringForConversion(const NppString& input) override {
+		return stringTakeWhileAdmissable(getSortKey(input), " \t\r\n0123456789.-");
 	}
 
-	double convertStringToNumber(const std::wstring& input) override {
+	double convertStringToNumber(const NppString& input) override {
 		return stodLocale(input, _usLocale);
 	}
 };
@@ -637,7 +637,7 @@ class ReverseSorter : public ISorter
 public:
 	ReverseSorter(bool isDescending, size_t fromColumn, size_t toColumn) : ISorter(isDescending, fromColumn, toColumn) {}
 
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		std::reverse(lines.begin(), lines.end());
 	}
 };
@@ -651,7 +651,7 @@ public:
 		seed = static_cast<unsigned>(time(NULL));
 	}
 
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		std::shuffle(lines.begin(), lines.end(), std::default_random_engine(seed));
 	}
 };
@@ -662,14 +662,14 @@ class LineLengthSorter : public ISorter
 public:
 	LineLengthSorter(bool isDescending, size_t fromColumn, size_t toColumn) : ISorter(isDescending, fromColumn, toColumn) {}
 
-	void sort(std::vector<std::wstring>& lines) override {
+	void sort(std::vector<NppString>& lines) override {
 		// When sorting specific columns, the effect would be to sort the lines whose length is between
 		// fromColumn and toColumn. Any lines shorter than fromColumn would be considered length 0.
 		// Any lines longer than toColumn would be considered same length (toColumn - fromColumn) and hence their
 		// relative order would be preserved.
 		if (isSortingSpecificColumns())
 		{
-			std::stable_sort(lines.begin(), lines.end(), [this](std::wstring a, std::wstring b)
+			std::stable_sort(lines.begin(), lines.end(), [this](NppString a, NppString b)
 				{
 					if (isDescending())
 					{
@@ -685,7 +685,7 @@ public:
 		// Normal sorting by line length
 		else
 		{
-			std::sort(lines.begin(), lines.end(), [this](std::wstring a, std::wstring b)
+			std::sort(lines.begin(), lines.end(), [this](NppString a, NppString b)
 				{
 					if (isDescending())
 					{

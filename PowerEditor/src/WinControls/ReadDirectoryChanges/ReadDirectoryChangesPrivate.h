@@ -42,7 +42,7 @@ class CReadChangesServer;
 class CReadChangesRequest
 {
 public:
-	CReadChangesRequest(CReadChangesServer* pServer, LPCTSTR sz, BOOL b, DWORD dw, DWORD size);
+	CReadChangesRequest(CReadChangesServer* pServer, const NppChar* sz, BOOL b, DWORD dw, DWORD size);
 
 	~CReadChangesRequest();
 
@@ -77,7 +77,7 @@ protected:
 			LPOVERLAPPED lpOverlapped);					// I/O information buffer
 
 	// Parameters from the caller for ReadDirectoryChangesW().
-	std::wstring m_wstrDirectory;
+	NppString m_wstrDirectory;
 	BOOL m_bIncludeChildren = FALSE;
 	DWORD m_dwFilterFlags = 0;
 

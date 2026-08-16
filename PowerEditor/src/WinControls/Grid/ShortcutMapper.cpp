@@ -67,25 +67,25 @@ void ShortcutMapper::getClientRect(RECT& rc) const
 wstring ShortcutMapper::getTabString(size_t i) const
 {
 	if (i >= _nbTab)
-		return L"";
+		return "";
 
 	NativeLangSpeaker* nativeLangSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
 	switch (i)
 	{
 		case 1:
-			return nativeLangSpeaker->getShortcutMapperLangStr("MacrosTab", L"Macros");
+			return nativeLangSpeaker->getShortcutMapperLangStr("MacrosTab", "Macros");
 
 		case 2:
-			return nativeLangSpeaker->getShortcutMapperLangStr("RunCommandsTab", L"Run commands");
+			return nativeLangSpeaker->getShortcutMapperLangStr("RunCommandsTab", "Run commands");
 
 		case 3:
-			return nativeLangSpeaker->getShortcutMapperLangStr("PluginCommandsTab", L"Plugin commands");
+			return nativeLangSpeaker->getShortcutMapperLangStr("PluginCommandsTab", "Plugin commands");
 
 		case 4:
-			return nativeLangSpeaker->getShortcutMapperLangStr("ScintillaCommandsTab", L"Scintilla commands");
+			return nativeLangSpeaker->getShortcutMapperLangStr("ScintillaCommandsTab", "Scintilla commands");
 
 		default: //0
-			return nativeLangSpeaker->getShortcutMapperLangStr("MainMenuTab", L"Main menu");
+			return nativeLangSpeaker->getShortcutMapperLangStr("MainMenuTab", "Main menu");
 	}
 }
 
@@ -165,14 +165,14 @@ void ShortcutMapper::initBabyGrid()
 
 	NativeLangSpeaker* nativeLangSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
 	nativeLangSpeaker->changeDlgLang(_hSelf, "ShortcutMapper");
-	_conflictInfoOk = nativeLangSpeaker->getShortcutMapperLangStr("ConflictInfoOk", L"No shortcut conflicts for this item.");
-	_conflictInfoEditing = nativeLangSpeaker->getShortcutMapperLangStr("ConflictInfoEditing", L"No conflicts . . .");
+	_conflictInfoOk = nativeLangSpeaker->getShortcutMapperLangStr("ConflictInfoOk", "No shortcut conflicts for this item.");
+	_conflictInfoEditing = nativeLangSpeaker->getShortcutMapperLangStr("ConflictInfoEditing", "No conflicts . . .");
 }
 
 wstring ShortcutMapper::getTextFromCombo(HWND hCombo)
 {
 	const int NB_MAX(128);
-	wchar_t str[NB_MAX](L"\0");
+	NppChar str[NB_MAX]("\0");
 	::SendMessage(hCombo, WM_GETTEXT, NB_MAX, reinterpret_cast<LPARAM>(str));
 	wstring res(str);
 	return stringToLower(res);
@@ -261,8 +261,8 @@ void ShortcutMapper::fillOutBabyGrid()
 
 	size_t nbItems = 0;
 	NativeLangSpeaker* nativeLangSpeaker = nppParam.getNativeLangSpeaker();
-	wstring nameStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnName", L"Name");
-	wstring shortcutStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnShortcut", L"Shortcut");
+	wstring nameStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnName", "Name");
+	wstring shortcutStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnShortcut", "Shortcut");
 
 	_babygrid.setText(0, 1, nameStr.c_str());
 	_babygrid.setText(0, 2, shortcutStr.c_str());
@@ -273,7 +273,7 @@ void ShortcutMapper::fillOutBabyGrid()
 		{
 			nbItems = nppParam.getUserShortcuts().size();
 			_babygrid.setLineColNumber(nbItems, 3);
-			wstring categoryStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnCategory", L"Category");
+			wstring categoryStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnCategory", "Category");
 			_babygrid.setText(0, 3, categoryStr.c_str());
 		}
 		break;
@@ -296,7 +296,7 @@ void ShortcutMapper::fillOutBabyGrid()
 		{
 			nbItems = nppParam.getPluginCommandList().size();
 			_babygrid.setLineColNumber(nbItems, 3);
-			wstring pluginStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnPlugin", L"Plugin");
+			wstring pluginStr = nativeLangSpeaker->getShortcutMapperLangStr("ColumnPlugin", "Plugin");
 			_babygrid.setText(0, 3, pluginStr.c_str());
 		}
 		break;
@@ -314,7 +314,7 @@ void ShortcutMapper::fillOutBabyGrid()
 	
 	// make _shortcutFilter a list of the words in IDC_BABYGRID_FILTER
 	wstring shortcutFilterStr = getTextFromCombo(::GetDlgItem(_hSelf, IDC_BABYGRID_FILTER));
-	const wstring whitespace(L" ");
+	const wstring whitespace(" ");
 	std::vector<wstring> shortcutFilterWithEmpties;
 	stringSplit(shortcutFilterStr, whitespace, shortcutFilterWithEmpties);
 	// now add only the non-empty strings in the split list to _shortcutFilter
@@ -1080,8 +1080,8 @@ intptr_t CALLBACK ShortcutMapper::run_dlgProc(UINT message, WPARAM wParam, LPARA
 					NppParameters& nppParam = NppParameters::getInstance();
 					int res = nppParam.getNativeLangSpeaker()->messageBox("SCMapperDoDeleteOrNot",
 						_hSelf,
-						L"Are you sure you want to delete this shortcut?",
-						L"Are you sure?",
+						"Are you sure you want to delete this shortcut?",
+						"Are you sure?",
 						MB_OKCANCEL);
 
 					if (res == IDOK)
@@ -1233,9 +1233,9 @@ intptr_t CALLBACK ShortcutMapper::run_dlgProc(UINT message, WPARAM wParam, LPARA
 							{
 								vector<MenuItemUnit> itemUnitArray;
 								NativeLangSpeaker* nativeLangSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
-								wstring modifyStr = nativeLangSpeaker->getShortcutMapperLangStr("ModifyContextMenu", L"Modify");
-								wstring deleteStr = nativeLangSpeaker->getShortcutMapperLangStr("DeleteContextMenu", L"Delete");
-								wstring clearStr = nativeLangSpeaker->getShortcutMapperLangStr("ClearContextMenu", L"Clear");
+								wstring modifyStr = nativeLangSpeaker->getShortcutMapperLangStr("ModifyContextMenu", "Modify");
+								wstring deleteStr = nativeLangSpeaker->getShortcutMapperLangStr("DeleteContextMenu", "Delete");
+								wstring clearStr = nativeLangSpeaker->getShortcutMapperLangStr("ClearContextMenu", "Clear");
 								itemUnitArray.push_back(MenuItemUnit(IDM_BABYGRID_MODIFY, modifyStr.c_str()));
 								itemUnitArray.push_back(MenuItemUnit(IDM_BABYGRID_DELETE, deleteStr.c_str()));
 								itemUnitArray.push_back(MenuItemUnit(IDM_BABYGRID_CLEAR, clearStr.c_str()));
@@ -1371,7 +1371,7 @@ intptr_t CALLBACK ShortcutMapper::run_dlgProc(UINT message, WPARAM wParam, LPARA
 				case IDC_BABYGRID_FILTER_CLEAR:
 				{
 					HWND hFilterEdit = ::GetDlgItem(_hSelf, IDC_BABYGRID_FILTER);
-					::SetWindowText(hFilterEdit, L"");
+					::SetWindowText(hFilterEdit, "");
 					::SetFocus(hFilterEdit);
 					return TRUE;
 				}
@@ -1424,15 +1424,15 @@ bool ShortcutMapper::findKeyConflicts(__inout_opt wstring * const keyConflictLoc
 						else
 						{
 							if (!keyConflictLocation->empty())
-								*keyConflictLocation += L"\r\n";
+								*keyConflictLocation += "\r\n";
 							*keyConflictLocation += _tabNames[gridState];
-							*keyConflictLocation += L"  |  ";
+							*keyConflictLocation += "  |  ";
 							*keyConflictLocation += std::to_wstring(itemIndex + 1);
-							*keyConflictLocation += L"   ";
+							*keyConflictLocation += "   ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].getName(), CP_UTF8);
-							*keyConflictLocation += L"  ( ";
+							*keyConflictLocation += "  ( ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].toString(), CP_UTF8);
-							*keyConflictLocation += L" )";
+							*keyConflictLocation += " )";
 						}
 					}
 				}
@@ -1458,15 +1458,15 @@ bool ShortcutMapper::findKeyConflicts(__inout_opt wstring * const keyConflictLoc
 						else
 						{
 							if (!keyConflictLocation->empty())
-								*keyConflictLocation += L"\r\n";
+								*keyConflictLocation += "\r\n";
 							*keyConflictLocation += _tabNames[gridState];
-							*keyConflictLocation += L"  |  ";
+							*keyConflictLocation += "  |  ";
 							*keyConflictLocation += std::to_wstring(itemIndex + 1);
-							*keyConflictLocation += L"   ";
+							*keyConflictLocation += "   ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].getName(), CP_UTF8);
-							*keyConflictLocation += L"  ( ";
+							*keyConflictLocation += "  ( ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].toString(), CP_UTF8);
-							*keyConflictLocation += L" )";
+							*keyConflictLocation += " )";
 						}
 					}
 				}
@@ -1492,15 +1492,15 @@ bool ShortcutMapper::findKeyConflicts(__inout_opt wstring * const keyConflictLoc
 						else
 						{
 							if (!keyConflictLocation->empty())
-								*keyConflictLocation += L"\r\n";
+								*keyConflictLocation += "\r\n";
 							*keyConflictLocation += _tabNames[gridState];
-							*keyConflictLocation += L"  |  ";
+							*keyConflictLocation += "  |  ";
 							*keyConflictLocation += std::to_wstring(itemIndex + 1);
-							*keyConflictLocation += L"   ";
+							*keyConflictLocation += "   ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].getName(), CP_UTF8);
-							*keyConflictLocation += L"  ( ";
+							*keyConflictLocation += "  ( ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].toString(), CP_UTF8);
-							*keyConflictLocation += L" )";
+							*keyConflictLocation += " )";
 						}
 					}
 				}
@@ -1526,15 +1526,15 @@ bool ShortcutMapper::findKeyConflicts(__inout_opt wstring * const keyConflictLoc
 						else
 						{
 							if (!keyConflictLocation->empty())
-								*keyConflictLocation += L"\r\n";
+								*keyConflictLocation += "\r\n";
 							*keyConflictLocation += _tabNames[gridState];
-							*keyConflictLocation += L"  |  ";
+							*keyConflictLocation += "  |  ";
 							*keyConflictLocation += std::to_wstring(itemIndex + 1);
-							*keyConflictLocation += L"   ";
+							*keyConflictLocation += "   ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].getName(), CP_UTF8);
-							*keyConflictLocation += L"  ( ";
+							*keyConflictLocation += "  ( ";
 							*keyConflictLocation += string2wstring(vShortcuts[itemIndex].toString(), CP_UTF8);
-							*keyConflictLocation += L" )";
+							*keyConflictLocation += " )";
 						}
 					}
 				}
@@ -1563,18 +1563,18 @@ bool ShortcutMapper::findKeyConflicts(__inout_opt wstring * const keyConflictLoc
 							else
 							{
 								if (!keyConflictLocation->empty())
-									*keyConflictLocation += L"\r\n";
+									*keyConflictLocation += "\r\n";
 								*keyConflictLocation += _tabNames[gridState];
-								*keyConflictLocation += L"  |  ";
+								*keyConflictLocation += "  |  ";
 								*keyConflictLocation += std::to_wstring(itemIndex + 1);
 								if (sciIndex > 0)
-									*keyConflictLocation += L"*   ";
+									*keyConflictLocation += "*   ";
 								else
-									*keyConflictLocation += L"   ";
+									*keyConflictLocation += "   ";
 								*keyConflictLocation += string2wstring(vShortcuts[itemIndex].getName(), CP_UTF8);
-								*keyConflictLocation += L"  ( ";
+								*keyConflictLocation += "  ( ";
 								*keyConflictLocation += string2wstring(vShortcuts[itemIndex].toString(sciIndex), CP_UTF8);
-								*keyConflictLocation += L" )";
+								*keyConflictLocation += " )";
 							}
 						}
 					}

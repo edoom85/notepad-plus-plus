@@ -16,22 +16,22 @@
 
 #pragma once
 
-typedef std::vector<std::wstring> stringVector;
+typedef std::vector<NppString> stringVector;
 
 class FileNameStringSplitter
 {
 public:
-	FileNameStringSplitter(const wchar_t *fileNameStr)
+	FileNameStringSplitter(const NppChar *fileNameStr)
 	{
-		wchar_t *pStr = NULL;
+		NppChar *pStr = NULL;
 		bool isInsideQuotes = false;
 		const int filePathLength = MAX_PATH;
 
-		wchar_t str[filePathLength];
+		NppChar str[filePathLength];
 		int i = 0;
         bool fini = false;
 
-		for (pStr = (wchar_t *)fileNameStr ; !fini ; )
+		for (pStr = (NppChar *)fileNameStr ; !fini ; )
 		{
 			if (i >= filePathLength)
 				break;
@@ -44,7 +44,7 @@ public:
 					{
 						str[i] = '\0';
                         if (str[0])
-							_fileNames.push_back(std::wstring(str));
+							_fileNames.push_back(NppString(str));
 						i = 0;
 					}
 					isInsideQuotes = !isInsideQuotes;
@@ -63,7 +63,7 @@ public:
 					{
 						str[i] = '\0';
                         if (str[0])
-							_fileNames.push_back(std::wstring(str));
+							_fileNames.push_back(NppString(str));
 						i = 0;
 					}
                     pStr++;
@@ -74,7 +74,7 @@ public:
 				{
                     str[i] = *pStr;
                     if (str[0])
-						_fileNames.push_back(std::wstring(str));
+						_fileNames.push_back(NppString(str));
                     fini = true;
 					break;
 				}
@@ -93,7 +93,7 @@ public:
 		return _fileNames;
 	}
 
-	const wchar_t * getFileName(size_t index) const {
+	const NppChar * getFileName(size_t index) const {
 		if (index >= _fileNames.size())
 			return NULL;
 		return _fileNames[index].c_str();

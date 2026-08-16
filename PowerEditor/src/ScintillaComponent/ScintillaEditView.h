@@ -229,9 +229,9 @@ struct SortInPositionOrder {
 typedef std::vector<ColumnModeInfo> ColumnModeInfos;
 
 struct LanguageNameInfo {
-	const wchar_t* _langName = nullptr;
-	const wchar_t* _shortName = nullptr;
-	const wchar_t* _longName = nullptr;
+	const NppChar* _langName = nullptr;
+	const NppChar* _shortName = nullptr;
+	const NppChar* _longName = nullptr;
 	LangType _langID = L_TEXT;
 	const char* _lexerID = nullptr;
 };
@@ -288,11 +288,11 @@ public:
 
 	void getText(char *dest, size_t start, size_t end) const;
 	void getGenericText(char* dest, size_t destlen, size_t start, size_t end) const;
-	void getGenericText(wchar_t *dest, size_t destlen, size_t start, size_t end) const;
-	void getGenericText(wchar_t* dest, size_t destlen, size_t start, size_t end, intptr_t* mstart, intptr_t* mend, intptr_t* outLen = nullptr) const;
-	std::wstring getGenericTextAsString(size_t start, size_t end) const;
+	void getGenericText(NppChar *dest, size_t destlen, size_t start, size_t end) const;
+	void getGenericText(NppChar* dest, size_t destlen, size_t start, size_t end, intptr_t* mstart, intptr_t* mend, intptr_t* outLen = nullptr) const;
+	NppString getGenericTextAsString(size_t start, size_t end) const;
 	void insertGenericTextFrom(size_t position, const char* text2insert) const;
-	void insertGenericTextFrom(size_t position, const wchar_t *text2insert) const;
+	void insertGenericTextFrom(size_t position, const NppChar *text2insert) const;
 	void replaceSelWith(const char * replaceText);
 
 	intptr_t getSelectedTextCount() {
@@ -303,22 +303,22 @@ public:
 	void getVisibleStartAndEndPosition(intptr_t* startPos, intptr_t* endPos);
     char * getWordFromRange(char * txt, size_t size, size_t pos1, size_t pos2);
 	char * getSelectedTextToMultiChar(char * txt, size_t size, bool expand = true);
-	std::wstring getSelectedTextToWChar(bool expand = true, Sci_Position* selCharNumber = nullptr);
+	NppString getSelectedTextToWChar(bool expand = true, Sci_Position* selCharNumber = nullptr);
     char * getWordOnCaretPos(char * txt, size_t size);
 
 	intptr_t searchInTarget(const std::string_view& text2Find, size_t fromPos, size_t toPos) const;
-	intptr_t searchInTarget(const wchar_t* text2Find, size_t lenOfText2Find, size_t fromPos, size_t toPos) const;
-	void appendGenericText(const wchar_t * text2Append) const;
-	void addGenericText(const wchar_t * text2Append) const;
-	void addGenericText(const wchar_t * text2Append, intptr_t* mstart, intptr_t* mend) const;
+	intptr_t searchInTarget(const NppChar* text2Find, size_t lenOfText2Find, size_t fromPos, size_t toPos) const;
+	void appendGenericText(const NppChar * text2Append) const;
+	void addGenericText(const NppChar * text2Append) const;
+	void addGenericText(const NppChar * text2Append, intptr_t* mstart, intptr_t* mend) const;
 	intptr_t replaceTarget(const std::string& str2replace, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
-	intptr_t replaceTarget(const wchar_t * str2replace, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
-	intptr_t replaceTargetRegExMode(const wchar_t * re, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
+	intptr_t replaceTarget(const NppChar * str2replace, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
+	intptr_t replaceTargetRegExMode(const NppChar * re, intptr_t fromTargetPos = -1, intptr_t toTargetPos = -1) const;
 	void showAutoCompletion(size_t lenEntered, const std::string& list) const;
 	void showCallTip(size_t startPos, const std::string& def) const;
-	std::wstring getLine(size_t lineNumber) const;
+	NppString getLine(size_t lineNumber) const;
 	void getLine(size_t lineNumber, char* line, size_t lineBufferLen) const;
-	void getLine(size_t lineNumber, wchar_t * line, size_t lineBufferLen) const;
+	void getLine(size_t lineNumber, NppChar * line, size_t lineBufferLen) const;
 	void addText(size_t length, const char *buf);
 
 	void insertNewLineAboveCurrentLine();
@@ -353,7 +353,7 @@ public:
 			getGenericText(str, strLen, startPos, caretPos);
 	}
 
-	void getWordToCurrentPos(wchar_t* str, intptr_t strLen) const {
+	void getWordToCurrentPos(NppChar* str, intptr_t strLen) const {
 		auto caretPos = execute(SCI_GETCURRENTPOS);
 		auto startPos = execute(SCI_WORDSTARTPOSITION, caretPos, true);
 
@@ -582,7 +582,7 @@ public:
     void currentLinesDown() const;
 
 	intptr_t caseConvertRange(intptr_t start, intptr_t end, TextCase caseToConvert);
-	static void changeCase(__inout wchar_t* const strWToConvert, const int& nbChars, const TextCase& caseToConvert);
+	static void changeCase(__inout NppChar* const strWToConvert, const int& nbChars, const TextCase& caseToConvert);
 	void convertSelectedTextTo(const TextCase & caseToConvert);
 	void setMultiSelections(const ColumnModeInfos & cmi);
 
@@ -607,7 +607,7 @@ public:
 		if ((NppParameters::getInstance()).isTransparentAvailable())
 			convertSelectedTextTo(caseToConvert);
 		else
-			NppDarkMode::darkMessageBoxW(_hSelf, L"This function needs a newer OS version.", L"Change Case Error", MB_OK | MB_ICONHAND);
+			NppDarkMode::darkMessageBoxW(_hSelf, "This function needs a newer OS version.", "Change Case Error", MB_OK | MB_ICONHAND);
 	}
 
 	void getCurrentFoldStates(std::vector<size_t> & lineStateVector);
@@ -681,7 +681,7 @@ public:
 				(_codepage == CP_JAPANESE) || (_codepage == CP_KOREAN));
 	}
 	void scrollPosToCenter(size_t pos);
-	std::wstring getEOLString() const;
+	NppString getEOLString() const;
 	void setBorderEdge(bool doWithBorderEdge);
 	void sortLines(size_t fromLine, size_t toLine, ISorter *pSort);
 	void changeTextDirection(bool isRTL);
@@ -744,7 +744,7 @@ protected:
 	void setJsLexer() const;
 	void setTclLexer() const;
 	void setObjCLexer(LangType langType) const;
-	void setUserLexer(const wchar_t* userLangName = nullptr) const;
+	void setUserLexer(const NppChar* userLangName = nullptr) const;
 	void setExternalLexer(LangType typeDoc) const;
 	void setEmbeddedJSLexer() const;
 	void setEmbeddedPhpLexer() const;

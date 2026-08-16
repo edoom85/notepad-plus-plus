@@ -17,7 +17,7 @@
 
 #include "BabyGridWrapper.h"
 
-const wchar_t* babyGridClassName = L"BABYGRID";
+const NppChar* babyGridClassName = "BABYGRID";
 
 bool BabyGridWrapper::_isRegistered = false;
 
@@ -30,7 +30,7 @@ void BabyGridWrapper::init(HINSTANCE hInst, HWND parent, int16_t id)
  
 	_hSelf = ::CreateWindowEx(0,
 					babyGridClassName,
-					L"",
+					"",
 					WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER,
 					CW_USEDEFAULT, 0, CW_USEDEFAULT, 0,
 					_hParent,

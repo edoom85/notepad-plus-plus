@@ -32,7 +32,7 @@
 #include "NppXml.h"
 #include "ScintillaEditView.h"
 
-bool FunctionParsersManager::init(const std::wstring& xmlDirPath, const std::wstring& xmlInstalledPath, ScintillaEditView** ppEditView)
+bool FunctionParsersManager::init(const NppString& xmlDirPath, const NppString& xmlInstalledPath, ScintillaEditView** ppEditView)
 {
 	_ppEditView = ppEditView;
 	_xmlDirPath = xmlDirPath;
@@ -148,10 +148,10 @@ bool FunctionParsersManager::getUnitPaserParameters(
 	return true;
 }
 
-bool FunctionParsersManager::loadFuncListFromXmlTree(const std::wstring& xmlDirPath, LangType lType, const std::wstring& overrideId, int udlIndex)
+bool FunctionParsersManager::loadFuncListFromXmlTree(const NppString& xmlDirPath, LangType lType, const NppString& overrideId, int udlIndex)
 {
-	std::wstring funcListRulePath = xmlDirPath;
-	funcListRulePath += L"\\";
+	NppString funcListRulePath = xmlDirPath;
+	funcListRulePath += "\\";
 	int index = -1;
 	if (lType == L_USER) // UDL
 	{
@@ -169,9 +169,9 @@ bool FunctionParsersManager::loadFuncListFromXmlTree(const std::wstring& xmlDirP
 		index = lType;
 		if (overrideId.empty())
 		{
-			std::wstring lexerName = ScintillaEditView::_langNameInfoArray[lType]._langName;
+			NppString lexerName = ScintillaEditView::_langNameInfoArray[lType]._langName;
 			funcListRulePath += lexerName;
-			funcListRulePath += L".xml";
+			funcListRulePath += ".xml";
 		}
 		else
 		{
@@ -250,10 +250,10 @@ bool FunctionParsersManager::loadFuncListFromXmlTree(const std::wstring& xmlDirP
 	return true;
 }
 
-bool FunctionParsersManager::getOverrideMapFromXmlTree(const std::wstring& xmlDirPath)
+bool FunctionParsersManager::getOverrideMapFromXmlTree(const NppString& xmlDirPath)
 {
-	std::wstring funcListRulePath = xmlDirPath;
-	funcListRulePath += L"\\overrideMap.xml";
+	NppString funcListRulePath = xmlDirPath;
+	funcListRulePath += "\\overrideMap.xml";
 	
 	NppXml::NewDocument xmlFuncListDoc{};
 	const bool loadOK = NppXml::loadFile(&xmlFuncListDoc, funcListRulePath.c_str());
@@ -315,7 +315,7 @@ FunctionParser* FunctionParsersManager::getParser(const AssociationInfo& assoInf
 	if (assoInfo._langID != -1 && assoInfo._langID != L_USER)
 		choice = checkLangID;
 	// langID == L_USER, we chack the userDefinedLangName
-	else if (assoInfo._langID == L_USER && assoInfo._userDefinedLangName != L"")
+	else if (assoInfo._langID == L_USER && assoInfo._userDefinedLangName != "")
 		choice = checkUserDefined;
 	else
 		return nullptr;
@@ -615,7 +615,7 @@ void FunctionZoneParser::classParse(
 			break;
 
 		// Begin to search all method inside
-		// std::vector<std::wstring> emptyArray;
+		// std::vector<NppString> emptyArray;
 		if (!isInZones(targetStart, commentZones))
 		{
 			funcParse(foundInfos, targetStart, targetEnd, ppEditView, subLevelClassStructName, &commentZones);

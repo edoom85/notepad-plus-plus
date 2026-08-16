@@ -49,26 +49,26 @@
 
 typedef struct DockedWidgetData {            // DockedWidget data (old name: tTbData)
 	HWND hClient = nullptr;                  // client Window Handle
-	const wchar_t* pszName = nullptr;        // name of plugin (shown in window)
+	const NppChar* pszName = nullptr;        // name of plugin (shown in window)
 	int dlgID = 0;                           // a funcItem provides the function pointer to start a dialog. Please parse here these ID
 
 	// user modifications
 	UINT uMask = 0;                          // mask params: look to above defines
 	HICON hIconTab = nullptr;                // icon for tabs
-	const wchar_t* pszAddInfo = nullptr;     // for plugin to display additional information
+	const NppChar* pszAddInfo = nullptr;     // for plugin to display additional information
 
 	// internal data, do not use !!! (rcFloat, iPrevCont only)
 	RECT rcFloat = {}; // floating position
 	int iPrevCont = 0; // stores the privious container (toggling between float and dock)
 
 	// REQUIRED: must be set by the plugin, NOT internal data.
-	// This must be the plugin's own DLL file name (e.g. L"NppPluginDemo.dll"),
+	// This must be the plugin's own DLL file name (e.g. "NppPluginDemo.dll"),
 	// including the ".dll" extension - not the panel's display title, and not an arbitrary identifier string.
 	// Notepad++'s Docking Manager uses this file name to locate and reload the plugin's DLL, and to re-open/re-dock this panel on the next startup.
 	// The value is persisted verbatim as the "pluginName" attribute of the <PluginDlg> element in the user's config.xml, e.g.:
 	// <PluginDlg pluginName="NppPluginDemo.dll" id="16" curr="1" prev="-1" isVisible="yes" />
 	// If this is left null/empty or set incorrectly, the panel will fail to restore its docked position/visibility across restarts.
-	const wchar_t* pszModuleName = nullptr;
+	const NppChar* pszModuleName = nullptr;
 
 } DockedWidgetData, tTbData;
 

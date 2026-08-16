@@ -250,7 +250,7 @@ public:
     virtual void updateDlg() = 0;
 protected:
     //Shared data
-	static std::wstring _kwlBuffer;
+	static NppString _kwlBuffer;
     static UserLangContainer *_pUserLang;
     static ScintillaEditView *_pScintilla;
     intptr_t CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam) override;
@@ -267,7 +267,7 @@ protected :
     intptr_t CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam) override;
     void setKeywords2List(int ctrlID) override;
 private :
-	static void retrieve(wchar_t* dest, size_t destMaxLen, const wchar_t* toRetrieve, const wchar_t* prefix);
+	static void retrieve(NppChar* dest, size_t destMaxLen, const NppChar* toRetrieve, const NppChar* prefix);
     URLCtrl _pageLink;
 };
 
@@ -290,7 +290,7 @@ protected :
     intptr_t CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam) override;
     void setKeywords2List(int id) override;
 private :
-	static void retrieve(wchar_t* dest, size_t destMaxLen, const wchar_t* toRetrieve, const wchar_t* prefix);
+	static void retrieve(NppChar* dest, size_t destMaxLen, const NppChar* toRetrieve, const NppChar* prefix);
 };
 
 class SymbolsStyleDialog : public SharedParametersDialog
@@ -302,7 +302,7 @@ protected :
     intptr_t CALLBACK run_dlgProc(UINT Message, WPARAM wParam, LPARAM lParam) override;
     void setKeywords2List(int id) override;
 private :
-	static void retrieve(wchar_t* dest, size_t destMaxLen, const wchar_t* toRetrieve, const wchar_t* prefix);
+	static void retrieve(NppChar* dest, size_t destMaxLen, const NppChar* toRetrieve, const NppChar* prefix);
 };
 
 class UserDefineDialog : public SharedParametersDialog
@@ -358,7 +358,7 @@ public :
     HWND getSymbolHandle() const {
         return _symbolsStyleDlg.getHSelf();
     }
-    void setTabName(int index, const wchar_t *name2set) {
+    void setTabName(int index, const NppChar *name2set) {
         _ctrlTab.renameTab(index, name2set);
     }
 protected :
@@ -395,7 +395,7 @@ class StringDlg : public StaticDialog
 {
 public :
     StringDlg() = default;
-	void init(HINSTANCE hInst, HWND parent, const wchar_t *title, const wchar_t *staticName, const wchar_t *text2Set, int txtLen = 0, const wchar_t* restrictedChars = nullptr, bool bGotoCenter = false) {
+	void init(HINSTANCE hInst, HWND parent, const NppChar *title, const NppChar *staticName, const NppChar *text2Set, int txtLen = 0, const NppChar* restrictedChars = nullptr, bool bGotoCenter = false) {
 		Window::init(hInst, parent);
 		_title = title;
 		_static = staticName;
@@ -420,14 +420,14 @@ protected :
 	// Custom proc to subclass edit control
 	static LRESULT CALLBACK CustomEditProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-	bool isAllowed(const std::wstring& txt);
+	bool isAllowed(const NppString& txt);
 	void HandlePaste(HWND hEdit);
 
 private :
-    std::wstring _title;
-    std::wstring _textValue;
-    std::wstring _static;
-	std::wstring _restrictedChars;
+    NppString _title;
+    NppString _textValue;
+    NppString _static;
+	NppString _restrictedChars;
     int _txtLen = 0;
 	bool _shouldGotoCenter = false;
 

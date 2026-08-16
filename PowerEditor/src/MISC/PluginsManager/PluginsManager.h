@@ -39,10 +39,10 @@ class PluginViewList;
 
 struct PluginCommand
 {
-	std::wstring _pluginName;
+	NppString _pluginName;
 	int _funcID = 0;
 	PFUNCPLUGINCMD _pFunc = nullptr;
-	PluginCommand(const wchar_t* pluginName, int funcID, PFUNCPLUGINCMD pFunc): _pluginName(pluginName), _funcID(funcID), _pFunc(pFunc) {}
+	PluginCommand(const NppChar* pluginName, int funcID, PFUNCPLUGINCMD pFunc): _pluginName(pluginName), _funcID(funcID), _pFunc(pFunc) {}
 };
 
 struct PluginInfo
@@ -69,17 +69,17 @@ struct PluginInfo
 
 	FuncItem *_funcItems = nullptr;
 	int _nbFuncItem = 0;
-	std::wstring _moduleName;
-	std::wstring _funcName;
+	NppString _moduleName;
+	NppString _funcName;
 };
 
 struct LoadedDllInfo
 {
-	std::wstring _fullFilePath;
-	std::wstring _fileName;
-	std::wstring _displayName; // the plugin module's name, without '.dll'
+	NppString _fullFilePath;
+	NppString _fileName;
+	NppString _displayName; // the plugin module's name, without '.dll'
 
-	LoadedDllInfo(const std::wstring& fullFilePath, const std::wstring& fileName)
+	LoadedDllInfo(const NppString& fullFilePath, const NppString& fileName)
 		: _fullFilePath(fullFilePath), _fileName(fileName), _displayName(fileName.substr(0, fileName.find_last_of('.')))
 	{}
 };
@@ -98,10 +98,10 @@ public:
 		_nppData = nppData;
 	}
 
-	bool loadPlugins(const wchar_t* dir = nullptr, const PluginViewList* pluginUpdateInfoList = nullptr, PluginViewList* pluginIncompatibleList = nullptr);
+	bool loadPlugins(const NppChar* dir = nullptr, const PluginViewList* pluginUpdateInfoList = nullptr, PluginViewList* pluginIncompatibleList = nullptr);
 
 	void runPluginCommand(size_t i);
-	void runPluginCommand(const wchar_t *pluginName, int commandID);
+	void runPluginCommand(const NppChar *pluginName, int commandID);
 
 	void addInMenuFromPMIndex(int i);
 	HMENU initMenu(HMENU hMenu, bool enablePluginAdmin = false);
@@ -123,7 +123,7 @@ public:
 
 	bool allocateMarker(int numberRequired, int* start);
 	bool allocateIndicator(int numberRequired, int* start);
-	std::wstring getLoadedPluginNames() const;
+	NppString getLoadedPluginNames() const;
 
 private:
 	NppData _nppData;
@@ -138,30 +138,30 @@ private:
 	IDAllocator _indicatorAlloc;
 	bool _noMoreNotification = false;
 
-	int loadPluginFromPath(const wchar_t* pluginFilePath);
+	int loadPluginFromPath(const NppChar* pluginFilePath);
 
-	static void pluginCrashAlert(const wchar_t* pluginName, const wchar_t* funcSignature) {
-		std::wstring msg = pluginName;
-		msg += L" just crashed in\r";
+	static void pluginCrashAlert(const NppChar* pluginName, const NppChar* funcSignature) {
+		NppString msg = pluginName;
+		msg += " just crashed in\r";
 		msg += funcSignature;
-		NppDarkMode::darkMessageBoxW(nullptr, msg.c_str(), L"Plugin Crash", MB_OK | MB_ICONSTOP);
+		NppDarkMode::darkMessageBoxW(nullptr, msg.c_str(), "Plugin Crash", MB_OK | MB_ICONSTOP);
 	}
 
-	static void pluginExceptionAlert(const wchar_t* pluginName, const std::exception& e) {
-		std::wstring msg = L"An exception occurred due to plugin: ";
+	static void pluginExceptionAlert(const NppChar* pluginName, const std::exception& e) {
+		NppString msg = "An exception occurred due to plugin: ";
 		msg += pluginName;
-		msg += L"\r\n\r\nException reason: ";
+		msg += "\r\n\r\nException reason: ";
 		msg += string2wstring(e.what(), CP_UTF8);
 
-		NppDarkMode::darkMessageBoxW(nullptr, msg.c_str(), L"Plugin Exception", MB_OK);
+		NppDarkMode::darkMessageBoxW(nullptr, msg.c_str(), "Plugin Exception", MB_OK);
 	}
 
-	bool isInLoadedDlls(const wchar_t* fn) const {
+	bool isInLoadedDlls(const NppChar* fn) const {
 		return std::any_of(_loadedDlls.begin(), _loadedDlls.end(),
 			[&fn](const auto& dll) { return ::_wcsicmp(fn, dll._fileName.c_str()) == 0; });
 	}
 
-	void addInLoadedDlls(const wchar_t *fullPath, const wchar_t *fn) {
+	void addInLoadedDlls(const NppChar *fullPath, const NppChar *fn) {
 		_loadedDlls.push_back(LoadedDllInfo(fullPath, fn));
 	}
 };

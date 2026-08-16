@@ -53,9 +53,9 @@ public:
 	void destroy() override;
 	virtual void init(HINSTANCE hInst, HWND parent, bool isVertical, bool isMultiLine);
 	void reSizeTo(RECT& rc2Adjust) override;
-	int insertAtEnd(const wchar_t *subTabName);
+	int insertAtEnd(const NppChar *subTabName);
 	void activateAt(int index) const;
-	void getCurrentTitle(wchar_t *title, int titleLen);
+	void getCurrentTitle(NppChar *title, int titleLen);
 
 	int getCurrentTabIndex() const {
 		return static_cast<int>(SendMessage(_hSelf, TCM_GETCURSEL, 0, 0));
@@ -178,7 +178,7 @@ public :
 	// Hack for forcing the tab width change
 	// ref: https://github.com/notepad-plus-plus/notepad-plus-plus/pull/15781#issuecomment-2469387409
 	void refresh() {
-		int index = insertAtEnd(L"");
+		int index = insertAtEnd("");
 		deletItemAt(index);
 	}
 

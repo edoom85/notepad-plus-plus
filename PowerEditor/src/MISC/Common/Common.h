@@ -28,34 +28,34 @@
 #include <vector>
 
 
-std::wstring folderBrowser(HWND parent, const std::wstring & title = L"", int outputCtrlID = 0, const wchar_t *defaultStr = NULL);
-std::wstring getFolderName(HWND parent, const wchar_t *defaultDir = NULL);
+NppString folderBrowser(HWND parent, const NppString & title = "", int outputCtrlID = 0, const NppChar *defaultStr = NULL);
+NppString getFolderName(HWND parent, const NppChar *defaultDir = NULL);
 
 void printInt(int int2print);
-void printStr(const wchar_t *str2print);
-std::wstring commafyInt(size_t n);
+void printStr(const NppChar *str2print);
+NppString commafyInt(size_t n);
 
-void writeLog(const wchar_t* logFileName, const char* log2write);
-void writeLog(const wchar_t* logFileName, const wchar_t* log2write);
+void writeLog(const NppChar* logFileName, const char* log2write);
+void writeLog(const NppChar* logFileName, const NppChar* log2write);
 int filter(unsigned int code, struct _EXCEPTION_POINTERS *ep);
-std::wstring purgeMenuItemString(const wchar_t* menuItemStr, bool keepAmpersand = false);
-std::vector<std::wstring> tokenizeString(const std::wstring & tokenString, const char delim);
+NppString purgeMenuItemString(const NppChar* menuItemStr, bool keepAmpersand = false);
+std::vector<NppString> tokenizeString(const NppString & tokenString, const char delim);
 
 void ClientRectToScreenRect(HWND hWnd, RECT* rect);
 void ScreenRectToClientRect(HWND hWnd, RECT* rect);
 
-std::wstring string2wstring(const std::string& rString, UINT codepage = CP_UTF8);
-std::string wstring2string(const std::wstring& rwString, UINT codepage = CP_UTF8);
-bool isInList(const wchar_t* token, const wchar_t* list);
-std::wstring BuildMenuFileName(int filenameLen, unsigned int pos, const std::wstring &filename, bool ordinalNumber = true);
+NppString string2wstring(const std::string& rString, UINT codepage = CP_UTF8);
+std::string wstring2string(const NppString& rwString, UINT codepage = CP_UTF8);
+bool isInList(const NppChar* token, const NppChar* list);
+NppString BuildMenuFileName(int filenameLen, unsigned int pos, const NppString &filename, bool ordinalNumber = true);
 
-std::string getFileContent(const wchar_t* file2read, bool* pbFailed = nullptr);
-std::wstring relativeFilePathToFullFilePath(const wchar_t *relativeFilePath);
-void writeFileContent(const wchar_t *file2write, const char *content2write);
-bool matchInList(const wchar_t *fileName, const std::vector<std::wstring> & patterns);
-bool matchInExcludeDirList(const wchar_t* dirName, const std::vector<std::wstring>& patterns, size_t level);
-bool allPatternsAreExclusion(const std::vector<std::wstring>& patterns);
-HRESULT openInExplorerAndSelect(const wchar_t* path);
+std::string getFileContent(const NppChar* file2read, bool* pbFailed = nullptr);
+NppString relativeFilePathToFullFilePath(const NppChar *relativeFilePath);
+void writeFileContent(const NppChar *file2write, const char *content2write);
+bool matchInList(const NppChar *fileName, const std::vector<NppString> & patterns);
+bool matchInExcludeDirList(const NppChar* dirName, const std::vector<NppString>& patterns, size_t level);
+bool allPatternsAreExclusion(const std::vector<NppString>& patterns);
+HRESULT openInExplorerAndSelect(const NppChar* path);
 
 class WcharMbcsConvertor final
 {
@@ -65,16 +65,16 @@ public:
 		return instance;
 	}
 
-	const wchar_t* char2wchar(const char* mbcs2Convert, size_t codepage, int lenMbcs = -1, int* pLenWc = nullptr, int* pBytesNotProcessed = NULL);
-	const wchar_t* char2wchar(const char* mbcs2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int mbcsLen = 0);
+	const NppChar* char2wchar(const char* mbcs2Convert, size_t codepage, int lenMbcs = -1, int* pLenWc = nullptr, int* pBytesNotProcessed = NULL);
+	const NppChar* char2wchar(const char* mbcs2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int mbcsLen = 0);
 	size_t getSizeW() const { return _wideCharStr.size(); }
-	const char* wchar2char(const wchar_t* wcharStr2Convert, size_t codepage, int lenWc = -1, int* pLenMbcs = nullptr);
-	const char* wchar2char(const wchar_t* wcharStr2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int wcharLenIn = 0, int* lenOut = nullptr);
+	const char* wchar2char(const NppChar* wcharStr2Convert, size_t codepage, int lenWc = -1, int* pLenMbcs = nullptr);
+	const char* wchar2char(const NppChar* wcharStr2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int wcharLenIn = 0, int* lenOut = nullptr);
 	size_t getSizeA() const { return _multiByteStr.size(); }
 
 	const char* encode(UINT fromCodepage, UINT toCodepage, const char* txt2Encode, int lenIn = -1, int* pLenOut = NULL, int* pBytesNotProcessed = NULL) {
 		int lenWc = 0;
-		const wchar_t* strW = char2wchar(txt2Encode, fromCodepage, lenIn, &lenWc, pBytesNotProcessed);
+		const NppChar* strW = char2wchar(txt2Encode, fromCodepage, lenIn, &lenWc, pBytesNotProcessed);
 		return wchar2char(strW, toCodepage, lenWc, pLenOut);
 	}
 
@@ -128,42 +128,42 @@ protected:
 	};
 
 	StringBuffer<char> _multiByteStr;
-	StringBuffer<wchar_t> _wideCharStr;
+	StringBuffer<NppChar> _wideCharStr;
 };
 
-std::wstring pathRemoveFileSpec(std::wstring & path);
-std::wstring pathAppend(std::wstring &strDest, const std::wstring & str2append);
+NppString pathRemoveFileSpec(NppString & path);
+NppString pathAppend(NppString &strDest, const NppString & str2append);
 COLORREF getCtrlBgColor(HWND hWnd);
-std::wstring stringToUpper(std::wstring strToConvert);
-std::wstring stringToLower(std::wstring strToConvert);
-std::wstring stringReplace(std::wstring subject, const std::wstring& search, const std::wstring& replace);
-void stringSplit(const std::wstring& input, const std::wstring& delimiter, std::vector<std::wstring>& output);
-bool str2numberVector(std::wstring str2convert, std::vector<size_t>& numVect);
-void stringJoin(const std::vector<std::wstring>& strings, const std::wstring& separator, std::wstring& joinedString);
-std::wstring stringTakeWhileAdmissable(const std::wstring& input, const std::wstring& admissable);
-double stodLocale(const std::wstring& str, _locale_t loc, size_t* idx = NULL);
+NppString stringToUpper(NppString strToConvert);
+NppString stringToLower(NppString strToConvert);
+NppString stringReplace(NppString subject, const NppString& search, const NppString& replace);
+void stringSplit(const NppString& input, const NppString& delimiter, std::vector<NppString>& output);
+bool str2numberVector(NppString str2convert, std::vector<size_t>& numVect);
+void stringJoin(const std::vector<NppString>& strings, const NppString& separator, NppString& joinedString);
+NppString stringTakeWhileAdmissable(const NppString& input, const NppString& admissable);
+double stodLocale(const NppString& str, _locale_t loc, size_t* idx = NULL);
 
 const std::locale& getSysLocale();
 
-bool str2Clipboard(const std::wstring &str2cpy, HWND hwnd);
-std::wstring strFromClipboard();
+bool str2Clipboard(const NppString &str2cpy, HWND hwnd);
+NppString strFromClipboard();
 class Buffer;
 bool buf2Clipboard(const std::vector<Buffer*>& buffers, bool isFullPath, HWND hwnd);
 
-std::wstring GetLastErrorAsString(DWORD errorCode = 0);
+NppString GetLastErrorAsString(DWORD errorCode = 0);
 
-std::wstring intToString(int val);
-std::wstring uintToString(unsigned int val);
+NppString intToString(int val);
+NppString uintToString(unsigned int val);
 
-HWND createToolTip(int toolID, HWND hDlg, HINSTANCE hInst, wchar_t* pszText, bool isRTL);
-HWND createToolTipRect(int toolID, HWND hWnd, HINSTANCE hInst, wchar_t* pszText, const RECT rc);
+HWND createToolTip(int toolID, HWND hDlg, HINSTANCE hInst, NppChar* pszText, bool isRTL);
+HWND createToolTipRect(int toolID, HWND hWnd, HINSTANCE hInst, NppChar* pszText, const RECT rc);
 
-bool isCertificateValidated(const std::wstring & fullFilePath, const std::wstring & subjectName2check);
+bool isCertificateValidated(const NppString & fullFilePath, const NppString & subjectName2check);
 bool isAssoCommandExisting(LPCWSTR FullPathName);
 
-bool deleteFileOrFolder(const std::wstring& f2delete);
+bool deleteFileOrFolder(const NppString& f2delete);
 
-void getFilesInFolder(std::vector<std::wstring>& files, const std::wstring& extTypeFilter, const std::wstring& inFolder);
+void getFilesInFolder(std::vector<NppString>& files, const NppString& extTypeFilter, const NppString& inFolder);
 
 template<typename T> size_t vecRemoveDuplicates(std::vector<T>& vec, bool isSorted = false, bool canSort = false)
 {
@@ -191,32 +191,32 @@ template<typename T> size_t vecRemoveDuplicates(std::vector<T>& vec, bool isSort
 	return vec.size();
 }
 
-void trim(std::wstring& str);
+void trim(NppString& str);
 
 int nbDigitsFromNbLines(size_t nbLines);
 
-std::wstring getDateTimeStrFrom(const std::wstring& dateTimeFormat, const SYSTEMTIME& st);
+NppString getDateTimeStrFrom(const NppString& dateTimeFormat, const SYSTEMTIME& st);
 
-HFONT createFont(const wchar_t* fontName, int fontSize, bool isBold, HWND hDestParent);
-bool removeReadOnlyFlagFromFileAttributes(const wchar_t* fileFullPath);
-bool toggleReadOnlyFlagFromFileAttributes(const wchar_t* fileFullPath, bool& isChangedToReadOnly);
+HFONT createFont(const NppChar* fontName, int fontSize, bool isBold, HWND hDestParent);
+bool removeReadOnlyFlagFromFileAttributes(const NppChar* fileFullPath);
+bool toggleReadOnlyFlagFromFileAttributes(const NppChar* fileFullPath, bool& isChangedToReadOnly);
 
-bool isWin32NamespacePrefixedFileName(const std::wstring& fileName);
-bool isWin32NamespacePrefixedFileName(const wchar_t* szFileName);
-bool isUnsupportedFileName(const std::wstring& fileName);
-bool isUnsupportedFileName(const wchar_t* szFileName);
-bool isUncPath(const std::wstring& path);
-bool isUncFileUrl(const std::wstring& url);
+bool isWin32NamespacePrefixedFileName(const NppString& fileName);
+bool isWin32NamespacePrefixedFileName(const NppChar* szFileName);
+bool isUnsupportedFileName(const NppString& fileName);
+bool isUnsupportedFileName(const NppChar* szFileName);
+bool isUncPath(const NppString& path);
+bool isUncFileUrl(const NppString& url);
 
 class Version final
 {
 public:
 	Version() = default;
-	explicit Version(const std::wstring& versionStr);
+	explicit Version(const NppString& versionStr);
 
-	void setVersionFrom(const std::wstring& filePath);
-	std::wstring toString() const;
-	static bool isNumber(const std::wstring& s) {
+	void setVersionFrom(const NppString& filePath);
+	NppString toString() const;
+	static bool isNumber(const NppString& s) {
 		static const auto& loc = std::locale::classic();
 		return !s.empty() &&
 			find_if(s.begin(), s.end(), [](auto c) { return !std::isdigit(c, loc); }) == s.end();
@@ -264,14 +264,14 @@ private:
 };
 
 
-BOOL getDiskFreeSpaceWithTimeout(const wchar_t* dirPath, ULARGE_INTEGER* freeBytesForUser,
+BOOL getDiskFreeSpaceWithTimeout(const NppChar* dirPath, ULARGE_INTEGER* freeBytesForUser,
 	DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
-BOOL getFileAttributesExWithTimeout(const wchar_t* filePath, WIN32_FILE_ATTRIBUTE_DATA* fileAttr,
+BOOL getFileAttributesExWithTimeout(const NppChar* filePath, WIN32_FILE_ATTRIBUTE_DATA* fileAttr,
 	DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr, DWORD* pdwWin32ApiError = nullptr);
 
-bool doesFileExist(const wchar_t* filePath, DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
-bool doesDirectoryExist(const wchar_t* dirPath, DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
-bool doesPathExist(const wchar_t* path, DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
+bool doesFileExist(const NppChar* filePath, DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
+bool doesDirectoryExist(const NppChar* dirPath, DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
+bool doesPathExist(const NppChar* path, DWORD milliSec2wait = 0, bool* isTimeoutReached = nullptr);
 
 
 // check if the window rectangle intersects with any currently active monitor's working area
@@ -290,7 +290,7 @@ public:
 		}
 	}
 
-	bool init(HINSTANCE hInst, HWND ctrl2attached, HWND ctrl2attachedParent, const std::wstring& tipStr, bool isRTL, unsigned int remainTimeMillisecond = 0, int maxWidth = 200); // remainTimeMillisecond = 0: no timeout
+	bool init(HINSTANCE hInst, HWND ctrl2attached, HWND ctrl2attachedParent, const NppString& tipStr, bool isRTL, unsigned int remainTimeMillisecond = 0, int maxWidth = 200); // remainTimeMillisecond = 0: no timeout
 
 	bool isValid() const {
 		return _hWndInfoTip != nullptr;
@@ -313,9 +313,9 @@ private:
 	ControlInfoTip& operator=(const ControlInfoTip&) = delete;
 };
 
-DWORD invokeNppUacOp(const std::wstring& strCmdLineParams);
+DWORD invokeNppUacOp(const NppString& strCmdLineParams);
 bool fileTimeToYMD(const FILETIME& ft, int& yyyymmdd);
-void expandEnv(std::wstring& path2Expand);
+void expandEnv(NppString& path2Expand);
 
 class ScopedCOMInit final // never use this in DllMain
 {
@@ -350,4 +350,4 @@ private:
 };
 
 
-bool needsElevation4Access(const std::wstring& path2check, bool bWriteAccess);
+bool needsElevation4Access(const NppString& path2check, bool bWriteAccess);

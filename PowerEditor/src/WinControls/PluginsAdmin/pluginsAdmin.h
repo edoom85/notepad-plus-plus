@@ -35,10 +35,10 @@ class PluginsManager;
 
 struct PluginUpdateInfo
 {
-	std::wstring _fullFilePath; // only for the installed Plugin
+	NppString _fullFilePath; // only for the installed Plugin
 
-	std::wstring _folderName;   // plugin folder name - should be the same name with plugin and should be uniq among the plugins
-	std::wstring _displayName;  // plugin description name
+	NppString _folderName;   // plugin folder name - should be the same name with plugin and should be uniq among the plugins
+	NppString _displayName;  // plugin description name
 	Version _version;
 	// Optional
 	std::pair<Version, Version> _nppCompatibleVersions; // compatible to Notepad++ interval versions: <from, to> example: 
@@ -54,17 +54,17 @@ struct PluginUpdateInfo
 	                                                                                              // The 2nd interval versions are for Notepad++ versions
 	                                                                                              // which are compatible with the old plugins' versions given in the 1st interval
 	
-	std::wstring _homepage;
-	std::wstring _sourceUrl;
-	std::wstring _description;
-	std::wstring _author;
-	std::wstring _id;           // Plugin package ID: SHA-256 hash
-	std::wstring _repository;
+	NppString _homepage;
+	NppString _sourceUrl;
+	NppString _description;
+	NppString _author;
+	NppString _id;           // Plugin package ID: SHA-256 hash
+	NppString _repository;
 	bool _isVisible = true;       // if false then it should not be displayed 
 
-	std::wstring describe() const;
+	NppString describe() const;
 	PluginUpdateInfo() = default;
-	PluginUpdateInfo(const std::wstring& fullFilePath, const std::wstring& fileName);
+	PluginUpdateInfo(const NppString& fullFilePath, const NppString& fileName);
 };
 
 struct NppCurrentStatus
@@ -76,8 +76,8 @@ struct NppCurrentStatus
 									
 	bool _isAppDataPluginsAllowed = false;  // true: install on %APPDATA%, update / remove on %APPDATA% & "Program files" or NPP_INST
 
-	std::wstring _nppInstallPath;
-	std::wstring _appdataPath;
+	NppString _nppInstallPath;
+	NppString _appdataPath;
 
 	// it should determine :
 	// 1. deployment location : %ProgramFile%   %appdata%   %other%
@@ -116,15 +116,15 @@ public:
 	void setViewStyleOption(int extraStyle) { _ui.setStyleOption(extraStyle); }
 	size_t nbItem() const { return _ui.nbItem(); }
 	PluginUpdateInfo* getPluginInfoFromUiIndex(size_t index) const { return reinterpret_cast<PluginUpdateInfo*>(_ui.getLParamFromIndex(static_cast<int>(index))); }
-	PluginUpdateInfo* findPluginInfoFromFolderName(const std::wstring& folderName, int& index) const;
+	PluginUpdateInfo* findPluginInfoFromFolderName(const NppString& folderName, int& index) const;
 	bool removeFromListIndex(size_t index2remove);
 	bool hideFromListIndex(size_t index2hide);
-	bool removeFromFolderName(const std::wstring& folderName);
+	bool removeFromFolderName(const NppString& folderName);
 	bool removeFromUiIndex(size_t index2remove);
 	bool hideFromPluginInfoPtr(PluginUpdateInfo* pluginInfo2hide);
-	bool restore(const std::wstring& folderName);
+	bool restore(const NppString& folderName);
 	bool removeFromPluginInfoPtr(PluginUpdateInfo* pluginInfo2hide);
-	void changeColumnName(COLUMN_TYPE index, const wchar_t *name2change);
+	void changeColumnName(COLUMN_TYPE index, const NppChar *name2change);
 
 private:
 	// _list & _ui should keep being synchronized
@@ -175,9 +175,9 @@ public :
 	bool removePlugins(int iTab);
 	bool enableOrDisablePlugins(Operation op);
 
-	void changeTabName(LIST_TYPE index, wchar_t* name2change);
-	void changeColumnName(COLUMN_TYPE index, const wchar_t *name2change);
-	std::wstring getPluginListVerStr() const;
+	void changeTabName(LIST_TYPE index, NppChar* name2change);
+	void changeColumnName(COLUMN_TYPE index, const NppChar *name2change);
+	NppString getPluginListVerStr() const;
 	const PluginViewList& getAvailablePluginUpdateInfoList() const {
 		return _availableList;
 	}
@@ -194,13 +194,13 @@ protected:
 	intptr_t CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
 private :
-	std::wstring _updaterDir;
-	std::wstring _updaterFullPath;
-	std::wstring _pluginListFullPath;
+	NppString _updaterDir;
+	NppString _updaterFullPath;
+	NppString _pluginListFullPath;
 
 	TabBar _tab;
 
-	std::wstring _pluginListVersion;
+	NppString _pluginListVersion;
 	URLCtrl _repoLink;
 
 	PluginViewList _availableList;    // A permanent list, once it's loaded (no removal - only hide or show) 
@@ -217,13 +217,13 @@ private :
 	bool searchInPlugins(bool isNextMode) const;
 	const bool _inNames = true;
 	const bool _inDescs = false;
-	bool isFoundInListFromIndex(const PluginViewList& inWhichList,int index, const std::wstring& str2search, bool inWhichPart) const;
-	long searchFromCurrentSel(const PluginViewList& inWhichList, const std::wstring& str2search, bool inWhichPart, bool isNextMode) const;
-	long searchInNamesFromCurrentSel(const PluginViewList& inWhichList, const std::wstring& str2search, bool isNextMode) const {
+	bool isFoundInListFromIndex(const PluginViewList& inWhichList,int index, const NppString& str2search, bool inWhichPart) const;
+	long searchFromCurrentSel(const PluginViewList& inWhichList, const NppString& str2search, bool inWhichPart, bool isNextMode) const;
+	long searchInNamesFromCurrentSel(const PluginViewList& inWhichList, const NppString& str2search, bool isNextMode) const {
 		return searchFromCurrentSel(inWhichList, str2search, _inNames, isNextMode);
 	}
 
-	long searchInDescsFromCurrentSel(const PluginViewList& inWhichList, const std::wstring& str2search, bool isNextMode) const {
+	long searchInDescsFromCurrentSel(const PluginViewList& inWhichList, const NppString& str2search, bool isNextMode) const {
 		return searchFromCurrentSel(inWhichList, str2search, _inDescs, isNextMode);
 	}
 	
@@ -232,7 +232,7 @@ private :
 	bool initDisabledPluginList();
 	bool loadFromPluginInfos();
 
-	bool exitToInstallRemovePlugins(Operation op, const std::vector<PluginUpdateInfo*>& puis, const std::wstring& customRoot = L"");
+	bool exitToInstallRemovePlugins(Operation op, const std::vector<PluginUpdateInfo*>& puis, const NppString& customRoot = "");
 
 	// Handles pa_deactivate / pa_activate: moves plugin folders between "plugins"
 	// and "plugins\disabled" (direction depends on op), then restarts Npp the same

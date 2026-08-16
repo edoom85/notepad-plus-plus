@@ -65,8 +65,8 @@ using namespace std;
 // WM_CHAR replacement
 #define WM_CHAR_REPLACEMENT			(WM_USER + WM_CHAR)
 
-static const wchar_t *readonlyString = L" [Read Only]";
-const UINT WDN_NOTIFY = RegisterWindowMessage(L"WDN_NOTIFY");
+static const NppChar *readonlyString = " [Read Only]";
+const UINT WDN_NOTIFY = RegisterWindowMessage("WDN_NOTIFY");
 /*
 inline static DWORD GetStyle(HWND hWnd) {
 	return (DWORD)GetWindowLongPtr(hWnd, GWL_STYLE);
@@ -97,14 +97,14 @@ inline static BOOL ModifyStyleEx(HWND hWnd, DWORD dwRemove, DWORD dwAdd) {
 
 struct NumericStringEquivalence
 {
-	int operator()(const wchar_t* s1, const wchar_t* s2) const
+	int operator()(const NppChar* s1, const NppChar* s2) const
 	{
 		return numstrcmp(s1, s2);
 	}
 
-	static inline int numstrcmp_get(const wchar_t **str, int *length)
+	static inline int numstrcmp_get(const NppChar **str, int *length)
 	{
-		const wchar_t *p = *str;
+		const NppChar *p = *str;
 		int value = 0;
 		for (*length = 0; std::iswdigit(*p); ++(*length))
 			value = value * 10 + *p++ - L'0';
@@ -112,9 +112,9 @@ struct NumericStringEquivalence
 		return (value);
 	}
 
-	static int numstrcmp(const wchar_t *str1, const wchar_t *str2)
+	static int numstrcmp(const NppChar *str1, const NppChar *str2)
 	{
-		wchar_t *p1 = nullptr, *p2 = nullptr;
+		NppChar *p1 = nullptr, *p2 = nullptr;
 		int c1 = 0, c2 = 0, lcmp = 0;
 		for (;;)
 		{
@@ -190,8 +190,8 @@ struct BufferEquivalent
 
 			if (_iColumn == 0)
 			{
-				const wchar_t *s1 = b1->getFileName();
-				const wchar_t *s2 = b2->getFileName();
+				const NppChar *s1 = b1->getFileName();
+				const NppChar *s2 = b2->getFileName();
 				int result = _strequiv(s1, s2);
 
 				if (result != 0) // default to filepath sorting when equivalent
@@ -200,9 +200,9 @@ struct BufferEquivalent
 			else if (_iColumn == 2)
 			{
 				NppParameters & nppParameters = NppParameters::getInstance();
-				const wchar_t *s1;
-				const wchar_t *s2;
-				//const wchar_t empty[] = ;
+				const NppChar *s1;
+				const NppChar *s2;
+				//const NppChar empty[] = ;
 				Lang *lang1 = nppParameters.getLangFromID(b1->getLangType());
 
 				if (lang1)
@@ -210,7 +210,7 @@ struct BufferEquivalent
 					s1 = lang1->getLangName();
 				}
 				else
-					s1 = L"";
+					s1 = "";
 
 				Lang *lang2 = nppParameters.getLangFromID(b2->getLangType());
 				if (lang2)
@@ -218,7 +218,7 @@ struct BufferEquivalent
 					s2 = lang2->getLangName();
 				}
 				else
-					s2 = L"";
+					s2 = "";
 
 				int result = _strequiv(s1, s2);
 
@@ -244,8 +244,8 @@ struct BufferEquivalent
 			}
 
 			// _iColumn == 1
-			const wchar_t *s1 = b1->getFullPathName();
-			const wchar_t *s2 = b2->getFullPathName();
+			const NppChar *s1 = b1->getFullPathName();
+			const NppChar *s2 = b2->getFullPathName();
 			return _strequiv(s1, s2) < 0;	//we can compare the full path to sort on directory, since after sorting directories sorting files is the second thing to do (if directories are the same that is)
 		}
 		return false;
@@ -462,13 +462,13 @@ intptr_t CALLBACK WindowsDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 						}
 						else if (pLvdi->item.iSubItem == 1) // directory
 						{
-							const wchar_t *fullName = buf->getFullPathName();
-							const wchar_t *fileName = buf->getFileName();
-							int len = lstrlen(fullName)-lstrlen(fileName);
+							const NppChar *fullName = buf->getFullPathName();
+							const NppChar *fileName = buf->getFileName();
+							int len = strlen(fullName)-strlen(fileName);
 							if (!len) 
 							{
 								len = 1;
-								fullName = L"";
+								fullName = "";
 							}
 							text.assign(fullName, len);
 						}
@@ -494,7 +494,7 @@ intptr_t CALLBACK WindowsDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 							// handle unsaved or unknown timestamp
 							if (ft.dwLowDateTime == 0 && ft.dwHighDateTime == 0) 
 							{
-								text = L""; // or L"—"
+								text = ""; // or "—"
 							}
 							else 
 							{
@@ -502,15 +502,15 @@ intptr_t CALLBACK WindowsDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 								SYSTEMTIME st{};
 								if (FileTimeToLocalFileTime(&ft, &localFt) && FileTimeToSystemTime(&localFt, &st)) 
 								{
-									wchar_t bufW[20]; // "YYYY-MM-DD HH:MM:SS" = 19 + NUL
-									swprintf(bufW, 20, L"%04u-%02u-%02u %02u:%02u:%02u",
+									NppChar bufW[20]; // "YYYY-MM-DD HH:MM:SS" = 19 + NUL
+									swprintf(bufW, 20, "%04u-%02u-%02u %02u:%02u:%02u",
 										st.wYear, st.wMonth, st.wDay,
 										st.wHour, st.wMinute, st.wSecond);
 									text = bufW;
 								}
 								else 
 								{
-									text = L"";
+									text = "";
 								}
 							}
 						}
@@ -585,7 +585,7 @@ intptr_t CALLBACK WindowsDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			if (!_hList)
 				return TRUE;
 
-			wchar_t ch = static_cast<wchar_t>(wParam);
+			NppChar ch = static_cast<NppChar>(wParam);
 			int itemCount = ListView_GetItemCount(_hList);
 
 			// backup current state
@@ -598,7 +598,7 @@ intptr_t CALLBACK WindowsDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 			ListView_SetItemState(_hList, -1, 0, LVIS_SELECTED | LVIS_FOCUSED);
 
 			LVITEM lvItem {};
-			wchar_t buffer[MAX_PATH] = L"\0";
+			NppChar buffer[MAX_PATH] = "\0";
 
 			int firstMatchFound = -1;
 			int lastMatchSel = -1;
@@ -683,8 +683,8 @@ intptr_t CALLBACK WindowsDlg::run_dlgProc(UINT message, WPARAM wParam, LPARAM lP
 					NativeLangSpeaker* pNativeSpeaker = (NppParameters::getInstance()).getNativeLangSpeaker();
 					const std::vector<MenuItemUnit> itemUnitArray
 					{
-						{IDM_WINDOW_COPY_NAME, pNativeSpeaker->getAttrNameStr(L"Copy Name(s)", WD_ROOTNODE, WD_MENUCOPYNAME)},
-						{IDM_WINDOW_COPY_PATH, pNativeSpeaker->getAttrNameStr(L"Copy Pathname(s)", WD_ROOTNODE, WD_MENUCOPYPATH)}
+						{IDM_WINDOW_COPY_NAME, pNativeSpeaker->getAttrNameStr("Copy Name(s)", WD_ROOTNODE, WD_MENUCOPYNAME)},
+						{IDM_WINDOW_COPY_PATH, pNativeSpeaker->getAttrNameStr("Copy Pathname(s)", WD_ROOTNODE, WD_MENUCOPYPATH)}
 					};
 					_listMenu.create(_hSelf, itemUnitArray);
 				}
@@ -791,29 +791,29 @@ BOOL WindowsDlg::onInitDialog()
 	wstring columnText;
 	NativeLangSpeaker *pNativeSpeaker = (NppParameters::getInstance()).getNativeLangSpeaker();
 
-	columnText = L"⇵ " + pNativeSpeaker->getAttrNameStr(L"Name", WD_ROOTNODE, WD_CLMNNAME);
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	columnText = "⇵ " + pNativeSpeaker->getAttrNameStr("Name", WD_ROOTNODE, WD_CLMNNAME);
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = width / 4;
 	SendMessage(_hList, LVM_INSERTCOLUMN, 0, LPARAM(&lvColumn));
 
-	columnText = L"⇵ " + pNativeSpeaker->getAttrNameStr(L"Path", WD_ROOTNODE, WD_CLMNPATH);
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	columnText = "⇵ " + pNativeSpeaker->getAttrNameStr("Path", WD_ROOTNODE, WD_CLMNPATH);
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = 300;
 	SendMessage(_hList, LVM_INSERTCOLUMN, 1, LPARAM(&lvColumn));
 
 	lvColumn.fmt = LVCFMT_CENTER;
-	columnText = L"⇵ " + pNativeSpeaker->getAttrNameStr(L"Type", WD_ROOTNODE, WD_CLMNTYPE);
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	columnText = "⇵ " + pNativeSpeaker->getAttrNameStr("Type", WD_ROOTNODE, WD_CLMNTYPE);
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = 100;
 	SendMessage(_hList, LVM_INSERTCOLUMN, 2, LPARAM(&lvColumn));
 
-	columnText = L"⇵ " + pNativeSpeaker->getAttrNameStr(L"Size", WD_ROOTNODE, WD_CLMNSIZE);
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	columnText = "⇵ " + pNativeSpeaker->getAttrNameStr("Size", WD_ROOTNODE, WD_CLMNSIZE);
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = 100;
 	SendMessage(_hList, LVM_INSERTCOLUMN, 3, LPARAM(&lvColumn));
 
-	columnText = L"⇵ " + pNativeSpeaker->getAttrNameStr(L"Modified time", WD_ROOTNODE, WD_CLMNDT);
-	lvColumn.pszText = const_cast<wchar_t*>(columnText.c_str());
+	columnText = "⇵ " + pNativeSpeaker->getAttrNameStr("Modified time", WD_ROOTNODE, WD_CLMNDT);
+	lvColumn.pszText = const_cast<NppChar*>(columnText.c_str());
 	lvColumn.cx = 120;
 	SendMessage(_hList, LVM_INSERTCOLUMN, 4, LPARAM(&lvColumn));
 
@@ -842,91 +842,91 @@ void WindowsDlg::updateColumnNames()
 	wstring columnText;
 	NativeLangSpeaker *pNativeSpeaker = (NppParameters::getInstance()).getNativeLangSpeaker();
 
-	columnText = pNativeSpeaker->getAttrNameStr(L"Name", WD_ROOTNODE, WD_CLMNNAME);
+	columnText = pNativeSpeaker->getAttrNameStr("Name", WD_ROOTNODE, WD_CLMNNAME);
 	if (_currentColumn != 0)
 	{
-		columnText = L"⇵ " + columnText;
+		columnText = "⇵ " + columnText;
 	}
 	else if (_reverseSort)
 	{
-		columnText = L"△ " + columnText;
+		columnText = "△ " + columnText;
 	}
 	else
 	{
-		columnText = L"▽ " + columnText;
+		columnText = "▽ " + columnText;
 	}
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = static_cast<int>(SendMessage(_hList, LVM_GETCOLUMNWIDTH, 0, 0));
 	SendMessage(_hList, LVM_SETCOLUMN, 0, LPARAM(&lvColumn));
 
-	columnText = pNativeSpeaker->getAttrNameStr(L"Path", WD_ROOTNODE, WD_CLMNPATH);
+	columnText = pNativeSpeaker->getAttrNameStr("Path", WD_ROOTNODE, WD_CLMNPATH);
 	if (_currentColumn != 1)
 	{
-		columnText = L"⇵ " + columnText;
+		columnText = "⇵ " + columnText;
 	}
 	else if (_reverseSort)
 	{
-		columnText = L"△ " + columnText;
+		columnText = "△ " + columnText;
 	}
 	else
 	{
-		columnText = L"▽ " + columnText;
+		columnText = "▽ " + columnText;
 	}
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = static_cast<int>(SendMessage(_hList, LVM_GETCOLUMNWIDTH, 1, 0));
 	SendMessage(_hList, LVM_SETCOLUMN, 1, LPARAM(&lvColumn));
 
 	lvColumn.fmt = LVCFMT_CENTER;
-	columnText = pNativeSpeaker->getAttrNameStr(L"Type", WD_ROOTNODE, WD_CLMNTYPE);
+	columnText = pNativeSpeaker->getAttrNameStr("Type", WD_ROOTNODE, WD_CLMNTYPE);
 	if (_currentColumn != 2)
 	{
-		columnText = L"⇵ " + columnText;
+		columnText = "⇵ " + columnText;
 	}
 	else if (_reverseSort)
 	{
-		columnText = L"△ " + columnText;
+		columnText = "△ " + columnText;
 	}
 	else
 	{
-		columnText = L"▽ " + columnText;
+		columnText = "▽ " + columnText;
 	}
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = static_cast<int>(SendMessage(_hList, LVM_GETCOLUMNWIDTH, 2, 0));
 	SendMessage(_hList, LVM_SETCOLUMN, 2, LPARAM(&lvColumn));
 
-	columnText = pNativeSpeaker->getAttrNameStr(L"Size", WD_ROOTNODE, WD_CLMNSIZE);
+	columnText = pNativeSpeaker->getAttrNameStr("Size", WD_ROOTNODE, WD_CLMNSIZE);
 	if (_currentColumn != 3)
 	{
-		columnText = L"⇵ " + columnText;
+		columnText = "⇵ " + columnText;
 	}
 	else if (_reverseSort)
 	{
-		columnText = L"△ " + columnText;
+		columnText = "△ " + columnText;
 	}
 	else
 	{
-		columnText = L"▽ " + columnText;
+		columnText = "▽ " + columnText;
 	}
-	lvColumn.pszText = const_cast<wchar_t *>(columnText.c_str());
+	lvColumn.pszText = const_cast<NppChar *>(columnText.c_str());
 	lvColumn.cx = static_cast<int>(SendMessage(_hList, LVM_GETCOLUMNWIDTH, 3, 0));
 	SendMessage(_hList, LVM_SETCOLUMN, 3, LPARAM(&lvColumn));
 
 	// Modified time
 	lvColumn.fmt = LVCFMT_LEFT;
-	columnText = pNativeSpeaker->getAttrNameStr(L"Modified time", WD_ROOTNODE, WD_CLMNDT);
+	columnText = pNativeSpeaker->getAttrNameStr("Modified time", WD_ROOTNODE, WD_CLMNDT);
 	if (_currentColumn != 4) 
 	{
-		columnText = L"⇵ " + columnText;
+		columnText = "⇵ " + columnText;
 	}
 	else if (_reverseSort) 
 	{
-		columnText = L"△ " + columnText;
+		columnText = "△ " + columnText;
 	}
 	else 
 	{
-		columnText = L"▽ " + columnText;
+		columnText = "▽ " + columnText;
 	}
-	lvColumn.pszText = const_cast<wchar_t*>(columnText.c_str());
+	lvColumn.pszText = const_cast<NppChar*>(columnText.c_str());
 	lvColumn.cx = static_cast<int>(SendMessage(_hList, LVM_GETCOLUMNWIDTH, 4, 0));
 	SendMessage(_hList, LVM_SETCOLUMN, 4, LPARAM(&lvColumn));
 }
@@ -1153,10 +1153,10 @@ void WindowsDlg::doCount()
 {
 	NativeLangSpeaker* pNativeSpeaker = (NppParameters::getInstance()).getNativeLangSpeaker();
 
-	wstring msg = pNativeSpeaker->getAttrNameStr(L"Windows", "Dialog", "Window", "title");
-	msg += L" - ";
-	msg += pNativeSpeaker->getAttrNameStr(L"Total documents: ", WD_ROOTNODE, WD_NBDOCSTOTAL);
-	msg += L" ";
+	wstring msg = pNativeSpeaker->getAttrNameStr("Windows", "Dialog", "Window", "title");
+	msg += " - ";
+	msg += pNativeSpeaker->getAttrNameStr("Total documents: ", WD_ROOTNODE, WD_NBDOCSTOTAL);
+	msg += " ";
 	msg += to_wstring(_idxMap.size());
 	SetWindowText(_hSelf,msg.c_str());
 }
@@ -1393,7 +1393,7 @@ void WindowsMenu::initPopupMenu(HMENU hMenu, DocTabView* pTab)
 			mii.fMask = MIIM_STRING | MIIM_STATE | MIIM_ID;
 
 			wstring strBuffer(BuildMenuFileName(60, static_cast<int>(pos), buf->getFileName(), !isDropListMenu));
-			std::vector<wchar_t> vBuffer(strBuffer.begin(), strBuffer.end());
+			std::vector<NppChar> vBuffer(strBuffer.begin(), strBuffer.end());
 			if (buf->isDirty()) 
 			{
 				// add a '*' after the modified tab name (like Visual Studio)

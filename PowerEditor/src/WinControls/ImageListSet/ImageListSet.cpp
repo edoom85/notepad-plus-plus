@@ -65,7 +65,7 @@ void IconList::addIcon(int iconID, int cx, int cy, int failIconID, bool isToolba
 		int userAnswer = 0;
 		if (!ignoreWarning)
 		{
-			userAnswer = NppDarkMode::darkMessageBoxW(nullptr, L"IconList::addIcon : LoadIcon() function return null.\nIgnore the error?\n\n\"Yes\": ignore the error and launch Notepad++\n\"No\": Quit Notepad++\n\"Cancel\": display all errors", std::to_wstring(iconID).c_str(), MB_YESNOCANCEL | MB_ICONWARNING);
+			userAnswer = NppDarkMode::darkMessageBoxW(nullptr, "IconList::addIcon : LoadIcon() function return null.\nIgnore the error?\n\n\"Yes\": ignore the error and launch Notepad++\n\"No\": Quit Notepad++\n\"Cancel\": display all errors", std::to_wstring(iconID).c_str(), MB_YESNOCANCEL | MB_ICONWARNING);
 			ignoreWarning = userAnswer == IDYES;
 		}
 
@@ -104,7 +104,7 @@ void IconList::addIcon(HICON hIcon) const
 		ImageList_AddIcon(_hImglst, hIcon);
 }
 
-bool IconList::changeIcon(size_t index, const wchar_t* iconLocation) const
+bool IconList::changeIcon(size_t index, const NppChar* iconLocation) const
 {
 	HICON hIcon = nullptr;
 	DPIManagerV2::loadIcon(nullptr, iconLocation, _iconSize, _iconSize, &hIcon, LR_LOADFROMFILE | LR_LOADMAP3DCOLORS | LR_LOADTRANSPARENT);

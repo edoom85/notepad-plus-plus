@@ -179,15 +179,15 @@ void NativeLangSpeaker::init(NppXml::Document nativeLangDocRoot, bool loadIfEngl
 	}
 }
 
-std::wstring NativeLangSpeaker::getSubMenuEntryName(const char* nodeName) const
+NppString NativeLangSpeaker::getSubMenuEntryName(const char* nodeName) const
 {
-	if (!_nativeLang) return L"";
+	if (!_nativeLang) return "";
 	NppXml::Element mainMenu = NppXml::firstChildElement(_nativeLang, "Menu");
-	if (!mainMenu) return L"";
+	if (!mainMenu) return "";
 	mainMenu = NppXml::firstChildElement(mainMenu, "Main");
-	if (!mainMenu) return L"";
+	if (!mainMenu) return "";
 	NppXml::Element entriesRoot = NppXml::firstChildElement(mainMenu, "SubEntries");
-	if (!entriesRoot) return L"";
+	if (!entriesRoot) return "";
 
 	for (NppXml::Element childNode = NppXml::firstChildElement(entriesRoot, "Item");
 		childNode;
@@ -203,7 +203,7 @@ std::wstring NativeLangSpeaker::getSubMenuEntryName(const char* nodeName) const
 			}
 		}
 	}
-	return L"";
+	return "";
 }
 
 static void purifyMenuString(std::string& s)
@@ -246,7 +246,7 @@ static void purifyMenuString(std::string& s)
 
 }
 
-std::wstring NativeLangSpeaker::getNativeLangMenuString(int itemID, const std::wstring& inCaseOfFailureStr, bool removeMarkAnd) const
+NppString NativeLangSpeaker::getNativeLangMenuString(int itemID, const NppString& inCaseOfFailureStr, bool removeMarkAnd) const
 {
 	if (!_nativeLang)
 		return inCaseOfFailureStr;
@@ -281,19 +281,19 @@ std::wstring NativeLangSpeaker::getNativeLangMenuString(int itemID, const std::w
 	return inCaseOfFailureStr;
 }
 
-std::wstring NativeLangSpeaker::getShortcutNameString(int itemID) const
+NppString NativeLangSpeaker::getShortcutNameString(int itemID) const
 {
 	if (!_nativeLang)
-		return L"";
+		return "";
 
 	NppXml::Element node = NppXml::firstChildElement(_nativeLang, "Dialog");
-	if (!node) return L"";
+	if (!node) return "";
 
 	node = NppXml::firstChildElement(node, "ShortcutMapper");
-	if (!node) return L"";
+	if (!node) return "";
 
 	node = NppXml::firstChildElement(node, "MainCommandNames");
-	if (!node) return L"";
+	if (!node) return "";
 
 	for (NppXml::Element childNode = NppXml::firstChildElement(node, "Item");
 		childNode;
@@ -308,7 +308,7 @@ std::wstring NativeLangSpeaker::getShortcutNameString(int itemID) const
 			}
 		}
 	}
-	return L"";
+	return "";
 }
 
 std::string NativeLangSpeaker::getLocalizedStrFromID(const char* strID, const std::string& defaultString) const
@@ -331,7 +331,7 @@ std::string NativeLangSpeaker::getLocalizedStrFromID(const char* strID, const st
 	return value;
 }
 
-std::wstring NativeLangSpeaker::getLocalizedStrFromID(const char* strID, const std::wstring& defaultString) const
+NppString NativeLangSpeaker::getLocalizedStrFromID(const char* strID, const NppString& defaultString) const
 {
 	const std::string defaultStringA = wstring2string(defaultString, _nativeLangEncoding);
 	return string2wstring(NativeLangSpeaker::getLocalizedStrFromID(strID, defaultStringA), _nativeLangEncoding);
@@ -340,7 +340,7 @@ std::wstring NativeLangSpeaker::getLocalizedStrFromID(const char* strID, const s
 
 // Get string from map.
 // If string not found, get string from menu, then put it into map for the next use.
-void NativeLangSpeaker::getMainMenuEntryName(std::wstring& dest, HMENU hMenu, const char* menuId, const wchar_t* defaultDest)
+void NativeLangSpeaker::getMainMenuEntryName(NppString& dest, HMENU hMenu, const char* menuId, const NppChar* defaultDest)
 {
 	const auto iter = _shortcutMenuEntryNameMap.find(menuId);
 	if (iter == _shortcutMenuEntryNameMap.end())
@@ -348,7 +348,7 @@ void NativeLangSpeaker::getMainMenuEntryName(std::wstring& dest, HMENU hMenu, co
 		const MenuPosition& menuPos = MenuPosition::getMenuPosition(menuId);
 		if (menuPos._x != -1 && menuPos._y == -1 && menuPos._z == -1)
 		{
-			wchar_t str[MAX_PATH]{};
+			NppChar str[MAX_PATH]{};
 			GetMenuString(hMenu, menuPos._x, str, MAX_PATH, MF_BYPOSITION);
 			dest = str;
 			dest.erase(std::remove(dest.begin(), dest.end(), '&'), dest.end());
@@ -405,7 +405,7 @@ void NativeLangSpeaker::changeMenuLang(HMENU menuHandle) const
 			if (menuPos._x != -1)
 			{
 				const char* name = NppXml::attribute(childNode, "name");
-				const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 				::ModifyMenu(menuHandle, menuPos._x, MF_BYPOSITION, 0, nameW);
 			}
 		}
@@ -419,7 +419,7 @@ void NativeLangSpeaker::changeMenuLang(HMENU menuHandle) const
 		const int id = NppXml::intAttribute(childNode, "id", 0);
 		const char* name = NppXml::attribute(childNode, "name");
 
-		const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+		const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 		::ModifyMenu(menuHandle, id, MF_BYCOMMAND, id, nameW);
 	}
 
@@ -461,7 +461,7 @@ void NativeLangSpeaker::changeMenuLang(HMENU menuHandle) const
 			pos = z;
 		}
 
-		const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+		const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 		::ModifyMenu(hMenu, pos, MF_BYPOSITION, 0, nameW);
 	}
 }
@@ -504,7 +504,7 @@ void NativeLangSpeaker::changeLangTabContextMenu(HMENU hCM) const
 						continue;
 
 					const char* pName = NppXml::attribute(childNode, "name");
-					const wchar_t* pNameW = wmc.char2wchar(pName, _nativeLangEncoding);
+					const NppChar* pNameW = wmc.char2wchar(pName, _nativeLangEncoding);
 
 					if (cmd > nbSubEntry) // menu item CMD
 					{
@@ -531,7 +531,7 @@ void NativeLangSpeaker::changeLangTabContextMenu(HMENU hCM) const
 	}
 }
 
-void NativeLangSpeaker::getAlternativeNameFromTabContextMenu(std::wstring& output, int cmdID, bool isAlternative, const std::wstring& defaultValue) const
+void NativeLangSpeaker::getAlternativeNameFromTabContextMenu(NppString& output, int cmdID, bool isAlternative, const NppString& defaultValue) const
 {
 	if (_nativeLang)
 	{
@@ -593,14 +593,14 @@ void NativeLangSpeaker::changeLangTabDropContextMenu(HMENU hCM) const
 		WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
 		if (goToViewA && goToViewA[0])
 		{
-			const wchar_t* goToViewG = wmc.char2wchar(goToViewA, _nativeLangEncoding);
+			const NppChar* goToViewG = wmc.char2wchar(goToViewA, _nativeLangEncoding);
 			int cmdID = ::GetMenuItemID(hCM, POS_GO2VIEW);
 			::ModifyMenu(hCM, POS_GO2VIEW, MF_BYPOSITION | MF_STRING, cmdID, goToViewG);
 		}
 
 		if (cloneToViewA && cloneToViewA[0])
 		{
-			const wchar_t* cloneToViewG = wmc.char2wchar(cloneToViewA, _nativeLangEncoding);
+			const NppChar* cloneToViewG = wmc.char2wchar(cloneToViewA, _nativeLangEncoding);
 			int cmdID = ::GetMenuItemID(hCM, POS_CLONE2VIEW);
 			::ModifyMenu(hCM, POS_CLONE2VIEW, MF_BYPOSITION | MF_STRING, cmdID, cloneToViewG);
 		}
@@ -627,7 +627,7 @@ void NativeLangSpeaker::changeLangTrayIconContexMenu(HMENU hCM) const
 		const char* name = NppXml::attribute(childNode, "name");
 		if (id >= 0 && (name && name[0]))
 		{
-			const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+			const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 			::ModifyMenu(hCM, id, MF_BYCOMMAND, id, nameW);
 		}
 	}
@@ -652,7 +652,7 @@ void NativeLangSpeaker::changeConfigLang(HWND hDlg) const
 
 	if ((titre && titre[0]) && hDlg)
 	{
-		const wchar_t* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		const NppChar* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
 		::SetWindowText(hDlg, nameW);
 	}
 	for (NppXml::Element childNode = NppXml::firstChildElement(styleConfDlgNode, "Item");
@@ -666,7 +666,7 @@ void NativeLangSpeaker::changeConfigLang(HWND hDlg) const
 			HWND hItem = ::GetDlgItem(hDlg, id);
 			if (hItem)
 			{
-				const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 				::SetWindowText(hItem, nameW);
 				resizeCheckboxRadioBtn(hItem);
 			}
@@ -685,7 +685,7 @@ void NativeLangSpeaker::changeConfigLang(HWND hDlg) const
 			HWND hItem = ::GetDlgItem(hDlg, id);
 			if (hItem)
 			{
-				const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 				::SetWindowText(hItem, nameW);
 				resizeCheckboxRadioBtn(hItem);
 			}
@@ -709,7 +709,7 @@ void NativeLangSpeaker::changeStyleCtrlsLang(HWND hDlg, int* idArray, const char
 			hItem = ::GetDlgItem(hDlg, idArray[i]);
 			if (hItem)
 			{
-				const wchar_t* nameW = wmc.char2wchar(translatedText[i], _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(translatedText[i], _nativeLangEncoding);
 				::SetWindowText(hItem, nameW);
 			}
 		}
@@ -734,7 +734,7 @@ void NativeLangSpeaker::changeUserDefineLangPopupDlg(HWND hDlg) const
 	const char* titre = NppXml::attribute(stylerDialogNode, "title");
 	if (titre && titre[0])
 	{
-		const wchar_t* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		const NppChar* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
 		::SetWindowText(hDlg, nameW);
 	}
 	for (NppXml::Element childNode = NppXml::firstChildElement(stylerDialogNode, "Item");
@@ -748,7 +748,7 @@ void NativeLangSpeaker::changeUserDefineLangPopupDlg(HWND hDlg) const
 			HWND hItem = ::GetDlgItem(hDlg, id);
 			if (hItem)
 			{
-				const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 				::SetWindowText(hItem, nameW);
 				resizeCheckboxRadioBtn(hItem);
 			}
@@ -774,7 +774,7 @@ void NativeLangSpeaker::changeUserDefineLang(UserDefineDialog* userDefineDlg) co
 	const char* titre = NppXml::attribute(userDefineDlgNode, "title");
 	if (titre && titre[0])
 	{
-		const wchar_t* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		const NppChar* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
 		::SetWindowText(hDlg, nameW);
 	}
 
@@ -791,12 +791,12 @@ void NativeLangSpeaker::changeUserDefineLang(UserDefineDialog* userDefineDlg) co
 			{
 				if (id == IDC_DOCK_BUTTON && userDefineDlg->isDocked())
 				{
-					std::wstring undockStr = getAttrNameByIdStr(L"Undock", userDefineDlgNode, std::to_string(IDC_UNDOCK_BUTTON).c_str());
+					NppString undockStr = getAttrNameByIdStr("Undock", userDefineDlgNode, std::to_string(IDC_UNDOCK_BUTTON).c_str());
 					::SetWindowText(hItem, undockStr.c_str());
 				}
 				else
 				{
-					const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+					const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 					::SetWindowText(hItem, nameW);
 					resizeCheckboxRadioBtn(hItem);
 				}
@@ -822,7 +822,7 @@ void NativeLangSpeaker::changeUserDefineLang(UserDefineDialog* userDefineDlg) co
 			titre = NppXml::attribute(node, "title");
 			if (titre && titre[0])
 			{
-				const wchar_t* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
 				userDefineDlg->setTabName(i, nameW);
 			}
 			for (NppXml::Element childNode = NppXml::firstChildElement(node, "Item");
@@ -840,7 +840,7 @@ void NativeLangSpeaker::changeUserDefineLang(UserDefineDialog* userDefineDlg) co
 					HWND hItem = ::GetDlgItem(hDlgArrary[i], id);
 					if (hItem)
 					{
-						const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+						const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 						::SetWindowText(hItem, nameW);
 						resizeCheckboxRadioBtn(hItem);
 					}
@@ -917,7 +917,7 @@ void NativeLangSpeaker::changePluginsAdminDlgLang(PluginsAdminDlg& pluginsAdminD
 					const char* name = NppXml::attribute(ColumnPluginNode, "name");
 					if (name && name[0])
 					{
-						const std::wstring nameW = string2wstring(name, _nativeLangEncoding);
+						const NppString nameW = string2wstring(name, _nativeLangEncoding);
 						pluginsAdminDlg.changeColumnName(COLUMN_PLUGIN, nameW.c_str());
 					}
 				}
@@ -928,7 +928,7 @@ void NativeLangSpeaker::changePluginsAdminDlgLang(PluginsAdminDlg& pluginsAdminD
 					const char* name = NppXml::attribute(ColumnVersionNode, "name");
 					if (name && name[0])
 					{
-						const std::wstring nameW = string2wstring(name, _nativeLangEncoding);
+						const NppString nameW = string2wstring(name, _nativeLangEncoding);
 						pluginsAdminDlg.changeColumnName(COLUMN_VERSION, nameW.c_str());
 					}
 				}
@@ -941,27 +941,27 @@ void NativeLangSpeaker::changePluginsAdminDlgLang(PluginsAdminDlg& pluginsAdminD
 
 				if (titre1 && titre1[0])
 				{
-					std::wstring nameW = string2wstring(titre1, _nativeLangEncoding);
+					NppString nameW = string2wstring(titre1, _nativeLangEncoding);
 					pluginsAdminDlg.changeTabName(AVAILABLE_LIST, nameW.data());
 				}
 				if (titre2 && titre2[0])
 				{
-					std::wstring nameW = string2wstring(titre2, _nativeLangEncoding);
+					NppString nameW = string2wstring(titre2, _nativeLangEncoding);
 					pluginsAdminDlg.changeTabName(UPDATES_LIST, nameW.data());
 				}
 				if (titre3 && titre3[0])
 				{
-					std::wstring nameW = string2wstring(titre3, _nativeLangEncoding);
+					NppString nameW = string2wstring(titre3, _nativeLangEncoding);
 					pluginsAdminDlg.changeTabName(INSTALLED_LIST, nameW.data());
 				}
 				if (titre4 && titre4[0])
 				{
-					std::wstring nameW = string2wstring(titre4, _nativeLangEncoding);
+					NppString nameW = string2wstring(titre4, _nativeLangEncoding);
 					pluginsAdminDlg.changeTabName(INCOMPATIBLE_LIST, nameW.data());
 				}
 				if (titre5 && titre5[0])
 				{
-					std::wstring nameW = string2wstring(titre5, _nativeLangEncoding);
+					NppString nameW = string2wstring(titre5, _nativeLangEncoding);
 					pluginsAdminDlg.changeTabName(DISABLED_LIST, nameW.data());
 				}
 			}
@@ -982,168 +982,168 @@ void NativeLangSpeaker::changePreferenceDlgLang(PreferenceDlg& preference) const
 	changeDlgLang(preference._generalSubDlg.getHSelf(), "Global", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Global", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Global", nameW);
 	}
 
 	changeDlgLang(preference._toolbarSubDlg.getHSelf(), "Toolbar", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Toolbar", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Toolbar", nameW);
 	}
 
 	changeDlgLang(preference._tabbarSubDlg.getHSelf(), "Tabbar", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Tabbar", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Tabbar", nameW);
 	}
 
 	changeDlgLang(preference._editingSubDlg.getHSelf(), "Scintillas", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Scintillas", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Scintillas", nameW);
 	}
 
 	changeDlgLang(preference._editing2SubDlg.getHSelf(), "Scintillas2", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Scintillas2", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Scintillas2", nameW);
 	}
 
 	changeDlgLang(preference._darkModeSubDlg.getHSelf(), "DarkMode", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"DarkMode", nameW);
+		const NppChar* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("DarkMode", nameW);
 	}
 
 	changeDlgLang(preference._marginsBorderEdgeSubDlg.getHSelf(), "MarginsBorderEdge", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"MarginsBorderEdge", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("MarginsBorderEdge", nameW);
 	}
 
 	changeDlgLang(preference._newDocumentSubDlg.getHSelf(), "NewDoc", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"NewDoc", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("NewDoc", nameW);
 	}
 
 	changeDlgLang(preference._defaultDirectorySubDlg.getHSelf(), "DefaultDir", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"DefaultDir", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("DefaultDir", nameW);
 	}
 
 	changeDlgLang(preference._recentFilesHistorySubDlg.getHSelf(), "RecentFilesHistory", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"RecentFilesHistory", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("RecentFilesHistory", nameW);
 	}
 
 	changeDlgLang(preference._fileAssocDlg.getHSelf(), "FileAssoc", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"FileAssoc", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("FileAssoc", nameW);
 	}
 
 	changeDlgLang(preference._languageSubDlg.getHSelf(), "Language", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Language", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Language", nameW);
 	}
 
 	changeDlgLang(preference._indentationSubDlg.getHSelf(), "Indentation", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Indentation", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Indentation", nameW);
 	}
 
 	changeDlgLang(preference._highlightingSubDlg.getHSelf(), "Highlighting", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Highlighting", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Highlighting", nameW);
 	}
 
 	changeDlgLang(preference._printSubDlg.getHSelf(), "Print", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Print", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Print", nameW);
 	}
 
 	changeDlgLang(preference._searchingSubDlg.getHSelf(), "Searching", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Searching", nameW);
+		const NppChar* nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Searching", nameW);
 	}
 
 	changeDlgLang(preference._miscSubDlg.getHSelf(), "MISC", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"MISC", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("MISC", nameW);
 	}
 	changeDlgLang(preference._backupSubDlg.getHSelf(), "Backup", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Backup", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Backup", nameW);
 	}
 
 	changeDlgLang(preference._autoCompletionSubDlg.getHSelf(), "AutoCompletion", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"AutoCompletion", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("AutoCompletion", nameW);
 	}
 
 	changeDlgLang(preference._multiInstanceSubDlg.getHSelf(), "MultiInstance", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"MultiInstance", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("MultiInstance", nameW);
 	}
 
 	changeDlgLang(preference._delimiterSubDlg.getHSelf(), "Delimiter", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Delimiter", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Delimiter", nameW);
 	}
 
 	changeDlgLang(preference._performanceSubDlg.getHSelf(), "Performance", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Performance", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Performance", nameW);
 	}
 
 	changeDlgLang(preference._cloudAndLinkSubDlg.getHSelf(), "Cloud", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"Cloud", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("Cloud", nameW);
 	}
 
 	changeDlgLang(preference._searchEngineSubDlg.getHSelf(), "SearchEngine", titre, titreMaxSize);
 	if (titre[0] != '\0')
 	{
-		const wchar_t *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
-		preference.renameDialogTitle(L"SearchEngine", nameW);
+		const NppChar *nameW = wmc.char2wchar(titre, _nativeLangEncoding);
+		preference.renameDialogTitle("SearchEngine", nameW);
 	}
 
 	preference._darkModeSubDlg.destroyResetMenu();
@@ -1151,7 +1151,7 @@ void NativeLangSpeaker::changePreferenceDlgLang(PreferenceDlg& preference) const
 	preference.setListSelection(currentSel);
 }
 
-std::wstring NativeLangSpeaker::getShortcutMapperLangStr(const char* nodeName, const wchar_t* defaultStr) const
+NppString NativeLangSpeaker::getShortcutMapperLangStr(const char* nodeName, const NppChar* defaultStr) const
 {
 	if (!_nativeLang) return defaultStr;
 
@@ -1188,7 +1188,7 @@ NppXml::Element NativeLangSpeaker::searchDlgNode(NppXml::Element node, const cha
 	return {};
 }
 
-bool NativeLangSpeaker::getDoSaveOrNotStrings(std::wstring& title, std::wstring& msg) const
+bool NativeLangSpeaker::getDoSaveOrNotStrings(NppString& title, NppString& msg) const
 {
 	if (!_nativeLang) return false;
 
@@ -1202,7 +1202,7 @@ bool NativeLangSpeaker::getDoSaveOrNotStrings(std::wstring& title, std::wstring&
 	if (!title2set || !title2set[0]) return false;
 
 	WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
-	const wchar_t* titleW = wmc.char2wchar(title2set, _nativeLangEncoding);
+	const NppChar* titleW = wmc.char2wchar(title2set, _nativeLangEncoding);
 	title = titleW;
 
 	for (NppXml::Element childNode = NppXml::firstChildElement(dlgNode, "Item");
@@ -1215,7 +1215,7 @@ bool NativeLangSpeaker::getDoSaveOrNotStrings(std::wstring& title, std::wstring&
 		{
 			if (id == IDC_DOSAVEORNOTTEXT)
 			{
-				const wchar_t* msgW = wmc.char2wchar(name, _nativeLangEncoding);
+				const NppChar* msgW = wmc.char2wchar(name, _nativeLangEncoding);
 				msg = msgW;
 
 				return true;
@@ -1244,7 +1244,7 @@ bool NativeLangSpeaker::changeDlgLang(HWND hDlg, const char* dlgTagName, char* t
 	const char* titleToset = NppXml::attribute(dlgNode, titleOutTag && titleOutTag[0] ? titleOutTag : "title");
 	if ((titleToset && titleToset[0]) && hDlg)
 	{
-		const wchar_t* nameW = wmc.char2wchar(titleToset, _nativeLangEncoding);
+		const NppChar* nameW = wmc.char2wchar(titleToset, _nativeLangEncoding);
 		::SetWindowText(hDlg, nameW);
 
 		if (titleOut && titleOutMaxSize)
@@ -1263,7 +1263,7 @@ bool NativeLangSpeaker::changeDlgLang(HWND hDlg, const char* dlgTagName, char* t
 			HWND hItem = ::GetDlgItem(hDlg, id);
 			if (hItem)
 			{
-				const wchar_t* nameW = wmc.char2wchar(name, _nativeLangEncoding);
+				const NppChar* nameW = wmc.char2wchar(name, _nativeLangEncoding);
 				::SetWindowText(hItem, nameW);
 				resizeCheckboxRadioBtn(hItem);
 			}
@@ -1275,7 +1275,7 @@ bool NativeLangSpeaker::changeDlgLang(HWND hDlg, const char* dlgTagName, char* t
 		childNode;
 		childNode = NppXml::nextSiblingElement(childNode, "ComboBox"))
 	{
-		std::vector<std::wstring> comboElms;
+		std::vector<NppString> comboElms;
 		const int id = NppXml::intAttribute(childNode, "id", -1);
 		HWND hCombo = ::GetDlgItem(hDlg, id);
 		if (!hCombo) return false;
@@ -1310,10 +1310,10 @@ bool NativeLangSpeaker::changeDlgLang(HWND hDlg, const char* dlgTagName, char* t
 	return true;
 }
 
-bool NativeLangSpeaker::getMsgBoxLang(const char* msgBoxTagName, std::wstring& title, std::wstring& message) const
+bool NativeLangSpeaker::getMsgBoxLang(const char* msgBoxTagName, NppString& title, NppString& message) const
 {
-	title = L"";
-	message = L"";
+	title = "";
+	message = "";
 
 	if (!_nativeLang) return false;
 
@@ -1337,7 +1337,7 @@ bool NativeLangSpeaker::getMsgBoxLang(const char* msgBoxTagName, std::wstring& t
 	return false;
 }
 
-std::wstring NativeLangSpeaker::getDlgLangMenuStr(const char* firstLevelNodeName, const char* secondLevelNodeName, int cmdID, const wchar_t* defaultStr) const
+NppString NativeLangSpeaker::getDlgLangMenuStr(const char* firstLevelNodeName, const char* secondLevelNodeName, int cmdID, const NppChar* defaultStr) const
 {
 	if (!_nativeLang) return defaultStr;
 
@@ -1375,7 +1375,7 @@ std::wstring NativeLangSpeaker::getDlgLangMenuStr(const char* firstLevelNodeName
 	return defaultStr;
 }
 
-std::wstring NativeLangSpeaker::getCmdLangStr(const std::vector<const char*>& nodeNames, int cmdID, const wchar_t* defaultStr) const
+NppString NativeLangSpeaker::getCmdLangStr(const std::vector<const char*>& nodeNames, int cmdID, const NppChar* defaultStr) const
 {
 	if (!_nativeLang) return defaultStr;
 	NppXml::Element targetNode = NppXml::firstChildElement(_nativeLang, nodeNames.at(0));
@@ -1417,7 +1417,7 @@ std::wstring NativeLangSpeaker::getCmdLangStr(const std::vector<const char*>& no
 	return defaultStr;
 }
 
-std::wstring NativeLangSpeaker::getProjectPanelLangMenuStr(const char* nodeName, int cmdID, const wchar_t* defaultStr) const
+NppString NativeLangSpeaker::getProjectPanelLangMenuStr(const char* nodeName, int cmdID, const NppChar* defaultStr) const
 {
 	if (!_nativeLang) return defaultStr;
 
@@ -1450,7 +1450,7 @@ std::wstring NativeLangSpeaker::getProjectPanelLangMenuStr(const char* nodeName,
 	return defaultStr;
 }
 
-std::wstring NativeLangSpeaker::getAttrNameStr(const wchar_t* defaultStr, const char* nodeL1Name, const char* nodeL2Name, const char* nodeL3Name) const
+NppString NativeLangSpeaker::getAttrNameStr(const NppChar* defaultStr, const char* nodeL1Name, const char* nodeL2Name, const char* nodeL3Name) const
 {
 	if (!_nativeLang) return defaultStr;
 
@@ -1469,7 +1469,7 @@ std::wstring NativeLangSpeaker::getAttrNameStr(const wchar_t* defaultStr, const 
 	return defaultStr;
 }
 
-std::wstring NativeLangSpeaker::getAttrNameByIdStr(const wchar_t* defaultStr, NppXml::Element targetNode, const char* nodeL1Value, const char* nodeL1Name, const char* nodeL2Name)
+NppString NativeLangSpeaker::getAttrNameByIdStr(const NppChar* defaultStr, NppXml::Element targetNode, const char* nodeL1Value, const char* nodeL1Name, const char* nodeL2Name)
 {
 	if (!targetNode) return defaultStr;
 
@@ -1490,33 +1490,33 @@ std::wstring NativeLangSpeaker::getAttrNameByIdStr(const wchar_t* defaultStr, Np
 	return defaultStr;
 }
 
-int NativeLangSpeaker::messageBox(const char* msgBoxTagName, HWND hWnd, const wchar_t* defaultMessage, const wchar_t* defaultTitle, int msgBoxType, int intInfo, const wchar_t* strInfo) const
+int NativeLangSpeaker::messageBox(const char* msgBoxTagName, HWND hWnd, const NppChar* defaultMessage, const NppChar* defaultTitle, int msgBoxType, int intInfo, const NppChar* strInfo) const
 {
 	if (NppParameters::getInstance().isEndSessionCritical())
 		return IDCANCEL; // simulate Esc-key or Cancel-button as there should not be any big delay / code-flow block
 
-	std::wstring msg;
-	std::wstring title;
+	NppString msg;
+	NppString title;
 	if (!getMsgBoxLang(msgBoxTagName, title, msg))
 	{
 		title = defaultTitle;
 		msg = defaultMessage;
 	}
-	title = stringReplace(title, L"$INT_REPLACE$", std::to_wstring(intInfo));
-	msg = stringReplace(msg, L"$INT_REPLACE$", std::to_wstring(intInfo));
+	title = stringReplace(title, "$INT_REPLACE$", std::to_wstring(intInfo));
+	msg = stringReplace(msg, "$INT_REPLACE$", std::to_wstring(intInfo));
 	if (strInfo)
 	{
-		title = stringReplace(title, L"$STR_REPLACE$", strInfo);
-		msg = stringReplace(msg, L"$STR_REPLACE$", strInfo);
+		title = stringReplace(title, "$STR_REPLACE$", strInfo);
+		msg = stringReplace(msg, "$STR_REPLACE$", strInfo);
 	}
 	if (_isRTL)
 	{
 		msgBoxType |= MB_RTLREADING | MB_RIGHT;
 	}
 
-	if (title.empty() || title == L"0")
+	if (title.empty() || title == "0")
 	{
-		title = getLocalizedStrFromID("common-error", L"Error");
+		title = getLocalizedStrFromID("common-error", "Error");
 	}
 
 	return NppDarkMode::darkMessageBoxW(hWnd, msg.c_str(), title.c_str(), msgBoxType);
@@ -1527,7 +1527,7 @@ int NativeLangSpeaker::messageBox(const char* msgBoxTagName, HWND hWnd, const wc
 void NativeLangSpeaker::resizeCheckboxRadioBtn(HWND hWnd)
 {
 	static constexpr size_t classNameLen = 32;
-	wchar_t className[classNameLen]{};
+	NppChar className[classNameLen]{};
 	::GetClassNameW(hWnd, className, classNameLen);
 	if (wcscmp(className, WC_BUTTON) == 0)
 	{

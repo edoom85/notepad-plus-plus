@@ -66,7 +66,7 @@ public:
 	DockedWidgetData* createDockedWidget(const DockedWidgetData& data);
 	void removeDockedWidget(const DockedWidgetData& data);
 	DockedWidgetData* findDockedWidgetByWnd(HWND hClient);
-	DockedWidgetData* findDockedWidgetByName(wchar_t* pszName);
+	DockedWidgetData* findDockedWidgetByName(NppChar* pszName);
 
 	void showDockedWidget(DockedWidgetData *pTbData, BOOL state);
 
@@ -189,7 +189,7 @@ private:
 
 	// caption params
 	BOOL _isTopCaption = CAPTION_TOP;
-	std::wstring _pszCaption;
+	NppString _pszCaption;
 
 	BOOL _isMouseDown = FALSE;
 	BOOL _isMouseClose = FALSE;

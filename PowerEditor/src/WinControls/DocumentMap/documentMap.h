@@ -20,7 +20,7 @@
 #include "DockingDlgInterface.h"
 #include "documentMap_rc.h"
 
-#define DM_PANELTITLE     L"Document Map"
+#define DM_PANELTITLE     "Document Map"
 
 class ScintillaEditView;
 class Buffer;
@@ -143,7 +143,7 @@ private:
 	// for needToRecomputeWith function
 	intptr_t _displayZoom = -1;
 	intptr_t _displayWidth = 0;
-	std::wstring id4dockingCont = DM_NOFOCUSWHILECLICKINGCAPTION;
+	NppString id4dockingCont = DM_NOFOCUSWHILECLICKINGCAPTION;
 
 	using DockingDlgInterface::init;
 	using StaticDialog::create;

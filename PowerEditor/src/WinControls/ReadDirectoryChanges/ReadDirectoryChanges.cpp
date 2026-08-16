@@ -74,7 +74,7 @@ void CReadDirectoryChanges::Terminate()
 	}
 }
 
-void CReadDirectoryChanges::AddDirectory( LPCTSTR szDirectory, BOOL bWatchSubtree, DWORD dwNotifyFilter, DWORD dwBufferSize )
+void CReadDirectoryChanges::AddDirectory( const NppChar* szDirectory, BOOL bWatchSubtree, DWORD dwNotifyFilter, DWORD dwBufferSize )
 {
 	if (!m_hThread)
 		Init();
@@ -86,13 +86,13 @@ void CReadDirectoryChanges::AddDirectory( LPCTSTR szDirectory, BOOL bWatchSubtre
 	QueueUserAPC(CReadChangesServer::AddDirectoryProc, m_hThread, (ULONG_PTR)pRequest);
 }
 
-void CReadDirectoryChanges::Push(DWORD dwAction, std::wstring& wstrFilename)
+void CReadDirectoryChanges::Push(DWORD dwAction, NppString& wstrFilename)
 {
 	TDirectoryChangeNotification dirChangeNotif = TDirectoryChangeNotification(dwAction, wstrFilename);
 	m_Notifications.push(dirChangeNotif);
 }
 
-bool  CReadDirectoryChanges::Pop(DWORD& dwAction, std::wstring& wstrFilename)
+bool  CReadDirectoryChanges::Pop(DWORD& dwAction, NppString& wstrFilename)
 {
 	TDirectoryChangeNotification pair;
 	if (!m_Notifications.pop(pair))

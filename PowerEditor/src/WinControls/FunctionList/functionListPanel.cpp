@@ -52,10 +52,10 @@ FunctionListPanel::~FunctionListPanel()
 	_iconListVector.clear();
 }
 
-void FunctionListPanel::addEntry(const wchar_t *nodeName, const wchar_t *displayText, size_t pos)
+void FunctionListPanel::addEntry(const NppChar *nodeName, const NppChar *displayText, size_t pos)
 {
 	HTREEITEM itemParent = NULL;
-	std::wstring posStr = std::to_wstring(pos);
+	NppString posStr = std::to_wstring(pos);
 
 	HTREEITEM root = _treeView.getRoot();
 
@@ -86,7 +86,7 @@ void FunctionListPanel::removeAllEntries()
 	_treeView.removeAllItems();
 }
 
-void FunctionListPanel::addInStateArray(TreeStateNode tree2Update, const wchar_t *searchText, bool isSorted)
+void FunctionListPanel::addInStateArray(TreeStateNode tree2Update, const NppChar *searchText, bool isSorted)
 {
 	bool found = false;
 	for (size_t i = 0, len = _treeParams.size(); i < len; ++i)
@@ -127,7 +127,7 @@ void FunctionListPanel::sortOrUnsort()
 		_pTreeView->sort(_pTreeView->getRoot(), true);
 	else
 	{
-		wchar_t text2search[MAX_PATH] = { '\0' };
+		NppChar text2search[MAX_PATH] = { '\0' };
 		::SendMessage(_hSearchEdit, WM_GETTEXT, MAX_PATH, reinterpret_cast<LPARAM>(text2search));
 
 		if (text2search[0] == '\0') // main view
@@ -142,9 +142,9 @@ void FunctionListPanel::sortOrUnsort()
 				return;
 
 			_treeViewSearchResult.removeAllItems();
-			const wchar_t *fn = ((*_ppEditView)->getCurrentBuffer())->getFileName();
+			const NppChar *fn = ((*_ppEditView)->getCurrentBuffer())->getFileName();
 
-			wstring* invalidValueStr = new wstring(L"-1");
+			wstring* invalidValueStr = new wstring("-1");
 			_posStrs.push_back(invalidValueStr);
 			LPARAM lParamInvalidPosStr = reinterpret_cast<LPARAM>(invalidValueStr);
 			_treeViewSearchResult.addItem(fn, NULL, INDEX_ROOT, lParamInvalidPosStr);
@@ -174,20 +174,20 @@ int CALLBACK FunctionListPanel::categorySortFunc(LPARAM lParam1, LPARAM lParam2,
 bool FunctionListPanel::serialize(const wstring & outputFilename)
 {
 	Buffer* currentBuf = (*_ppEditView)->getCurrentBuffer();
-	const wchar_t* fileNameLabel = currentBuf->getFileName();
+	const NppChar* fileNameLabel = currentBuf->getFileName();
 
 	wstring fname2write;
 	if (outputFilename.empty()) // if outputFilename is not given, get the current file path by adding the file extension
 	{
-		const wchar_t *fullFilePath = currentBuf->getFullPathName();
+		const NppChar *fullFilePath = currentBuf->getFullPathName();
 
 		// Export function list from an existing file
 		bool exportFuncntionList = (NppParameters::getInstance()).doFunctionListExport();
 		if (exportFuncntionList && doesFileExist(fullFilePath))
 		{
 			fname2write = fullFilePath;
-			fname2write += L".result";
-			fname2write += L".json";
+			fname2write += ".result";
+			fname2write += ".json";
 		}
 		else
 			return false;
@@ -260,35 +260,35 @@ void FunctionListPanel::reload()
 	bool isOK = _treeView.retrieveFoldingStateTo(currentTree, _treeView.getRoot());
 	if (isOK)
 	{
-		wchar_t text2Search[MAX_PATH] = { '\0' };
+		NppChar text2Search[MAX_PATH] = { '\0' };
 		::SendMessage(_hSearchEdit, WM_GETTEXT, MAX_PATH, reinterpret_cast<LPARAM>(text2Search));
 		bool isSorted =  shouldSort();
 		addInStateArray(currentTree, text2Search, isSorted);
 	}
 	removeAllEntries();
-	::SendMessage(_hSearchEdit, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(L""));
+	::SendMessage(_hSearchEdit, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(""));
 	setSort(false);
 
 	_foundFuncInfos.clear();
 
 	Buffer* currentBuf = (*_ppEditView)->getCurrentBuffer();
-	const wchar_t *fn = currentBuf->getFileName();
+	const NppChar *fn = currentBuf->getFileName();
 	LangType langID = currentBuf->getLangType();
 	if (langID == L_JS_EMBEDDED)
 		langID = L_JAVASCRIPT;
 
-	const wchar_t *udln = NULL;
+	const NppChar *udln = NULL;
 	if (langID == L_USER)
 	{
 		udln = currentBuf->getUserDefineLangName();
 	}
 
-	const wchar_t* ext = ::PathFindExtension(fn);
+	const NppChar* ext = ::PathFindExtension(fn);
 
 	bool parsedOK = _funcParserMgr.parse(_foundFuncInfos, AssociationInfo(-1, langID, ext, udln));
 	if (parsedOK)
 	{
-		wstring* invalidValueStr = new wstring(L"-1");
+		wstring* invalidValueStr = new wstring("-1");
 		_posStrs.push_back(invalidValueStr);
 		LPARAM lParamInvalidPosStr = reinterpret_cast<LPARAM>(invalidValueStr);
 
@@ -307,7 +307,7 @@ void FunctionListPanel::reload()
 	if (root)
 	{
 		currentBuf = (*_ppEditView)->getCurrentBuffer();
-		const wchar_t *fullFilePath = currentBuf->getFullPathName();
+		const NppChar *fullFilePath = currentBuf->getFullPathName();
 
 		wstring* fullPathStr = new wstring(fullFilePath);
 		_posStrs.push_back(fullPathStr);
@@ -317,7 +317,7 @@ void FunctionListPanel::reload()
 		TreeParams *previousParams = getFromStateArray(fullFilePath);
 		if (!previousParams)
 		{
-			::SendMessage(_hSearchEdit, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(L""));
+			::SendMessage(_hSearchEdit, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(""));
 			setSort(NppParameters::getInstance().getNppGUI()._shouldSortFunctionList);
 			sortOrUnsort();
 			_treeView.expand(root);
@@ -350,7 +350,7 @@ void FunctionListPanel::initPreferencesMenu()
 	NativeLangSpeaker* pNativeSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
 	const NppGUI& nppGUI = NppParameters::getInstance().getNppGUI();
 
-	wstring shouldSortFunctionListStr = pNativeSpeaker->getAttrNameStr(L"Sort functions (A to Z) by default", FL_FUNCTIONLISTROOTNODE, FL_PREFERENCE_INITIALSORT);
+	wstring shouldSortFunctionListStr = pNativeSpeaker->getAttrNameStr("Sort functions (A to Z) by default", FL_FUNCTIONLISTROOTNODE, FL_PREFERENCE_INITIALSORT);
 
 	_hPreferencesMenu = ::CreatePopupMenu();
 	::InsertMenu(_hPreferencesMenu, 0, MF_BYCOMMAND, FL_PREFERENCES_INITIALSORT_ID, shouldSortFunctionListStr.c_str());
@@ -441,10 +441,10 @@ void FunctionListPanel::init(HINSTANCE hInst, HWND hPere, ScintillaEditView **pp
 	NppParameters& nppParams = NppParameters::getInstance();
 
 	wstring funcListXmlPath = nppParams.getUserPath();
-	pathAppend(funcListXmlPath, L"functionList");
+	pathAppend(funcListXmlPath, "functionList");
 
 	wstring funcListDefaultXmlPath = nppParams.getNppPath();
-	pathAppend(funcListDefaultXmlPath, L"functionList");
+	pathAppend(funcListDefaultXmlPath, "functionList");
 
 	bool doLocalConf = nppParams.isLocal();
 
@@ -561,7 +561,7 @@ void FunctionListPanel::notified(LPNMHDR notification)
 				}
 				else if (ptvkd->wVKey == VK_ESCAPE)
 				{
-					::SendMessage(_hSearchEdit, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(L""));
+					::SendMessage(_hSearchEdit, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(""));
 					SetWindowLongPtr(_hSelf, DWLP_MSGRESULT, 1); // remove beep
 					PostMessage(_hParent, WM_COMMAND, SCEN_SETFOCUS << 16, reinterpret_cast<LPARAM>((*_ppEditView)->getHSelf()));
 				}
@@ -581,7 +581,7 @@ void FunctionListPanel::notified(LPNMHDR notification)
 
 void FunctionListPanel::searchFuncAndSwitchView()
 {
-	wchar_t text2search[MAX_PATH] = { '\0' };
+	NppChar text2search[MAX_PATH] = { '\0' };
 	::SendMessage(_hSearchEdit, WM_GETTEXT, MAX_PATH, reinterpret_cast<LPARAM>(text2search));
 
 	if (text2search[0] == '\0')
@@ -596,9 +596,9 @@ void FunctionListPanel::searchFuncAndSwitchView()
 			return;
 
 		_treeViewSearchResult.removeAllItems();
-		const wchar_t *fn = ((*_ppEditView)->getCurrentBuffer())->getFileName();
+		const NppChar *fn = ((*_ppEditView)->getCurrentBuffer())->getFileName();
 
-		wstring* invalidValueStr = new wstring(L"-1");
+		wstring* invalidValueStr = new wstring("-1");
 		_posStrs.push_back(invalidValueStr);
 		LPARAM lParamInvalidPosStr = reinterpret_cast<LPARAM>(invalidValueStr);
 		_treeViewSearchResult.addItem(fn, NULL, INDEX_ROOT, lParamInvalidPosStr);
@@ -652,7 +652,7 @@ static LRESULT CALLBACK funclstSearchEditProc(HWND hwnd, UINT message, WPARAM wP
 		{
 			if (wParam == VK_ESCAPE)
 			{
-				::SendMessage(hwnd, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(L""));
+				::SendMessage(hwnd, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(""));
 				return 0;
 			}
 			else if (wParam == VK_TAB)
@@ -692,7 +692,7 @@ intptr_t CALLBACK FunctionListPanel::run_dlgProc(UINT message, WPARAM wParam, LP
 		// Make edit field red if not found
 		case WM_CTLCOLOREDIT :
 		{
-			wchar_t text2search[MAX_PATH] = { '\0' };
+			NppChar text2search[MAX_PATH] = { '\0' };
 			::SendMessage(_hSearchEdit, WM_GETTEXT, MAX_PATH, reinterpret_cast<LPARAM>(text2search));
 			bool textFound = false;
 			if (text2search[0] == '\0')

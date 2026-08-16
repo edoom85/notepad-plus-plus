@@ -24,15 +24,15 @@ enum progType {WIN32_PROG, CONSOLE_PROG};
 class Process
 {
 public:
-    Process(const wchar_t* cmd, const wchar_t* args, const wchar_t* cDir)
+    Process(const NppChar* cmd, const NppChar* args, const NppChar* cDir)
 		:_command(cmd), _args(args), _curDir(cDir){}
 
 	void run(bool isElevationRequired = false) const;
 	unsigned long runSync(bool isElevationRequired = false) const;
 
 protected:
-    std::wstring _command;
-	std::wstring _args;
-	std::wstring _curDir;
+    NppString _command;
+	NppString _args;
+	NppString _curDir;
 };
 

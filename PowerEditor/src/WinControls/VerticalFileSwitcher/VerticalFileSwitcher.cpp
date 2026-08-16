@@ -41,8 +41,8 @@ COLORREF VerticalFileSwitcher::_bgColor = 0xFFFFFF;
 int CALLBACK ListViewCompareProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
 	sortCompareData* sortData = (sortCompareData*)lParamSort;
-	wchar_t str1[MAX_PATH] = { '\0' };
-	wchar_t str2[MAX_PATH] = { '\0' };
+	NppChar str1[MAX_PATH] = { '\0' };
+	NppChar str2[MAX_PATH] = { '\0' };
 
 	ListView_GetItemText(sortData->hListView, lParam1, sortData->columnIndex, str1, sizeof(str1));
 	ListView_GetItemText(sortData->hListView, lParam2, sortData->columnIndex, str2, sizeof(str2));
@@ -259,7 +259,7 @@ LRESULT CALLBACK VerticalFileSwitcher::FileSwitcherNotifySubclass(
 				case NM_CUSTOMDRAW:
 				{
 					constexpr size_t classNameLen = 16;
-					wchar_t className[classNameLen]{};
+					NppChar className[classNameLen]{};
 					GetClassName(nmhdr->hwndFrom, className, classNameLen);
 
 					if (wcscmp(className, WC_LISTVIEW) == 0)
@@ -455,7 +455,7 @@ intptr_t CALLBACK VerticalFileSwitcher::run_dlgProc(UINT message, WPARAM wParam,
 					
 					LPNMHEADER test = (LPNMHEADER)lParam;
 					HWND hwndHD = ListView_GetHeader(_fileListView.getHSelf());
-					wchar_t HDtext[MAX_PATH] = { '\0' };
+					NppChar HDtext[MAX_PATH] = { '\0' };
 					HDITEM hdi = {};
 					hdi.mask = HDI_TEXT | HDI_WIDTH;
 					hdi.pszText = HDtext;
@@ -463,9 +463,9 @@ intptr_t CALLBACK VerticalFileSwitcher::run_dlgProc(UINT message, WPARAM wParam,
 					Header_GetItem(hwndHD, test->iItem, &hdi);
 
 					// storing column width data
-					if (hdi.pszText == pNativeSpeaker->getAttrNameStr(L"Ext.", FS_ROOTNODE, FS_CLMNEXT))
+					if (hdi.pszText == pNativeSpeaker->getAttrNameStr("Ext.", FS_ROOTNODE, FS_CLMNEXT))
 						nppParams.getNppGUI()._fileSwitcherExtWidth = hdi.cxy;
-					else if (hdi.pszText == pNativeSpeaker->getAttrNameStr(L"Path", FS_ROOTNODE, FS_CLMNPATH))
+					else if (hdi.pszText == pNativeSpeaker->getAttrNameStr("Path", FS_ROOTNODE, FS_CLMNPATH))
 						nppParams.getNppGUI()._fileSwitcherPathWidth = hdi.cxy;
 
 					return TRUE;
@@ -545,9 +545,9 @@ void VerticalFileSwitcher::initPopupMenus()
 	NativeLangSpeaker* pNativeSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
 	const NppGUI& nppGUI = NppParameters::getInstance().getNppGUI();
 
-	wstring extStr = pNativeSpeaker->getAttrNameStr(L"Ext.", FS_ROOTNODE, FS_CLMNEXT);
-	wstring pathStr = pNativeSpeaker->getAttrNameStr(L"Path", FS_ROOTNODE, FS_CLMNPATH);
-	wstring groupStr = pNativeSpeaker->getAttrNameStr(L"Group by View", FS_ROOTNODE, FS_LVGROUPS);
+	wstring extStr = pNativeSpeaker->getAttrNameStr("Ext.", FS_ROOTNODE, FS_CLMNEXT);
+	wstring pathStr = pNativeSpeaker->getAttrNameStr("Path", FS_ROOTNODE, FS_CLMNPATH);
+	wstring groupStr = pNativeSpeaker->getAttrNameStr("Group by View", FS_ROOTNODE, FS_LVGROUPS);
 
 	_hGlobalMenu = ::CreatePopupMenu();
 	::InsertMenu(_hGlobalMenu, CLMNEXT_ID, MF_BYCOMMAND | MF_STRING, CLMNEXT_ID, extStr.c_str());

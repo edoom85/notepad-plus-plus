@@ -32,12 +32,12 @@
 struct TaskLstFnStatus {
 	int _iView = -1;
 	int _docIndex = 0;
-	std::wstring _fn;
+	NppString _fn;
 	int _status = 0;
 	void *_bufID = nullptr;
 	int _docColor = -1;
-	TaskLstFnStatus(const std::wstring& str, int status) : _fn(str), _status(status) {}
-	TaskLstFnStatus(int iView, int docIndex, std::wstring str, int status, void* bufID, int docColor)
+	TaskLstFnStatus(const NppString& str, int status) : _fn(str), _status(status) {}
+	TaskLstFnStatus(int iView, int docIndex, NppString str, int status, void* bufID, int docColor)
 		: _iView(iView), _docIndex(docIndex), _fn(str), _status(status), _bufID(bufID), _docColor(docColor)
 	{}
 };

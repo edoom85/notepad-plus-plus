@@ -86,15 +86,15 @@ static constexpr COLORREF HEXRGB(DWORD rrggbb) {
 		((rrggbb & 0x0000FF) << 16);
 }
 
-static std::wstring getWndClassName(HWND hWnd)
+static NppString getWndClassName(HWND hWnd)
 {
 	constexpr int strLen = 32;
-	std::wstring className(strLen, 0);
+	NppString className(strLen, 0);
 	className.resize(::GetClassName(hWnd, className.data(), strLen));
 	return className;
 }
 
-static bool cmpWndClassName(HWND hWnd, const wchar_t* classNameToCmp)
+static bool cmpWndClassName(HWND hWnd, const NppChar* classNameToCmp)
 {
 	return (getWndClassName(hWnd) == classNameToCmp);
 }
@@ -491,7 +491,7 @@ namespace NppDarkMode
 		using PWINEGETVERSION = const CHAR* (__cdecl *)(void);
 
 		PWINEGETVERSION pWGV = nullptr;
-		auto hNtdllModule = GetModuleHandle(L"ntdll.dll");
+		auto hNtdllModule = GetModuleHandle("ntdll.dll");
 		if (hNtdllModule)
 		{
 			pWGV = reinterpret_cast<PWINEGETVERSION>(GetProcAddress(hNtdllModule, "wine_get_version"));
@@ -564,7 +564,7 @@ namespace NppDarkMode
 		g_advOptions._enableWindowsMode = enable;
 	}
 
-	void setThemeName(const std::wstring& newThemeName)
+	void setThemeName(const NppString& newThemeName)
 	{
 		if (NppDarkMode::isEnabled())
 			g_advOptions._darkDefaults._xmlFileName = newThemeName;
@@ -572,10 +572,10 @@ namespace NppDarkMode
 			g_advOptions._lightDefaults._xmlFileName = newThemeName;
 	}
 
-	std::wstring getThemeName()
+	NppString getThemeName()
 	{
 		auto& theme = NppDarkMode::isEnabled() ? g_advOptions._darkDefaults._xmlFileName : g_advOptions._lightDefaults._xmlFileName;
-		return (lstrcmp(theme.c_str(), L"stylers.xml") == 0) ? L"" : theme;
+		return (lstrcmp(theme.c_str(), "stylers.xml") == 0) ? "" : theme;
 	}
 
 	TbIconInfo getToolbarIconInfo(bool useDark)
@@ -908,8 +908,8 @@ namespace NppDarkMode
 	{
 		DWORD data{};
 		DWORD dwBufSize = sizeof(data);
-		static constexpr LPCWSTR lpSubKey = L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
-		static constexpr LPCWSTR lpValue = L"AppsUseLightTheme";
+		static constexpr LPCWSTR lpSubKey = "Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize";
+		static constexpr LPCWSTR lpValue = "AppsUseLightTheme";
 
 		const auto result = ::RegGetValueW(HKEY_CURRENT_USER, lpSubKey, lpValue, RRF_RT_REG_DWORD, nullptr, &data, &dwBufSize);
 		if (result != ERROR_SUCCESS)
@@ -972,11 +972,11 @@ namespace NppDarkMode
 	struct ThemeData
 	{
 		HTHEME _hTheme = nullptr;
-		const wchar_t* _themeClass = nullptr;
+		const NppChar* _themeClass = nullptr;
 
 		ThemeData() = default;
 
-		ThemeData(const wchar_t* themeClass)
+		ThemeData(const NppChar* themeClass)
 			: _themeClass(themeClass)
 		{}
 
@@ -1116,7 +1116,7 @@ namespace NppDarkMode
 	static void renderButton(HWND hwnd, HDC hdc, HTHEME hTheme, int iPartID, int iStateID)
 	{
 		RECT rcClient{};
-		wchar_t szText[256] = { '\0' };
+		NppChar szText[256] = { '\0' };
 		DWORD nState = static_cast<DWORD>(SendMessage(hwnd, BM_GETSTATE, 0, 0));
 		DWORD uiState = static_cast<DWORD>(SendMessage(hwnd, WM_QUERYUISTATE, 0, 0));
 		auto nStyle = ::GetWindowLongPtr(hwnd, GWL_STYLE);
@@ -1432,7 +1432,7 @@ namespace NppDarkMode
 
 		hOldFont = static_cast<HFONT>(::SelectObject(hdc, hFont));
 
-		wchar_t szText[256] = { '\0' };
+		NppChar szText[256] = { '\0' };
 		GetWindowText(hwnd, szText, _countof(szText));
 
 		auto style = static_cast<long>(::GetWindowLongPtr(hwnd, GWL_STYLE));
@@ -1455,7 +1455,7 @@ namespace NppDarkMode
 		else
 		{
 			SIZE textSize{};
-			GetTextExtentPoint32(hdc, L"M", 1, &textSize);
+			GetTextExtentPoint32(hdc, "M", 1, &textSize);
 			rcBackground.top += textSize.cy / 2;
 		}
 
@@ -1613,7 +1613,7 @@ namespace NppDarkMode
 				::InflateRect(&rcItem, -1, -1);
 				rcItem.right += 1;
 
-				std::wstring label(MAX_PATH, L'\0');
+				NppString label(MAX_PATH, L'\0');
 				TCITEM tci{};
 				tci.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_STATE;
 				tci.dwStateMask = TCIS_HIGHLIGHTED;
@@ -2083,7 +2083,7 @@ namespace NppDarkMode
 			if (index != CB_ERR)
 			{
 				auto bufferLen = static_cast<size_t>(::SendMessage(hWnd, CB_GETLBTEXTLEN, index, 0));
-				wchar_t* buffer = new wchar_t[(bufferLen + 1)];
+				NppChar* buffer = new NppChar[(bufferLen + 1)];
 				::SendMessage(hWnd, CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(buffer));
 
 				RECT rcText{ cbi.rcItem };
@@ -2137,7 +2137,7 @@ namespace NppDarkMode
 			{
 				const auto clrText = isDisabled ? NppDarkMode::getDisabledTextColor() : (isHot ? NppDarkMode::getTextColor() : NppDarkMode::getDarkerTextColor());
 				::SetTextColor(hdc, clrText);
-				wchar_t arrow[] = L"˅";
+				NppChar arrow[] = "˅";
 				::DrawText(hdc, arrow, -1, &rcArrow, DT_NOPREFIX | DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP);
 			}
 		}
@@ -2707,11 +2707,11 @@ namespace NppDarkMode
 		const LONG offset = upDownData._isHorizontal ? DPIManagerV2::scale(1, ::GetParent(hWnd)) : 0;
 		RECT rcTectPrev{ upDownData._rcPrev.left, upDownData._rcPrev.top, upDownData._rcPrev.right, upDownData._rcPrev.bottom - offset };
 		::SetTextColor(hdc, isHotPrev ? NppDarkMode::getTextColor() : clrText);
-		::DrawText(hdc, upDownData._isHorizontal ? L"<" : L"˄", -1, &rcTectPrev, dtFlags);
+		::DrawText(hdc, upDownData._isHorizontal ? "<" : "˄", -1, &rcTectPrev, dtFlags);
 
 		RECT rcTectNext{ upDownData._rcNext.left + offset, upDownData._rcNext.top, upDownData._rcNext.right, upDownData._rcNext.bottom - offset };
 		::SetTextColor(hdc, isHotNext ? NppDarkMode::getTextColor() : clrText);
-		::DrawText(hdc, upDownData._isHorizontal ? L">" : L"˅", -1, &rcTectNext, dtFlags);
+		::DrawText(hdc, upDownData._isHorizontal ? ">" : "˅", -1, &rcTectNext, dtFlags);
 
 		::SelectObject(hdc, holdFont);
 	}
@@ -2898,7 +2898,7 @@ namespace NppDarkMode
 	void autoSubclassAndThemeChildControls(HWND hwndParent, bool subclass, bool theme)
 	{
 		NppDarkModeParams p{
-			g_isAtLeastWindows10 && NppDarkMode::isEnabled() ? L"DarkMode_Explorer" : nullptr
+			g_isAtLeastWindows10 && NppDarkMode::isEnabled() ? "DarkMode_Explorer" : nullptr
 			, subclass
 			, theme
 		};
@@ -2908,7 +2908,7 @@ namespace NppDarkMode
 		EnumChildWindows(hwndParent, [](HWND hwnd, LPARAM lParam) WINAPI_LAMBDA {
 			const auto& p = *reinterpret_cast<NppDarkModeParams*>(lParam);
 			constexpr size_t classNameLen = 32;
-			wchar_t className[classNameLen]{};
+			NppChar className[classNameLen]{};
 			GetClassName(hwnd, className, classNameLen);
 
 			if (wcscmp(className, WC_BUTTON) == 0)
@@ -2972,7 +2972,7 @@ namespace NppDarkMode
 			}
 
 			// Plugin might use rich edit control version 2.0 and later
-			if (wcscmp(className, L"RichEdit20W") == 0 || wcscmp(className, L"RICHEDIT50W") == 0)
+			if (wcscmp(className, "RichEdit20W") == 0 || wcscmp(className, "RICHEDIT50W") == 0)
 			{
 				NppDarkMode::themeRichEdit(hwnd, p);
 				return TRUE;
@@ -2994,7 +2994,7 @@ namespace NppDarkMode
 
 			/*
 			// for debugging
-			if (wcscmp(className, L"#32770") == 0)
+			if (wcscmp(className, "#32770") == 0)
 			{
 				return TRUE;
 			}
@@ -3110,7 +3110,7 @@ namespace NppDarkMode
 			if (p._theme && NppDarkMode::isExperimentalSupported())
 			{
 				NppDarkMode::allowDarkModeForWindow(hWnd, NppDarkMode::isExperimentalActive());
-				::SetWindowTheme(hWnd, L"CFD", nullptr);
+				::SetWindowTheme(hWnd, "CFD", nullptr);
 			}
 		}
 	}
@@ -3557,7 +3557,7 @@ namespace NppDarkMode
 					::SetBkMode(lpnmcd->hdc, TRANSPARENT);
 
 					constexpr auto dtFlags = DT_NOPREFIX | DT_CENTER | DT_TOP | DT_SINGLELINE | DT_NOCLIP;
-					::DrawText(lpnmcd->hdc, L"»", -1, &rbBand.rcChevronLocation, dtFlags);
+					::DrawText(lpnmcd->hdc, "»", -1, &rbBand.rcChevronLocation, dtFlags);
 
 					lr = CDRF_SKIPDEFAULT;
 				}
@@ -3646,7 +3646,7 @@ namespace NppDarkMode
 				{
 					auto hChild = reinterpret_cast<HWND>(lParam);
 					const bool isChildEnabled = ::IsWindowEnabled(hChild) == TRUE;
-					std::wstring className = getWndClassName(hChild);
+					NppString className = getWndClassName(hChild);
 
 					auto hdc = reinterpret_cast<HDC>(wParam);
 
@@ -3685,7 +3685,7 @@ namespace NppDarkMode
 				{
 					case NM_CUSTOMDRAW:
 					{
-						std::wstring className = getWndClassName(nmhdr->hwndFrom);
+						NppString className = getWndClassName(nmhdr->hwndFrom);
 						if (className == TOOLBARCLASSNAME)
 						{
 							return NppDarkMode::darkToolBarNotifyCustomDraw(hWnd, uMsg, wParam, lParam, true);
@@ -3942,7 +3942,7 @@ namespace NppDarkMode
 				{
 					case NM_CUSTOMDRAW:
 					{
-						std::wstring className = getWndClassName(nmhdr->hwndFrom);
+						NppString className = getWndClassName(nmhdr->hwndFrom);
 						if (className == TOOLBARCLASSNAME)
 						{
 							return NppDarkMode::darkToolBarNotifyCustomDraw(hWnd, uMsg, wParam, lParam, false);
@@ -4006,7 +4006,7 @@ namespace NppDarkMode
 	static void paintMenuBarItems(UAHDRAWMENUITEM& UDMI, const HTHEME& hTheme)
 	{
 		// get the menu item string
-		std::wstring buffer(MAX_PATH, L'\0');
+		NppString buffer(MAX_PATH, L'\0');
 		MENUITEMINFO mii{};
 		mii.cbSize = sizeof(MENUITEMINFO);
 		mii.fMask = MIIM_STRING;
@@ -4244,7 +4244,7 @@ namespace NppDarkMode
 
 	void setDarkExplorerTheme(HWND hwnd)
 	{
-		SetWindowTheme(hwnd, g_isAtLeastWindows10 && NppDarkMode::isEnabled() ? L"DarkMode_Explorer" : nullptr, nullptr);
+		SetWindowTheme(hwnd, g_isAtLeastWindows10 && NppDarkMode::isEnabled() ? "DarkMode_Explorer" : nullptr, nullptr);
 	}
 
 	void setDarkScrollBar(HWND hwnd)
@@ -4315,10 +4315,10 @@ namespace NppDarkMode
 
 			HWND hHeader = ListView_GetHeader(hwnd);
 			NppDarkMode::allowDarkModeForWindow(hHeader, useDark);
-			SetWindowTheme(hHeader, useDark ? L"ItemsView" : nullptr, nullptr);
+			SetWindowTheme(hHeader, useDark ? "ItemsView" : nullptr, nullptr);
 
 			NppDarkMode::allowDarkModeForWindow(hwnd, useDark);
-			SetWindowTheme(hwnd, L"Explorer", nullptr);
+			SetWindowTheme(hwnd, "Explorer", nullptr);
 		}
 	}
 
@@ -4326,7 +4326,7 @@ namespace NppDarkMode
 	{
 		if (doDisable)
 		{
-			SetWindowTheme(hwnd, L"", L"");
+			SetWindowTheme(hwnd, "", "");
 		}
 		else
 		{
@@ -4379,7 +4379,7 @@ namespace NppDarkMode
 			auto style = ::GetWindowLongPtr(hWnd, GWL_STYLE);
 			const bool hasHotStyle = (style & TVS_TRACKSELECT) == TVS_TRACKSELECT;
 			bool change = false;
-			std::wstring strSubAppName;
+			NppString strSubAppName;
 
 			switch (g_treeViewStyle)
 			{
@@ -4390,7 +4390,7 @@ namespace NppDarkMode
 						style |= TVS_TRACKSELECT;
 						change = true;
 					}
-					strSubAppName = L"Explorer";
+					strSubAppName = "Explorer";
 					break;
 				}
 
@@ -4403,7 +4403,7 @@ namespace NppDarkMode
 							style |= TVS_TRACKSELECT;
 							change = true;
 						}
-						strSubAppName = L"DarkMode_Explorer";
+						strSubAppName = "DarkMode_Explorer";
 						break;
 					}
 					[[fallthrough]];
@@ -4416,7 +4416,7 @@ namespace NppDarkMode
 						style &= ~TVS_TRACKSELECT;
 						change = true;
 					}
-					strSubAppName = L"";
+					strSubAppName = "";
 					break;
 				}
 			}
@@ -4462,9 +4462,9 @@ namespace NppDarkMode
 	static BOOL CALLBACK enumAutocompleteProc(HWND hwnd, LPARAM /*lParam*/)
 	{
 		constexpr size_t classNameLen = 16;
-		wchar_t className[classNameLen]{};
+		NppChar className[classNameLen]{};
 		GetClassName(hwnd, className, classNameLen);
-		if ((wcscmp(className, L"ListBoxX") == 0))
+		if ((wcscmp(className, "ListBoxX") == 0))
 		{
 			NppDarkMode::setDarkTitleBar(hwnd);
 			NppDarkMode::autoThemeChildControls(hwnd);
@@ -4630,7 +4630,7 @@ namespace NppDarkMode
 		}
 
 	private:
-		ThemeData m_themeData{ L"DarkMode_Explorer::TaskDialog" };
+		ThemeData m_themeData{ "DarkMode_Explorer::TaskDialog" };
 		COLORREF m_clrText = RGB(255, 255, 255);
 		COLORREF m_clrBg = RGB(44, 44, 44);
 		HBRUSH m_hBrushBg = nullptr;
@@ -4659,14 +4659,14 @@ namespace NppDarkMode
 
 			case WM_ERASEBKGND:
 			{
-				const std::wstring className = getWndClassName(hWnd);
+				const NppString className = getWndClassName(hWnd);
 
-				if (className == L"CtrlNotifySink")
+				if (className == "CtrlNotifySink")
 				{
 					break;
 				}
 
-				if ((className == L"DirectUIHWND") && pTaskDlgData->shouldErase())
+				if ((className == "DirectUIHWND") && pTaskDlgData->shouldErase())
 				{
 					RECT rcClient{};
 					::GetClientRect(hWnd, &rcClient);
@@ -4712,9 +4712,9 @@ namespace NppDarkMode
 
 	static BOOL CALLBACK DarkTaskEnumChildProc(HWND hWnd, [[maybe_unused]] LPARAM lParam)
 	{
-		const std::wstring className = getWndClassName(hWnd);
+		const NppString className = getWndClassName(hWnd);
 
-		if (className == L"CtrlNotifySink")
+		if (className == "CtrlNotifySink")
 		{
 			setDarkTaskDlgSubclass(hWnd);
 			return TRUE;
@@ -4761,7 +4761,7 @@ namespace NppDarkMode
 			return TRUE;
 		}
 
-		if (className == L"DirectUIHWND")
+		if (className == "DirectUIHWND")
 		{
 			::EnumChildWindows(hWnd, DarkTaskEnumChildProc, 0);
 			setDarkTaskDlgSubclass(hWnd);
@@ -4850,7 +4850,7 @@ namespace NppDarkMode
 		tdc.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_SIZE_TO_CONTENT;
 		// Unlike message box localized "Error" string, task dialog uses filename if title is nullptr.
 		// Maintainer will need to provide localization themself.
-		tdc.pszWindowTitle = lpCaption != nullptr ? lpCaption : L"Error";
+		tdc.pszWindowTitle = lpCaption != nullptr ? lpCaption : "Error";
 		tdc.pszContent = lpText;
 		tdc.pfCallback = DarkTaskDlgMsgBoxCallback;
 		tdc.lpCallbackData = static_cast<LONG_PTR>(uType);

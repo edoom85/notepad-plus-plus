@@ -67,8 +67,8 @@
 #pragma warning(disable : 4996) // for GetVersionEx()
 #endif
 
-static constexpr const wchar_t localConfFile[] = L"doLocalConf.xml";
-static constexpr const wchar_t notepadStyleFile[] = L"asNotepad.xml";
+static constexpr const NppChar localConfFile[] = "doLocalConf.xml";
+static constexpr const NppChar notepadStyleFile[] = "asNotepad.xml";
 
 static constexpr int NB_MAX_FINDHISTORY_FIND = 30;
 static constexpr int NB_MAX_FINDHISTORY_REPLACE = 30;
@@ -86,7 +86,7 @@ struct WinMenuKeyDefinition // more or less matches accelerator table definition
 	bool isCtrl = false;
 	bool isAlt = false;
 	bool isShift = false;
-	const wchar_t * specialName = nullptr; // Used when no real menu name exists (in case of toggle for example)
+	const NppChar * specialName = nullptr; // Used when no real menu name exists (in case of toggle for example)
 };
 
 
@@ -102,9 +102,9 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	//
 	{ VK_N,       IDM_FILE_NEW,                                 true,  false, false, nullptr },
 	{ VK_O,       IDM_FILE_OPEN,                                true,  false, false, nullptr },
-	{ VK_NULL,    IDM_FILE_OPEN_FOLDER,                         false, false, false, L"Open containing folder in Explorer" },
-	{ VK_NULL,    IDM_FILE_OPEN_CMD,                            false, false, false, L"Open containing folder in Command Prompt" },
-	{ VK_NULL,    IDM_FILE_OPEN_POWERSHELL,                     false, false, false, L"Open containing folder in PowerShell" },
+	{ VK_NULL,    IDM_FILE_OPEN_FOLDER,                         false, false, false, "Open containing folder in Explorer" },
+	{ VK_NULL,    IDM_FILE_OPEN_CMD,                            false, false, false, "Open containing folder in Command Prompt" },
+	{ VK_NULL,    IDM_FILE_OPEN_POWERSHELL,                     false, false, false, "Open containing folder in PowerShell" },
 	{ VK_NULL,    IDM_FILE_OPEN_DEFAULT_VIEWER,                 false, false, false, nullptr },
 	{ VK_NULL,    IDM_FILE_OPENFOLDERASWORKSPACE,                false, false, false, nullptr },
 	{ VK_R,       IDM_FILE_RELOAD,                              true,  false, false, nullptr },
@@ -125,7 +125,7 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_NULL,    IDM_FILE_SAVESESSION,                         false, false, false, nullptr },
 	{ VK_P,       IDM_FILE_PRINT,                               true,  false, false, nullptr },
 	{ VK_NULL,    IDM_FILE_PRINTNOW,                            false, false, false, nullptr },
-	{ VK_T,       IDM_FILE_RESTORELASTCLOSEDFILE,               true,  false, true,  L"Restore Recent Closed File" },
+	{ VK_T,       IDM_FILE_RESTORELASTCLOSEDFILE,               true,  false, true,  "Restore Recent Closed File" },
 	{ VK_F4,      IDM_FILE_EXIT,                                false, true,  false, nullptr },
 
 //	{ VK_NULL,    IDM_EDIT_UNDO,                                false, false, false, nullptr },
@@ -201,9 +201,9 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_NULL,    IDM_EDIT_INSERT_DATETIME_SHORT,               false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_INSERT_DATETIME_LONG,                false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_INSERT_DATETIME_CUSTOMIZED,          false, false, false, nullptr },
-	{ VK_NULL,    IDM_FORMAT_TODOS,                             false, false, false, L"EOL Conversion to Windows (CR LF)" },
-	{ VK_NULL,    IDM_FORMAT_TOUNIX,                            false, false, false, L"EOL Conversion to Unix (LF)" },
-	{ VK_NULL,    IDM_FORMAT_TOMAC,                             false, false, false, L"EOL Conversion to Macintosh (CR)" },
+	{ VK_NULL,    IDM_FORMAT_TODOS,                             false, false, false, "EOL Conversion to Windows (CR LF)" },
+	{ VK_NULL,    IDM_FORMAT_TOUNIX,                            false, false, false, "EOL Conversion to Unix (LF)" },
+	{ VK_NULL,    IDM_FORMAT_TOMAC,                             false, false, false, "EOL Conversion to Macintosh (CR)" },
 	{ VK_NULL,    IDM_EDIT_TRIMTRAILING,                        false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_TRIMLINEHEAD,                        false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_TRIM_BOTH,                           false, false, false, nullptr },
@@ -221,20 +221,20 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_NULL,    IDM_EDIT_OPENSELECTEDFILEFOLDERINEXPLORER,    false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_SEARCHONINTERNET,                    false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_CHANGESEARCHENGINE,                  false, false, false, nullptr },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTALL,                      false, false, false, L"Multi-select All: Ignore Case and Whole Word" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTALLMATCHCASE,             false, false, false, L"Multi-select All: Match Case Only" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTALLWHOLEWORD,             false, false, false, L"Multi-select All: Match Whole Word Only" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTALLMATCHCASEWHOLEWORD,    false, false, false, L"Multi-select All: Match Case and Whole Word" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXT,                     false, false, false, L"Multi-select Next: Ignore Case and Whole Word" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXTMATCHCASE,            false, false, false, L"Multi-select Next: Match Case Only" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXTWHOLEWORD,            false, false, false, L"Multi-select Next: Match Whole Word Only" },
-	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXTMATCHCASEWHOLEWORD,   false, false, false, L"Multi-select Next: Match Case and Whole Word" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTALL,                      false, false, false, "Multi-select All: Ignore Case and Whole Word" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTALLMATCHCASE,             false, false, false, "Multi-select All: Match Case Only" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTALLWHOLEWORD,             false, false, false, "Multi-select All: Match Whole Word Only" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTALLMATCHCASEWHOLEWORD,    false, false, false, "Multi-select All: Match Case and Whole Word" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXT,                     false, false, false, "Multi-select Next: Ignore Case and Whole Word" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXTMATCHCASE,            false, false, false, "Multi-select Next: Match Case Only" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXTWHOLEWORD,            false, false, false, "Multi-select Next: Match Whole Word Only" },
+	{ VK_NULL,    IDM_EDIT_MULTISELECTNEXTMATCHCASEWHOLEWORD,   false, false, false, "Multi-select Next: Match Case and Whole Word" },
 	{ VK_NULL,    IDM_EDIT_MULTISELECTUNDO,                     false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_MULTISELECTSSKIP,                    false, false, false, nullptr },
 //  { VK_NULL,    IDM_EDIT_COLUMNMODETIP,                       false, false, false, nullptr },
 	{ VK_C,       IDM_EDIT_COLUMNMODE,                          false, true,  false, nullptr },
-	{ VK_NULL,    IDM_EDIT_CHAR_PANEL,                          false, false, false, L"Toggle Character Panel" },
-	{ VK_NULL,    IDM_EDIT_CLIPBOARDHISTORY_PANEL,              false, false, false, L"Toggle Clipboard History" },
+	{ VK_NULL,    IDM_EDIT_CHAR_PANEL,                          false, false, false, "Toggle Character Panel" },
+	{ VK_NULL,    IDM_EDIT_CLIPBOARDHISTORY_PANEL,              false, false, false, "Toggle Clipboard History" },
 	{ VK_NULL,    IDM_EDIT_TOGGLEREADONLY,                      false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_SETREADONLYFORALLDOCS,               false, false, false, nullptr },
 	{ VK_NULL,    IDM_EDIT_CLEARREADONLYFORALLDOCS,             false, false, false, nullptr },
@@ -259,41 +259,41 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_NULL,    IDM_SEARCH_CHANGED_NEXT,                      false, false, false, nullptr },
 	{ VK_NULL,    IDM_SEARCH_CLEAR_CHANGE_HISTORY,              false, false, false, nullptr },
 	{ VK_M,       IDM_SEARCH_MARK,                              true,  false, false, nullptr },
-	{ VK_NULL,    IDM_SEARCH_MARKALLEXT1,                       false, false, false, L"Style all using 1st style" },
-	{ VK_NULL,    IDM_SEARCH_MARKALLEXT2,                       false, false, false, L"Style all using 2nd style" },
-	{ VK_NULL,    IDM_SEARCH_MARKALLEXT3,                       false, false, false, L"Style all using 3rd style" },
-	{ VK_NULL,    IDM_SEARCH_MARKALLEXT4,                       false, false, false, L"Style all using 4th style" },
-	{ VK_NULL,    IDM_SEARCH_MARKALLEXT5,                       false, false, false, L"Style all using 5th style" },
-	{ VK_NULL,    IDM_SEARCH_MARKONEEXT1,                       false, false, false, L"Style one using 1st style" },
-	{ VK_NULL,    IDM_SEARCH_MARKONEEXT2,                       false, false, false, L"Style one using 2nd style" },
-	{ VK_NULL,    IDM_SEARCH_MARKONEEXT3,                       false, false, false, L"Style one using 3rd style" },
-	{ VK_NULL,    IDM_SEARCH_MARKONEEXT4,                       false, false, false, L"Style one using 4th style" },
-	{ VK_NULL,    IDM_SEARCH_MARKONEEXT5,                       false, false, false, L"Style one using 5th style" },
-	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT1,                     false, false, false, L"Clear 1st style" },
-	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT2,                     false, false, false, L"Clear 2nd style" },
-	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT3,                     false, false, false, L"Clear 3rd style" },
-	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT4,                     false, false, false, L"Clear 4th style" },
-	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT5,                     false, false, false, L"Clear 5th style" },
-	{ VK_NULL,    IDM_SEARCH_CLEARALLMARKS,                     false, false, false, L"Clear all styles" },
-	{ VK_1,       IDM_SEARCH_GOPREVMARKER1,                     true,  false, true,  L"Previous style of 1st style" },
-	{ VK_2,       IDM_SEARCH_GOPREVMARKER2,                     true,  false, true,  L"Previous style of 2nd style" },
-	{ VK_3,       IDM_SEARCH_GOPREVMARKER3,                     true,  false, true,  L"Previous style of 3rd style" },
-	{ VK_4,       IDM_SEARCH_GOPREVMARKER4,                     true,  false, true,  L"Previous style of 4th style" },
-	{ VK_5,       IDM_SEARCH_GOPREVMARKER5,                     true,  false, true,  L"Previous style of 5th style" },
-	{ VK_0,       IDM_SEARCH_GOPREVMARKER_DEF,                  true,  false, true,  L"Previous style of Find Mark style" },
-	{ VK_1,       IDM_SEARCH_GONEXTMARKER1,                     true,  false, false, L"Next style of 1st style" },
-	{ VK_2,       IDM_SEARCH_GONEXTMARKER2,                     true,  false, false, L"Next style of 2nd style" },
-	{ VK_3,       IDM_SEARCH_GONEXTMARKER3,                     true,  false, false, L"Next style of 3rd style" },
-	{ VK_4,       IDM_SEARCH_GONEXTMARKER4,                     true,  false, false, L"Next style of 4th style" },
-	{ VK_5,       IDM_SEARCH_GONEXTMARKER5,                     true,  false, false, L"Next style of 5th style" },
-	{ VK_0,       IDM_SEARCH_GONEXTMARKER_DEF,                  true,  false, false, L"Next style of Find Mark style" },
-	{ VK_NULL,    IDM_SEARCH_STYLE1TOCLIP,                      false, false, false, L"Copy Styled Text of 1st Style" },
-	{ VK_NULL,    IDM_SEARCH_STYLE2TOCLIP,                      false, false, false, L"Copy Styled Text of 2nd Style" },
-	{ VK_NULL,    IDM_SEARCH_STYLE3TOCLIP,                      false, false, false, L"Copy Styled Text of 3rd Style" },
-	{ VK_NULL,    IDM_SEARCH_STYLE4TOCLIP,                      false, false, false, L"Copy Styled Text of 4th Style" },
-	{ VK_NULL,    IDM_SEARCH_STYLE5TOCLIP,                      false, false, false, L"Copy Styled Text of 5th Style" },
-	{ VK_NULL,    IDM_SEARCH_ALLSTYLESTOCLIP,                   false, false, false, L"Copy Styled Text of All Styles" },
-	{ VK_NULL,    IDM_SEARCH_MARKEDTOCLIP,                      false, false, false, L"Copy Styled Text of Find Mark style" },
+	{ VK_NULL,    IDM_SEARCH_MARKALLEXT1,                       false, false, false, "Style all using 1st style" },
+	{ VK_NULL,    IDM_SEARCH_MARKALLEXT2,                       false, false, false, "Style all using 2nd style" },
+	{ VK_NULL,    IDM_SEARCH_MARKALLEXT3,                       false, false, false, "Style all using 3rd style" },
+	{ VK_NULL,    IDM_SEARCH_MARKALLEXT4,                       false, false, false, "Style all using 4th style" },
+	{ VK_NULL,    IDM_SEARCH_MARKALLEXT5,                       false, false, false, "Style all using 5th style" },
+	{ VK_NULL,    IDM_SEARCH_MARKONEEXT1,                       false, false, false, "Style one using 1st style" },
+	{ VK_NULL,    IDM_SEARCH_MARKONEEXT2,                       false, false, false, "Style one using 2nd style" },
+	{ VK_NULL,    IDM_SEARCH_MARKONEEXT3,                       false, false, false, "Style one using 3rd style" },
+	{ VK_NULL,    IDM_SEARCH_MARKONEEXT4,                       false, false, false, "Style one using 4th style" },
+	{ VK_NULL,    IDM_SEARCH_MARKONEEXT5,                       false, false, false, "Style one using 5th style" },
+	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT1,                     false, false, false, "Clear 1st style" },
+	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT2,                     false, false, false, "Clear 2nd style" },
+	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT3,                     false, false, false, "Clear 3rd style" },
+	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT4,                     false, false, false, "Clear 4th style" },
+	{ VK_NULL,    IDM_SEARCH_UNMARKALLEXT5,                     false, false, false, "Clear 5th style" },
+	{ VK_NULL,    IDM_SEARCH_CLEARALLMARKS,                     false, false, false, "Clear all styles" },
+	{ VK_1,       IDM_SEARCH_GOPREVMARKER1,                     true,  false, true,  "Previous style of 1st style" },
+	{ VK_2,       IDM_SEARCH_GOPREVMARKER2,                     true,  false, true,  "Previous style of 2nd style" },
+	{ VK_3,       IDM_SEARCH_GOPREVMARKER3,                     true,  false, true,  "Previous style of 3rd style" },
+	{ VK_4,       IDM_SEARCH_GOPREVMARKER4,                     true,  false, true,  "Previous style of 4th style" },
+	{ VK_5,       IDM_SEARCH_GOPREVMARKER5,                     true,  false, true,  "Previous style of 5th style" },
+	{ VK_0,       IDM_SEARCH_GOPREVMARKER_DEF,                  true,  false, true,  "Previous style of Find Mark style" },
+	{ VK_1,       IDM_SEARCH_GONEXTMARKER1,                     true,  false, false, "Next style of 1st style" },
+	{ VK_2,       IDM_SEARCH_GONEXTMARKER2,                     true,  false, false, "Next style of 2nd style" },
+	{ VK_3,       IDM_SEARCH_GONEXTMARKER3,                     true,  false, false, "Next style of 3rd style" },
+	{ VK_4,       IDM_SEARCH_GONEXTMARKER4,                     true,  false, false, "Next style of 4th style" },
+	{ VK_5,       IDM_SEARCH_GONEXTMARKER5,                     true,  false, false, "Next style of 5th style" },
+	{ VK_0,       IDM_SEARCH_GONEXTMARKER_DEF,                  true,  false, false, "Next style of Find Mark style" },
+	{ VK_NULL,    IDM_SEARCH_STYLE1TOCLIP,                      false, false, false, "Copy Styled Text of 1st Style" },
+	{ VK_NULL,    IDM_SEARCH_STYLE2TOCLIP,                      false, false, false, "Copy Styled Text of 2nd Style" },
+	{ VK_NULL,    IDM_SEARCH_STYLE3TOCLIP,                      false, false, false, "Copy Styled Text of 3rd Style" },
+	{ VK_NULL,    IDM_SEARCH_STYLE4TOCLIP,                      false, false, false, "Copy Styled Text of 4th Style" },
+	{ VK_NULL,    IDM_SEARCH_STYLE5TOCLIP,                      false, false, false, "Copy Styled Text of 5th Style" },
+	{ VK_NULL,    IDM_SEARCH_ALLSTYLESTOCLIP,                   false, false, false, "Copy Styled Text of All Styles" },
+	{ VK_NULL,    IDM_SEARCH_MARKEDTOCLIP,                      false, false, false, "Copy Styled Text of Find Mark style" },
 	{ VK_F2,      IDM_SEARCH_TOGGLE_BOOKMARK,                   true,  false, false, nullptr },
 	{ VK_F2,      IDM_SEARCH_NEXT_BOOKMARK,                     false, false, false, nullptr },
 	{ VK_F2,      IDM_SEARCH_PREV_BOOKMARK,                     false, false, true, nullptr  },
@@ -311,10 +311,10 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_F12,     IDM_VIEW_POSTIT,                              false, false, false, nullptr },
 	{ VK_NULL,    IDM_VIEW_DISTRACTIONFREE,                     false, false, false, nullptr },
 
-	{ VK_NULL,    IDM_VIEW_IN_FIREFOX,                          false, false, false, L"View current file in Firefox" },
-	{ VK_NULL,    IDM_VIEW_IN_CHROME,                           false, false, false, L"View current file in Chrome" },
-	{ VK_NULL,    IDM_VIEW_IN_IE,                               false, false, false, L"View current file in IE" },
-	{ VK_NULL,    IDM_VIEW_IN_EDGE,                             false, false, false, L"View current file in Edge" },
+	{ VK_NULL,    IDM_VIEW_IN_FIREFOX,                          false, false, false, "View current file in Firefox" },
+	{ VK_NULL,    IDM_VIEW_IN_CHROME,                           false, false, false, "View current file in Chrome" },
+	{ VK_NULL,    IDM_VIEW_IN_IE,                               false, false, false, "View current file in IE" },
+	{ VK_NULL,    IDM_VIEW_IN_EDGE,                             false, false, false, "View current file in Edge" },
 
 	{ VK_NULL,    IDM_VIEW_TAB_SPACE,                           false, false, false, nullptr },
 	{ VK_NULL,    IDM_VIEW_EOL,                                 false, false, false, nullptr },
@@ -348,8 +348,8 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_PRIOR,   IDM_VIEW_TAB_PREV,                            true,  false, false, nullptr },
 	{ VK_NEXT,    IDM_VIEW_TAB_MOVEFORWARD,                     true,  false, true,  nullptr },
 	{ VK_PRIOR,   IDM_VIEW_TAB_MOVEBACKWARD,                    true,  false, true,  nullptr },
-	{ VK_TAB,     IDC_PREV_DOC,                                 true,  false, true,  L"Switch to previous document" },
-	{ VK_TAB,     IDC_NEXT_DOC,                                 true,  false, false, L"Switch to next document" },
+	{ VK_TAB,     IDC_PREV_DOC,                                 true,  false, true,  "Switch to previous document" },
+	{ VK_TAB,     IDC_NEXT_DOC,                                 true,  false, false, "Switch to next document" },
 	{ VK_NULL,    IDM_VIEW_WRAP,                                false, false, false, nullptr },
 	{ VK_H,       IDM_VIEW_HIDELINES,                           false, true,  false, nullptr },
 	{ VK_F8,      IDM_VIEW_SWITCHTO_OTHER_VIEW,                 false, false, false, nullptr },
@@ -358,43 +358,43 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_0,       IDM_VIEW_UNFOLDALL,                           false, true,  true,  nullptr },
 	{ VK_F,       IDM_VIEW_FOLD_CURRENT,                        true,  true,  false, nullptr },
 	{ VK_F,       IDM_VIEW_UNFOLD_CURRENT,                      true,  true,  true,  nullptr },
-	{ VK_1,       IDM_VIEW_FOLD_1,                              false, true,  false, L"Fold Level 1" },
-	{ VK_2,       IDM_VIEW_FOLD_2,                              false, true,  false, L"Fold Level 2" },
-	{ VK_3,       IDM_VIEW_FOLD_3,                              false, true,  false, L"Fold Level 3" },
-	{ VK_4,       IDM_VIEW_FOLD_4,                              false, true,  false, L"Fold Level 4" },
-	{ VK_5,       IDM_VIEW_FOLD_5,                              false, true,  false, L"Fold Level 5" },
-	{ VK_6,       IDM_VIEW_FOLD_6,                              false, true,  false, L"Fold Level 6" },
-	{ VK_7,       IDM_VIEW_FOLD_7,                              false, true,  false, L"Fold Level 7" },
-	{ VK_8,       IDM_VIEW_FOLD_8,                              false, true,  false, L"Fold Level 8" },
+	{ VK_1,       IDM_VIEW_FOLD_1,                              false, true,  false, "Fold Level 1" },
+	{ VK_2,       IDM_VIEW_FOLD_2,                              false, true,  false, "Fold Level 2" },
+	{ VK_3,       IDM_VIEW_FOLD_3,                              false, true,  false, "Fold Level 3" },
+	{ VK_4,       IDM_VIEW_FOLD_4,                              false, true,  false, "Fold Level 4" },
+	{ VK_5,       IDM_VIEW_FOLD_5,                              false, true,  false, "Fold Level 5" },
+	{ VK_6,       IDM_VIEW_FOLD_6,                              false, true,  false, "Fold Level 6" },
+	{ VK_7,       IDM_VIEW_FOLD_7,                              false, true,  false, "Fold Level 7" },
+	{ VK_8,       IDM_VIEW_FOLD_8,                              false, true,  false, "Fold Level 8" },
 
-	{ VK_1,       IDM_VIEW_UNFOLD_1,                            false, true,  true,  L"Unfold Level 1" },
-	{ VK_2,       IDM_VIEW_UNFOLD_2,                            false, true,  true,  L"Unfold Level 2" },
-	{ VK_3,       IDM_VIEW_UNFOLD_3,                            false, true,  true,  L"Unfold Level 3" },
-	{ VK_4,       IDM_VIEW_UNFOLD_4,                            false, true,  true,  L"Unfold Level 4" },
-	{ VK_5,       IDM_VIEW_UNFOLD_5,                            false, true,  true,  L"Unfold Level 5" },
-	{ VK_6,       IDM_VIEW_UNFOLD_6,                            false, true,  true,  L"Unfold Level 6" },
-	{ VK_7,       IDM_VIEW_UNFOLD_7,                            false, true,  true,  L"Unfold Level 7" },
-	{ VK_8,       IDM_VIEW_UNFOLD_8,                            false, true,  true,  L"Unfold Level 8" },
+	{ VK_1,       IDM_VIEW_UNFOLD_1,                            false, true,  true,  "Unfold Level 1" },
+	{ VK_2,       IDM_VIEW_UNFOLD_2,                            false, true,  true,  "Unfold Level 2" },
+	{ VK_3,       IDM_VIEW_UNFOLD_3,                            false, true,  true,  "Unfold Level 3" },
+	{ VK_4,       IDM_VIEW_UNFOLD_4,                            false, true,  true,  "Unfold Level 4" },
+	{ VK_5,       IDM_VIEW_UNFOLD_5,                            false, true,  true,  "Unfold Level 5" },
+	{ VK_6,       IDM_VIEW_UNFOLD_6,                            false, true,  true,  "Unfold Level 6" },
+	{ VK_7,       IDM_VIEW_UNFOLD_7,                            false, true,  true,  "Unfold Level 7" },
+	{ VK_8,       IDM_VIEW_UNFOLD_8,                            false, true,  true,  "Unfold Level 8" },
 	{ VK_NULL,    IDM_VIEW_SUMMARY,                             false, false, false, nullptr },
-	{ VK_NULL,    IDM_VIEW_PROJECT_PANEL_1,                     false, false, false, L"Toggle Project Panel 1" },
-	{ VK_NULL,    IDM_VIEW_PROJECT_PANEL_2,                     false, false, false, L"Toggle Project Panel 2" },
-	{ VK_NULL,    IDM_VIEW_PROJECT_PANEL_3,                     false, false, false, L"Toggle Project Panel 3" },
-	{ VK_NULL,    IDM_VIEW_FILEBROWSER,                         false, false, false, L"Toggle Folder as Workspace" },
-	{ VK_NULL,    IDM_VIEW_DOC_MAP,                             false, false, false, L"Toggle Document Map" },
-	{ VK_NULL,    IDM_VIEW_DOCLIST,                             false, false, false, L"Toggle Document List" },
-	{ VK_NULL,    IDM_VIEW_FUNC_LIST,                           false, false, false, L"Toggle Function List" },
-	{ VK_NULL,    IDM_VIEW_SWITCHTO_PROJECT_PANEL_1,            false, false, false, L"Switch to Project Panel 1" },
-	{ VK_NULL,    IDM_VIEW_SWITCHTO_PROJECT_PANEL_2,            false, false, false, L"Switch to Project Panel 2" },
-	{ VK_NULL,    IDM_VIEW_SWITCHTO_PROJECT_PANEL_3,            false, false, false, L"Switch to Project Panel 3" },
-	{ VK_NULL,    IDM_VIEW_SWITCHTO_FILEBROWSER,                false, false, false, L"Switch to Folder as Workspace" },
-	{ VK_NULL,    IDM_VIEW_SWITCHTO_FUNC_LIST,                  false, false, false, L"Switch to Function List" },
-	{ VK_NULL,    IDM_VIEW_SWITCHTO_DOCLIST,                    false, false, false, L"Switch to Document List" },
-	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_NONE,                     false, false, false, L"Remove Tab Colour" },
-	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_1,                        false, false, false, L"Apply Tab Colour 1" },
-	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_2,                        false, false, false, L"Apply Tab Colour 2" },
-	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_3,                        false, false, false, L"Apply Tab Colour 3" },
-	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_4,                        false, false, false, L"Apply Tab Colour 4" },
-	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_5,                        false, false, false, L"Apply Tab Colour 5" },
+	{ VK_NULL,    IDM_VIEW_PROJECT_PANEL_1,                     false, false, false, "Toggle Project Panel 1" },
+	{ VK_NULL,    IDM_VIEW_PROJECT_PANEL_2,                     false, false, false, "Toggle Project Panel 2" },
+	{ VK_NULL,    IDM_VIEW_PROJECT_PANEL_3,                     false, false, false, "Toggle Project Panel 3" },
+	{ VK_NULL,    IDM_VIEW_FILEBROWSER,                         false, false, false, "Toggle Folder as Workspace" },
+	{ VK_NULL,    IDM_VIEW_DOC_MAP,                             false, false, false, "Toggle Document Map" },
+	{ VK_NULL,    IDM_VIEW_DOCLIST,                             false, false, false, "Toggle Document List" },
+	{ VK_NULL,    IDM_VIEW_FUNC_LIST,                           false, false, false, "Toggle Function List" },
+	{ VK_NULL,    IDM_VIEW_SWITCHTO_PROJECT_PANEL_1,            false, false, false, "Switch to Project Panel 1" },
+	{ VK_NULL,    IDM_VIEW_SWITCHTO_PROJECT_PANEL_2,            false, false, false, "Switch to Project Panel 2" },
+	{ VK_NULL,    IDM_VIEW_SWITCHTO_PROJECT_PANEL_3,            false, false, false, "Switch to Project Panel 3" },
+	{ VK_NULL,    IDM_VIEW_SWITCHTO_FILEBROWSER,                false, false, false, "Switch to Folder as Workspace" },
+	{ VK_NULL,    IDM_VIEW_SWITCHTO_FUNC_LIST,                  false, false, false, "Switch to Function List" },
+	{ VK_NULL,    IDM_VIEW_SWITCHTO_DOCLIST,                    false, false, false, "Switch to Document List" },
+	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_NONE,                     false, false, false, "Remove Tab Colour" },
+	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_1,                        false, false, false, "Apply Tab Colour 1" },
+	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_2,                        false, false, false, "Apply Tab Colour 2" },
+	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_3,                        false, false, false, "Apply Tab Colour 3" },
+	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_4,                        false, false, false, "Apply Tab Colour 4" },
+	{ VK_NULL,    IDM_VIEW_TAB_COLOUR_5,                        false, false, false, "Apply Tab Colour 5" },
 	{ VK_NULL,    IDM_VIEW_SYNSCROLLV,                          false, false, false, nullptr },
 	{ VK_NULL,    IDM_VIEW_SYNSCROLLH,                          false, false, false, nullptr },
 	{ VK_R,       IDM_EDIT_RTL,                                 true,  true,  false, nullptr },
@@ -472,7 +472,7 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_NULL,    IDM_SETTING_IMPORTSTYLETHEMES,                false, false, false, nullptr },
 	{ VK_NULL,    IDM_SETTING_EDITCONTEXTMENU,                  false, false, false, nullptr },
 
-	{ VK_R,       IDC_EDIT_TOGGLEMACRORECORDING,                true,  false, true,  L"Toggle macro recording" },
+	{ VK_R,       IDC_EDIT_TOGGLEMACRORECORDING,                true,  false, true,  "Toggle macro recording" },
 	{ VK_NULL,    IDM_MACRO_STARTRECORDINGMACRO,                false, false, false, nullptr },
 	{ VK_NULL,    IDM_MACRO_STOPRECORDINGMACRO,                 false, false, false, nullptr },
 	{ VK_P,       IDM_MACRO_PLAYBACKRECORDEDMACRO,              true,  false, true,  nullptr },
@@ -483,14 +483,14 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	{ VK_NULL,    IDM_EXECUTE_VALIDATE_SHORTCUTSXML,            false, false, false, nullptr },
 
 	{ VK_NULL,    IDM_WINDOW_WINDOWS,                           false, false, false, nullptr },
-	{ VK_NULL,    IDM_WINDOW_SORT_FN_ASC,                       false, false, false, L"Sort by Name A to Z" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FN_DSC,                       false, false, false, L"Sort by Name Z to A" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FP_ASC,                       false, false, false, L"Sort by Path A to Z" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FP_DSC,                       false, false, false, L"Sort by Path Z to A" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FT_ASC,                       false, false, false, L"Sort by Type A to Z" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FT_DSC,                       false, false, false, L"Sort by Type Z to A" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FS_ASC,                       false, false, false, L"Sort by Content Length Ascending" },
-	{ VK_NULL,    IDM_WINDOW_SORT_FS_DSC,                       false, false, false, L"Sort by Content Length Descending" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FN_ASC,                       false, false, false, "Sort by Name A to Z" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FN_DSC,                       false, false, false, "Sort by Name Z to A" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FP_ASC,                       false, false, false, "Sort by Path A to Z" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FP_DSC,                       false, false, false, "Sort by Path Z to A" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FT_ASC,                       false, false, false, "Sort by Type A to Z" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FT_DSC,                       false, false, false, "Sort by Type Z to A" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FS_ASC,                       false, false, false, "Sort by Content Length Ascending" },
+	{ VK_NULL,    IDM_WINDOW_SORT_FS_DSC,                       false, false, false, "Sort by Content Length Descending" },
 
 	{ VK_NULL,    IDM_CMDLINEARGUMENTS,                         false, false, false, nullptr },
 	{ VK_NULL,    IDM_HOMESWEETHOME,                            false, false, false, nullptr },
@@ -503,8 +503,8 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 	// The following two commands are not in menu if (nppGUI._doesExistUpdater == 0).
 	// They cannot be derived from menu then, only for this reason the text is specified here.
 	// In localized environments, the text comes preferably from xml Menu/Main/Commands.
-	{ VK_NULL,    IDM_UPDATE_NPP,                               false, false, false, L"Update Notepad++" },
-	{ VK_NULL,    IDM_CONFUPDATERPROXY,                         false, false, false, L"Set Updater Proxy..." },
+	{ VK_NULL,    IDM_UPDATE_NPP,                               false, false, false, "Update Notepad++" },
+	{ VK_NULL,    IDM_CONFUPDATERPROXY,                         false, false, false, "Set Updater Proxy..." },
 	{ VK_NULL,    IDM_DEBUGINFO,                                false, false, false, nullptr },
 	{ VK_F1,      IDM_ABOUT,                                    false, false, false, nullptr }
 };
@@ -513,7 +513,7 @@ static constexpr WinMenuKeyDefinition winKeyDefs[]
 
 struct ScintillaKeyDefinition
 {
-	const wchar_t* name = nullptr;
+	const NppChar* name = nullptr;
 	int functionId = 0;
 	bool isCtrl = false;
 	bool isAlt = false;
@@ -532,121 +532,121 @@ static constexpr ScintillaKeyDefinition scintKeyDefs[]
 	//Scintilla command name,             SCINTILLA_CMD_ID,            Ctrl,  Alt,   Shift, V_KEY,       NOTEPAD++_CMD_ID
 	// -------------------------------------------------------------------------------------------------------------------
 	//
-	//{L"SCI_CUT",                     SCI_CUT,                     true,  false, false, VK_X,        IDM_EDIT_CUT},
-	//{L"",                            SCI_CUT,                     false, false, true,  VK_DELETE,   0},
-	//{L"SCI_COPY",                    SCI_COPY,                    true,  false, false, VK_C,        IDM_EDIT_COPY},
-	//{L"",                            SCI_COPY,                    true,  false, false, VK_INSERT,   0},
-	//{L"SCI_PASTE",                   SCI_PASTE,                   true,  false, false, VK_V,        IDM_EDIT_PASTE},
-	//{L"SCI_PASTE",                   SCI_PASTE,                   false, false, true,  VK_INSERT,   IDM_EDIT_PASTE},
-	{L"SCI_SELECTALL",               SCI_SELECTALL,               true,  false, false, VK_A,        IDM_EDIT_SELECTALL},
-	{L"SCI_CLEAR",                   SCI_CLEAR,                   false, false, false, VK_DELETE,   IDM_EDIT_DELETE},
-	{L"SCI_CLEARALL",                SCI_CLEARALL,                false, false, false, 0,           0},
-	{L"SCI_UNDO",                    SCI_UNDO,                    true,  false, false, VK_Z,        IDM_EDIT_UNDO},
-	{L"",                            SCI_UNDO,                    false, true,  false, VK_BACK,     0},
-	{L"SCI_REDO",                    SCI_REDO,                    true,  false, false, VK_Y,        IDM_EDIT_REDO},
-	{L"",                            SCI_REDO,                    true,  false, true,  VK_Z,        0},
-	{L"SCI_NEWLINE",                 SCI_NEWLINE,                 false, false, false, VK_RETURN,   0},
-	{L"",                            SCI_NEWLINE,                 false, false, true,  VK_RETURN,   0},
-	{L"SCI_TAB",                     SCI_TAB,                     false, false, false, VK_TAB,      0},
-	{L"SCI_BACKTAB",                 SCI_BACKTAB,                 false, false, true,  VK_TAB,      0},
-	{L"SCI_FORMFEED",                SCI_FORMFEED,                false, false, false, 0,           0},
-	{L"SCI_ZOOMIN",                  SCI_ZOOMIN,                  true,  false, false, VK_ADD,      IDM_VIEW_ZOOMIN},
-	{L"SCI_ZOOMOUT",                 SCI_ZOOMOUT,                 true,  false, false, VK_SUBTRACT, IDM_VIEW_ZOOMOUT},
-	{L"SCI_SETZOOM",                 SCI_SETZOOM,                 true,  false, false, VK_DIVIDE,   IDM_VIEW_ZOOMRESTORE},
-	{L"SCI_SELECTIONDUPLICATE",      SCI_SELECTIONDUPLICATE,      true,  false, false, VK_D,        0},
-	{L"SCI_LINESJOIN",               SCI_LINESJOIN,               false, false, false, 0,           0},
-	{L"SCI_SCROLLCARET",             SCI_SCROLLCARET,             false, false, false, 0,           0},
-	{L"SCI_EDITTOGGLEOVERTYPE",      SCI_EDITTOGGLEOVERTYPE,      false, false, false, VK_INSERT,   0},
-	{L"SCI_MOVECARETINSIDEVIEW",     SCI_MOVECARETINSIDEVIEW,     false, false, false, 0,           0},
-	{L"SCI_LINEDOWN",                SCI_LINEDOWN,                false, false, false, VK_DOWN,     0},
-	{L"SCI_LINEDOWNEXTEND",          SCI_LINEDOWNEXTEND,          false, false, true,  VK_DOWN,     0},
-	{L"SCI_LINEDOWNRECTEXTEND",      SCI_LINEDOWNRECTEXTEND,      false, true,  true,  VK_DOWN,     0},
-	{L"SCI_LINESCROLLDOWN",          SCI_LINESCROLLDOWN,          true,  false, false, VK_DOWN,     0},
-	{L"SCI_LINEUP",                  SCI_LINEUP,                  false, false, false, VK_UP,       0},
-	{L"SCI_LINEUPEXTEND",            SCI_LINEUPEXTEND,            false, false, true,  VK_UP,       0},
-	{L"SCI_LINEUPRECTEXTEND",        SCI_LINEUPRECTEXTEND,        false, true,  true,  VK_UP,       0},
-	{L"SCI_LINESCROLLUP",            SCI_LINESCROLLUP,            true,  false, false, VK_UP,       0},
-	{L"SCI_PARADOWN",                SCI_PARADOWN,                true,  false, false, VK_OEM_6,    0},
-	{L"SCI_PARADOWNEXTEND",          SCI_PARADOWNEXTEND,          true,  false, true,  VK_OEM_6,    0},
-	{L"SCI_PARAUP",                  SCI_PARAUP,                  true,  false, false, VK_OEM_4,    0},
-	{L"SCI_PARAUPEXTEND",            SCI_PARAUPEXTEND,            true,  false, true,  VK_OEM_4,    0},
-	{L"SCI_CHARLEFT",                SCI_CHARLEFT,                false, false, false, VK_LEFT,     0},
-	{L"SCI_CHARLEFTEXTEND",          SCI_CHARLEFTEXTEND,          false, false, true,  VK_LEFT,     0},
-	{L"SCI_CHARLEFTRECTEXTEND",      SCI_CHARLEFTRECTEXTEND,      false, true,  true,  VK_LEFT,     0},
-	{L"SCI_CHARRIGHT",               SCI_CHARRIGHT,               false, false, false, VK_RIGHT,    0},
-	{L"SCI_CHARRIGHTEXTEND",         SCI_CHARRIGHTEXTEND,         false, false, true,  VK_RIGHT,    0},
-	{L"SCI_CHARRIGHTRECTEXTEND",     SCI_CHARRIGHTRECTEXTEND,     false, true,  true,  VK_RIGHT,    0},
-	{L"SCI_WORDLEFT",                SCI_WORDLEFT,                true,  false, false, VK_LEFT,     0},
-	{L"SCI_WORDLEFTEXTEND",          SCI_WORDLEFTEXTEND,          true,  false, true,  VK_LEFT,     0},
-	{L"SCI_WORDRIGHT",               SCI_WORDRIGHT,               true,  false, false, VK_RIGHT,    0},
-	{L"SCI_WORDRIGHTEXTEND",         SCI_WORDRIGHTEXTEND,         false, false, false, 0,           0},
-	{L"SCI_WORDLEFTEND",             SCI_WORDLEFTEND,             false, false, false, 0,           0},
-	{L"SCI_WORDLEFTENDEXTEND",       SCI_WORDLEFTENDEXTEND,       false, false, false, 0,           0},
-	{L"SCI_WORDRIGHTEND",            SCI_WORDRIGHTEND,            false, false, false, 0,           0},
-	{L"SCI_WORDRIGHTENDEXTEND",      SCI_WORDRIGHTENDEXTEND,      true,  false, true,  VK_RIGHT,    0},
-	{L"SCI_WORDPARTLEFT",            SCI_WORDPARTLEFT,            true,  false, false, VK_OEM_2,    0},
-	{L"SCI_WORDPARTLEFTEXTEND",      SCI_WORDPARTLEFTEXTEND,      true,  false, true,  VK_OEM_2,    0},
-	{L"SCI_WORDPARTRIGHT",           SCI_WORDPARTRIGHT,           true,  false, false, VK_OEM_5,    0},
-	{L"SCI_WORDPARTRIGHTEXTEND",     SCI_WORDPARTRIGHTEXTEND,     true,  false, true,  VK_OEM_5,    0},
-	{L"SCI_HOME",                    SCI_HOME,                    false, false, false, 0,           0},
-	{L"SCI_HOMEEXTEND",              SCI_HOMEEXTEND,              false, false, false, 0,           0},
-	{L"SCI_HOMERECTEXTEND",          SCI_HOMERECTEXTEND,          false, false, false, 0,           0},
-	{L"SCI_HOMEDISPLAY",             SCI_HOMEDISPLAY,             false, true,  false, VK_HOME,     0},
-	{L"SCI_HOMEDISPLAYEXTEND",       SCI_HOMEDISPLAYEXTEND,       false, false, false, 0,           0},
-	{L"SCI_HOMEWRAP",                SCI_HOMEWRAP,                false, false, false, 0,           0},
-	{L"SCI_HOMEWRAPEXTEND",          SCI_HOMEWRAPEXTEND,          false, false, false, 0,           0},
-	{L"SCI_VCHOME",                  SCI_VCHOME,                  false, false, false, 0,           0},
-	{L"SCI_VCHOMEEXTEND",            SCI_VCHOMEEXTEND,            false, false, false, 0,           0},
-	{L"SCI_VCHOMERECTEXTEND",        SCI_VCHOMERECTEXTEND,        false, true,  true,  VK_HOME,     0},
-	{L"SCI_VCHOMEDISPLAY",           SCI_VCHOMEDISPLAY,           false, false, false, 0,           0},
-	{L"SCI_VCHOMEDISPLAYEXTEND",     SCI_VCHOMEDISPLAYEXTEND,     false, false, false, 0,           0},
-	{L"SCI_VCHOMEWRAP",              SCI_VCHOMEWRAP,              false, false, false, VK_HOME,     0},
-	{L"SCI_VCHOMEWRAPEXTEND",        SCI_VCHOMEWRAPEXTEND,        false, false, true,  VK_HOME,     0},
-	{L"SCI_LINEEND",                 SCI_LINEEND,                 false, false, false, 0,           0},
-	{L"SCI_LINEENDWRAPEXTEND",       SCI_LINEENDWRAPEXTEND,       false, false, true,  VK_END,      0},
-	{L"SCI_LINEENDRECTEXTEND",       SCI_LINEENDRECTEXTEND,       false, true,  true,  VK_END,      0},
-	{L"SCI_LINEENDDISPLAY",          SCI_LINEENDDISPLAY,          false, true,  false, VK_END,      0},
-	{L"SCI_LINEENDDISPLAYEXTEND",    SCI_LINEENDDISPLAYEXTEND,    false, false, false, 0,           0},
-	{L"SCI_LINEENDWRAP",             SCI_LINEENDWRAP,             false, false, false, VK_END,      0},
-	{L"SCI_LINEENDEXTEND",           SCI_LINEENDEXTEND,           false, false, false, 0,           0},
-	{L"SCI_DOCUMENTSTART",           SCI_DOCUMENTSTART,           true,  false, false, VK_HOME,     0},
-	{L"SCI_DOCUMENTSTARTEXTEND",     SCI_DOCUMENTSTARTEXTEND,     true,  false, true,  VK_HOME,     0},
-	{L"SCI_DOCUMENTEND",             SCI_DOCUMENTEND,             true,  false, false, VK_END,      0},
-	{L"SCI_DOCUMENTENDEXTEND",       SCI_DOCUMENTENDEXTEND,       true,  false, true,  VK_END,      0},
-	{L"SCI_PAGEUP",                  SCI_PAGEUP,                  false, false, false, VK_PRIOR,    0},
-	{L"SCI_PAGEUPEXTEND",            SCI_PAGEUPEXTEND,            false, false, true,  VK_PRIOR,    0},
-	{L"SCI_PAGEUPRECTEXTEND",        SCI_PAGEUPRECTEXTEND,        false, true,  true,  VK_PRIOR,    0},
-	{L"SCI_PAGEDOWN",                SCI_PAGEDOWN,                false, false, false, VK_NEXT,     0},
-	{L"SCI_PAGEDOWNEXTEND",          SCI_PAGEDOWNEXTEND,          false, false, true,  VK_NEXT,     0},
-	{L"SCI_PAGEDOWNRECTEXTEND",      SCI_PAGEDOWNRECTEXTEND,      false, true,  true,  VK_NEXT,     0},
-	{L"SCI_STUTTEREDPAGEUP",         SCI_STUTTEREDPAGEUP,         false, false, false, 0,           0},
-	{L"SCI_STUTTEREDPAGEUPEXTEND",   SCI_STUTTEREDPAGEUPEXTEND,   false, false, false, 0,           0},
-	{L"SCI_STUTTEREDPAGEDOWN",       SCI_STUTTEREDPAGEDOWN,       false, false, false, 0,           0},
-	{L"SCI_STUTTEREDPAGEDOWNEXTEND", SCI_STUTTEREDPAGEDOWNEXTEND, false, false, false, 0,           0},
-	{L"SCI_DELETEBACK",              SCI_DELETEBACK,              false, false, false, VK_BACK,     0},
-	{L"",                            SCI_DELETEBACK,              false, false, true,  VK_BACK,     0},
-	{L"SCI_DELETEBACKNOTLINE",       SCI_DELETEBACKNOTLINE,       false, false, false, 0,           0},
-	{L"SCI_DELWORDLEFT",             SCI_DELWORDLEFT,             true,  false, false, VK_BACK,     0},
-	{L"SCI_DELWORDRIGHT",            SCI_DELWORDRIGHT,            true,  false, false, VK_DELETE,   0},
-	{L"SCI_DELLINELEFT",             SCI_DELLINELEFT,             true,  false, true,  VK_BACK,     0},
-	{L"SCI_DELLINERIGHT",            SCI_DELLINERIGHT,            true,  false, true,  VK_DELETE,   0},
-	{L"SCI_LINEDELETE",              SCI_LINEDELETE,              true,  false, true,  VK_L,        0},
-	{L"SCI_LINECUT",                 SCI_LINECUT,                 true,  false, false, VK_L,        0},
-	{L"SCI_LINECOPY",                SCI_LINECOPY,                true,  false, true,  VK_X,        0},
-	{L"SCI_LINETRANSPOSE",           SCI_LINETRANSPOSE,           true,  false, false, VK_T,        0},
-	{L"SCI_LINEDUPLICATE",           SCI_LINEDUPLICATE,           false, false, false, 0,           IDM_EDIT_DUP_LINE},
-	{L"SCI_CANCEL",                  SCI_CANCEL,                  false, false, false, VK_ESCAPE,   0},
-	{L"SCI_SWAPMAINANCHORCARET",     SCI_SWAPMAINANCHORCARET,     false, false, false, 0,           0},
-	{L"SCI_ROTATESELECTION",         SCI_ROTATESELECTION,         false, false, false, 0,           0}
+	//{"SCI_CUT",                     SCI_CUT,                     true,  false, false, VK_X,        IDM_EDIT_CUT},
+	//{"",                            SCI_CUT,                     false, false, true,  VK_DELETE,   0},
+	//{"SCI_COPY",                    SCI_COPY,                    true,  false, false, VK_C,        IDM_EDIT_COPY},
+	//{"",                            SCI_COPY,                    true,  false, false, VK_INSERT,   0},
+	//{"SCI_PASTE",                   SCI_PASTE,                   true,  false, false, VK_V,        IDM_EDIT_PASTE},
+	//{"SCI_PASTE",                   SCI_PASTE,                   false, false, true,  VK_INSERT,   IDM_EDIT_PASTE},
+	{"SCI_SELECTALL",               SCI_SELECTALL,               true,  false, false, VK_A,        IDM_EDIT_SELECTALL},
+	{"SCI_CLEAR",                   SCI_CLEAR,                   false, false, false, VK_DELETE,   IDM_EDIT_DELETE},
+	{"SCI_CLEARALL",                SCI_CLEARALL,                false, false, false, 0,           0},
+	{"SCI_UNDO",                    SCI_UNDO,                    true,  false, false, VK_Z,        IDM_EDIT_UNDO},
+	{"",                            SCI_UNDO,                    false, true,  false, VK_BACK,     0},
+	{"SCI_REDO",                    SCI_REDO,                    true,  false, false, VK_Y,        IDM_EDIT_REDO},
+	{"",                            SCI_REDO,                    true,  false, true,  VK_Z,        0},
+	{"SCI_NEWLINE",                 SCI_NEWLINE,                 false, false, false, VK_RETURN,   0},
+	{"",                            SCI_NEWLINE,                 false, false, true,  VK_RETURN,   0},
+	{"SCI_TAB",                     SCI_TAB,                     false, false, false, VK_TAB,      0},
+	{"SCI_BACKTAB",                 SCI_BACKTAB,                 false, false, true,  VK_TAB,      0},
+	{"SCI_FORMFEED",                SCI_FORMFEED,                false, false, false, 0,           0},
+	{"SCI_ZOOMIN",                  SCI_ZOOMIN,                  true,  false, false, VK_ADD,      IDM_VIEW_ZOOMIN},
+	{"SCI_ZOOMOUT",                 SCI_ZOOMOUT,                 true,  false, false, VK_SUBTRACT, IDM_VIEW_ZOOMOUT},
+	{"SCI_SETZOOM",                 SCI_SETZOOM,                 true,  false, false, VK_DIVIDE,   IDM_VIEW_ZOOMRESTORE},
+	{"SCI_SELECTIONDUPLICATE",      SCI_SELECTIONDUPLICATE,      true,  false, false, VK_D,        0},
+	{"SCI_LINESJOIN",               SCI_LINESJOIN,               false, false, false, 0,           0},
+	{"SCI_SCROLLCARET",             SCI_SCROLLCARET,             false, false, false, 0,           0},
+	{"SCI_EDITTOGGLEOVERTYPE",      SCI_EDITTOGGLEOVERTYPE,      false, false, false, VK_INSERT,   0},
+	{"SCI_MOVECARETINSIDEVIEW",     SCI_MOVECARETINSIDEVIEW,     false, false, false, 0,           0},
+	{"SCI_LINEDOWN",                SCI_LINEDOWN,                false, false, false, VK_DOWN,     0},
+	{"SCI_LINEDOWNEXTEND",          SCI_LINEDOWNEXTEND,          false, false, true,  VK_DOWN,     0},
+	{"SCI_LINEDOWNRECTEXTEND",      SCI_LINEDOWNRECTEXTEND,      false, true,  true,  VK_DOWN,     0},
+	{"SCI_LINESCROLLDOWN",          SCI_LINESCROLLDOWN,          true,  false, false, VK_DOWN,     0},
+	{"SCI_LINEUP",                  SCI_LINEUP,                  false, false, false, VK_UP,       0},
+	{"SCI_LINEUPEXTEND",            SCI_LINEUPEXTEND,            false, false, true,  VK_UP,       0},
+	{"SCI_LINEUPRECTEXTEND",        SCI_LINEUPRECTEXTEND,        false, true,  true,  VK_UP,       0},
+	{"SCI_LINESCROLLUP",            SCI_LINESCROLLUP,            true,  false, false, VK_UP,       0},
+	{"SCI_PARADOWN",                SCI_PARADOWN,                true,  false, false, VK_OEM_6,    0},
+	{"SCI_PARADOWNEXTEND",          SCI_PARADOWNEXTEND,          true,  false, true,  VK_OEM_6,    0},
+	{"SCI_PARAUP",                  SCI_PARAUP,                  true,  false, false, VK_OEM_4,    0},
+	{"SCI_PARAUPEXTEND",            SCI_PARAUPEXTEND,            true,  false, true,  VK_OEM_4,    0},
+	{"SCI_CHARLEFT",                SCI_CHARLEFT,                false, false, false, VK_LEFT,     0},
+	{"SCI_CHARLEFTEXTEND",          SCI_CHARLEFTEXTEND,          false, false, true,  VK_LEFT,     0},
+	{"SCI_CHARLEFTRECTEXTEND",      SCI_CHARLEFTRECTEXTEND,      false, true,  true,  VK_LEFT,     0},
+	{"SCI_CHARRIGHT",               SCI_CHARRIGHT,               false, false, false, VK_RIGHT,    0},
+	{"SCI_CHARRIGHTEXTEND",         SCI_CHARRIGHTEXTEND,         false, false, true,  VK_RIGHT,    0},
+	{"SCI_CHARRIGHTRECTEXTEND",     SCI_CHARRIGHTRECTEXTEND,     false, true,  true,  VK_RIGHT,    0},
+	{"SCI_WORDLEFT",                SCI_WORDLEFT,                true,  false, false, VK_LEFT,     0},
+	{"SCI_WORDLEFTEXTEND",          SCI_WORDLEFTEXTEND,          true,  false, true,  VK_LEFT,     0},
+	{"SCI_WORDRIGHT",               SCI_WORDRIGHT,               true,  false, false, VK_RIGHT,    0},
+	{"SCI_WORDRIGHTEXTEND",         SCI_WORDRIGHTEXTEND,         false, false, false, 0,           0},
+	{"SCI_WORDLEFTEND",             SCI_WORDLEFTEND,             false, false, false, 0,           0},
+	{"SCI_WORDLEFTENDEXTEND",       SCI_WORDLEFTENDEXTEND,       false, false, false, 0,           0},
+	{"SCI_WORDRIGHTEND",            SCI_WORDRIGHTEND,            false, false, false, 0,           0},
+	{"SCI_WORDRIGHTENDEXTEND",      SCI_WORDRIGHTENDEXTEND,      true,  false, true,  VK_RIGHT,    0},
+	{"SCI_WORDPARTLEFT",            SCI_WORDPARTLEFT,            true,  false, false, VK_OEM_2,    0},
+	{"SCI_WORDPARTLEFTEXTEND",      SCI_WORDPARTLEFTEXTEND,      true,  false, true,  VK_OEM_2,    0},
+	{"SCI_WORDPARTRIGHT",           SCI_WORDPARTRIGHT,           true,  false, false, VK_OEM_5,    0},
+	{"SCI_WORDPARTRIGHTEXTEND",     SCI_WORDPARTRIGHTEXTEND,     true,  false, true,  VK_OEM_5,    0},
+	{"SCI_HOME",                    SCI_HOME,                    false, false, false, 0,           0},
+	{"SCI_HOMEEXTEND",              SCI_HOMEEXTEND,              false, false, false, 0,           0},
+	{"SCI_HOMERECTEXTEND",          SCI_HOMERECTEXTEND,          false, false, false, 0,           0},
+	{"SCI_HOMEDISPLAY",             SCI_HOMEDISPLAY,             false, true,  false, VK_HOME,     0},
+	{"SCI_HOMEDISPLAYEXTEND",       SCI_HOMEDISPLAYEXTEND,       false, false, false, 0,           0},
+	{"SCI_HOMEWRAP",                SCI_HOMEWRAP,                false, false, false, 0,           0},
+	{"SCI_HOMEWRAPEXTEND",          SCI_HOMEWRAPEXTEND,          false, false, false, 0,           0},
+	{"SCI_VCHOME",                  SCI_VCHOME,                  false, false, false, 0,           0},
+	{"SCI_VCHOMEEXTEND",            SCI_VCHOMEEXTEND,            false, false, false, 0,           0},
+	{"SCI_VCHOMERECTEXTEND",        SCI_VCHOMERECTEXTEND,        false, true,  true,  VK_HOME,     0},
+	{"SCI_VCHOMEDISPLAY",           SCI_VCHOMEDISPLAY,           false, false, false, 0,           0},
+	{"SCI_VCHOMEDISPLAYEXTEND",     SCI_VCHOMEDISPLAYEXTEND,     false, false, false, 0,           0},
+	{"SCI_VCHOMEWRAP",              SCI_VCHOMEWRAP,              false, false, false, VK_HOME,     0},
+	{"SCI_VCHOMEWRAPEXTEND",        SCI_VCHOMEWRAPEXTEND,        false, false, true,  VK_HOME,     0},
+	{"SCI_LINEEND",                 SCI_LINEEND,                 false, false, false, 0,           0},
+	{"SCI_LINEENDWRAPEXTEND",       SCI_LINEENDWRAPEXTEND,       false, false, true,  VK_END,      0},
+	{"SCI_LINEENDRECTEXTEND",       SCI_LINEENDRECTEXTEND,       false, true,  true,  VK_END,      0},
+	{"SCI_LINEENDDISPLAY",          SCI_LINEENDDISPLAY,          false, true,  false, VK_END,      0},
+	{"SCI_LINEENDDISPLAYEXTEND",    SCI_LINEENDDISPLAYEXTEND,    false, false, false, 0,           0},
+	{"SCI_LINEENDWRAP",             SCI_LINEENDWRAP,             false, false, false, VK_END,      0},
+	{"SCI_LINEENDEXTEND",           SCI_LINEENDEXTEND,           false, false, false, 0,           0},
+	{"SCI_DOCUMENTSTART",           SCI_DOCUMENTSTART,           true,  false, false, VK_HOME,     0},
+	{"SCI_DOCUMENTSTARTEXTEND",     SCI_DOCUMENTSTARTEXTEND,     true,  false, true,  VK_HOME,     0},
+	{"SCI_DOCUMENTEND",             SCI_DOCUMENTEND,             true,  false, false, VK_END,      0},
+	{"SCI_DOCUMENTENDEXTEND",       SCI_DOCUMENTENDEXTEND,       true,  false, true,  VK_END,      0},
+	{"SCI_PAGEUP",                  SCI_PAGEUP,                  false, false, false, VK_PRIOR,    0},
+	{"SCI_PAGEUPEXTEND",            SCI_PAGEUPEXTEND,            false, false, true,  VK_PRIOR,    0},
+	{"SCI_PAGEUPRECTEXTEND",        SCI_PAGEUPRECTEXTEND,        false, true,  true,  VK_PRIOR,    0},
+	{"SCI_PAGEDOWN",                SCI_PAGEDOWN,                false, false, false, VK_NEXT,     0},
+	{"SCI_PAGEDOWNEXTEND",          SCI_PAGEDOWNEXTEND,          false, false, true,  VK_NEXT,     0},
+	{"SCI_PAGEDOWNRECTEXTEND",      SCI_PAGEDOWNRECTEXTEND,      false, true,  true,  VK_NEXT,     0},
+	{"SCI_STUTTEREDPAGEUP",         SCI_STUTTEREDPAGEUP,         false, false, false, 0,           0},
+	{"SCI_STUTTEREDPAGEUPEXTEND",   SCI_STUTTEREDPAGEUPEXTEND,   false, false, false, 0,           0},
+	{"SCI_STUTTEREDPAGEDOWN",       SCI_STUTTEREDPAGEDOWN,       false, false, false, 0,           0},
+	{"SCI_STUTTEREDPAGEDOWNEXTEND", SCI_STUTTEREDPAGEDOWNEXTEND, false, false, false, 0,           0},
+	{"SCI_DELETEBACK",              SCI_DELETEBACK,              false, false, false, VK_BACK,     0},
+	{"",                            SCI_DELETEBACK,              false, false, true,  VK_BACK,     0},
+	{"SCI_DELETEBACKNOTLINE",       SCI_DELETEBACKNOTLINE,       false, false, false, 0,           0},
+	{"SCI_DELWORDLEFT",             SCI_DELWORDLEFT,             true,  false, false, VK_BACK,     0},
+	{"SCI_DELWORDRIGHT",            SCI_DELWORDRIGHT,            true,  false, false, VK_DELETE,   0},
+	{"SCI_DELLINELEFT",             SCI_DELLINELEFT,             true,  false, true,  VK_BACK,     0},
+	{"SCI_DELLINERIGHT",            SCI_DELLINERIGHT,            true,  false, true,  VK_DELETE,   0},
+	{"SCI_LINEDELETE",              SCI_LINEDELETE,              true,  false, true,  VK_L,        0},
+	{"SCI_LINECUT",                 SCI_LINECUT,                 true,  false, false, VK_L,        0},
+	{"SCI_LINECOPY",                SCI_LINECOPY,                true,  false, true,  VK_X,        0},
+	{"SCI_LINETRANSPOSE",           SCI_LINETRANSPOSE,           true,  false, false, VK_T,        0},
+	{"SCI_LINEDUPLICATE",           SCI_LINEDUPLICATE,           false, false, false, 0,           IDM_EDIT_DUP_LINE},
+	{"SCI_CANCEL",                  SCI_CANCEL,                  false, false, false, VK_ESCAPE,   0},
+	{"SCI_SWAPMAINANCHORCARET",     SCI_SWAPMAINANCHORCARET,     false, false, false, 0,           0},
+	{"SCI_ROTATESELECTION",         SCI_ROTATESELECTION,         false, false, false, 0,           0}
 };
 
-#define SHORTCUTSXML_FILENAME L"shortcuts.xml"
-#define SHORTCUTSXML_MODEL_FILENAME L"shortcuts.model.xml"
+#define SHORTCUTSXML_FILENAME "shortcuts.xml"
+#define SHORTCUTSXML_MODEL_FILENAME "shortcuts.model.xml"
 
-#define CONTEXTMENUXML_FILENAME L"contextMenu.xml"
-#define CONTEXTMENUXML_MODEL_FILENAME L"contextMenu.model.xml"
+#define CONTEXTMENUXML_FILENAME "contextMenu.xml"
+#define CONTEXTMENUXML_MODEL_FILENAME "contextMenu.model.xml"
 
-#define SESSION_BACKUP_EXT L".inCaseOfCorruption.bak"
+#define SESSION_BACKUP_EXT ".inCaseOfCorruption.bak"
 
 using PGNSI = void (WINAPI*)(LPSYSTEM_INFO);
 
@@ -798,12 +798,12 @@ static void setBoolAttribute(NppXml::Element& elem, const char* name, bool isTru
 	return XmlAttrResult::failed;
 }
 
-void cutString(const wchar_t* str2cut, std::vector<std::wstring>& patternVect)
+void cutString(const NppChar* str2cut, std::vector<NppString>& patternVect)
 {
 	if (str2cut == nullptr) return;
 
-	const wchar_t *pBegin = str2cut;
-	const wchar_t *pEnd = pBegin;
+	const NppChar *pBegin = str2cut;
+	const NppChar *pEnd = pBegin;
 
 	static const auto& loc = std::locale::classic();
 
@@ -823,12 +823,12 @@ void cutString(const wchar_t* str2cut, std::vector<std::wstring>& patternVect)
 		patternVect.emplace_back(pBegin, pEnd);
 }
 
-void cutStringBy(const wchar_t* str2cut, std::vector<std::wstring>& patternVect, wchar_t byChar, bool allowEmptyStr)
+void cutStringBy(const NppChar* str2cut, std::vector<NppString>& patternVect, NppChar byChar, bool allowEmptyStr)
 {
 	if (str2cut == nullptr) return;
 
-	const wchar_t* pBegin = str2cut;
-	const wchar_t* pEnd = pBegin;
+	const NppChar* pBegin = str2cut;
+	const NppChar* pEnd = pBegin;
 
 	while (*pEnd != L'\0')
 	{
@@ -849,32 +849,32 @@ void cutStringBy(const wchar_t* str2cut, std::vector<std::wstring>& patternVect,
 }
 
 
-std::wstring LocalizationSwitcher::getLangFromXmlFileName(const wchar_t* fn)
+NppString LocalizationSwitcher::getLangFromXmlFileName(const NppChar* fn)
 {
 	for (const auto& locDef : localizationDefs)
 	{
 		if (::_wcsicmp(fn, locDef._xmlFileName) == 0)
 			return locDef._langName;
 	}
-	return L"";
+	return "";
 }
 
 
-std::wstring LocalizationSwitcher::getXmlFilePathFromLangName(const wchar_t *langName) const
+NppString LocalizationSwitcher::getXmlFilePathFromLangName(const NppChar *langName) const
 {
 	for (size_t i = 0, len = _localizationList.size(); i < len ; ++i)
 	{
 		if (_wcsicmp(langName, _localizationList[i].first.c_str()) == 0)
 			return _localizationList[i].second;
 	}
-	return std::wstring();
+	return NppString();
 }
 
 
-bool LocalizationSwitcher::addLanguageFromXml(const std::wstring& xmlFullPath)
+bool LocalizationSwitcher::addLanguageFromXml(const NppString& xmlFullPath)
 {
-	const wchar_t * fn = ::PathFindFileNameW(xmlFullPath.c_str());
-	const std::wstring foundLang = getLangFromXmlFileName(fn);
+	const NppChar * fn = ::PathFindFileNameW(xmlFullPath.c_str());
+	const NppString foundLang = getLangFromXmlFileName(fn);
 	if (!foundLang.empty())
 	{
 		_localizationList.emplace_back(foundLang, xmlFullPath);
@@ -884,9 +884,9 @@ bool LocalizationSwitcher::addLanguageFromXml(const std::wstring& xmlFullPath)
 }
 
 
-bool LocalizationSwitcher::switchToLang(const wchar_t *lang2switch) const
+bool LocalizationSwitcher::switchToLang(const NppChar *lang2switch) const
 {
-	const std::wstring langPath = getXmlFilePathFromLangName(lang2switch);
+	const NppString langPath = getXmlFilePathFromLangName(lang2switch);
 	if (langPath.empty())
 		return false;
 
@@ -894,11 +894,11 @@ bool LocalizationSwitcher::switchToLang(const wchar_t *lang2switch) const
 }
 
 
-std::wstring ThemeSwitcher::getThemeFromXmlFileName(const wchar_t* xmlFullPath)
+NppString ThemeSwitcher::getThemeFromXmlFileName(const NppChar* xmlFullPath)
 {
 	if (!xmlFullPath || !xmlFullPath[0])
-		return L"";
-	std::wstring fn(::PathFindFileName(xmlFullPath));
+		return "";
+	NppString fn(::PathFindFileName(xmlFullPath));
 	::PathRemoveExtension(fn.data());
 	return fn;
 }
@@ -906,7 +906,7 @@ std::wstring ThemeSwitcher::getThemeFromXmlFileName(const wchar_t* xmlFullPath)
 int DynamicMenu::getTopLevelItemNumber() const
 {
 	int nb = 0;
-	std::wstring previousFolderName;
+	NppString previousFolderName;
 	for (const MenuItemUnit& i : _menuItems)
 	{
 		if (i._parentFolderName.empty())
@@ -943,7 +943,7 @@ int DynamicMenu::getTopLevelItemNumber() const
 	return nb;
 }
 
-bool DynamicMenu::attach(HMENU hMenu, unsigned int posBase, int lastCmd, const std::wstring& lastCmdLabel)
+bool DynamicMenu::attach(HMENU hMenu, unsigned int posBase, int lastCmd, const NppString& lastCmdLabel)
 {
 	if (!hMenu) return false;
 
@@ -974,7 +974,7 @@ bool DynamicMenu::createMenu() const
 
 	bool lastIsSep = false;
 	HMENU hParentFolder = NULL;
-	std::wstring currentParentFolderStr;
+	NppString currentParentFolderStr;
 	int j = 0;
 
 	size_t nb = _menuItems.size();
@@ -1053,7 +1053,7 @@ winVer NppParameters::getWindowsVersion()
 			return WV_UNKNOWN;
 	}
 
-	pGNSI = reinterpret_cast<PGNSI>(::GetProcAddress(GetModuleHandle(L"kernel32.dll"), "GetNativeSystemInfo"));
+	pGNSI = reinterpret_cast<PGNSI>(::GetProcAddress(GetModuleHandle("kernel32.dll"), "GetNativeSystemInfo"));
 	if (pGNSI != nullptr)
 		pGNSI(&si);
 	else
@@ -1155,19 +1155,19 @@ NppParameters::NppParameters()
 	_currentSystemCodepage = GetACP();
 
 	// Prepare for default path
-	wchar_t nppPath[MAX_PATH];
+	NppChar nppPath[MAX_PATH];
 	::GetModuleFileName(NULL, nppPath, MAX_PATH);
 
 	PathRemoveFileSpec(nppPath);
 	_nppPath = nppPath;
 
 	//Initialize current directory to startup directory
-	wchar_t curDir[MAX_PATH];
+	NppChar curDir[MAX_PATH];
 	::GetCurrentDirectory(MAX_PATH, curDir);
 	_currentDirectory = curDir;
 
 	_appdataNppDir.clear();
-	std::wstring notepadStylePath(_nppPath);
+	NppString notepadStylePath(_nppPath);
 	pathAppend(notepadStylePath, notepadStyleFile);
 
 	_asNotepadStyle = (doesFileExist(notepadStylePath.c_str()) == TRUE);
@@ -1190,7 +1190,7 @@ NppParameters::~NppParameters()
 }
 
 
-bool NppParameters::reloadStylers(const wchar_t* stylePath)
+bool NppParameters::reloadStylers(const NppChar* stylePath)
 {
 	delete _pXmlUserStylerDoc._doc;
 
@@ -1202,14 +1202,14 @@ bool NppParameters::reloadStylers(const wchar_t* stylePath)
 	{
 		if (!_pNativeLangSpeaker)
 		{
-			NppDarkMode::darkMessageBoxW(nullptr, _pXmlUserStylerDoc._path.c_str(), L"Load stylers.xml failed", MB_OK);
+			NppDarkMode::darkMessageBoxW(nullptr, _pXmlUserStylerDoc._path.c_str(), "Load stylers.xml failed", MB_OK);
 		}
 		else
 		{
 			_pNativeLangSpeaker->messageBox("LoadStylersFailed",
 				nullptr,
-				L"Load \"$STR_REPLACE$\" failed!",
-				L"Load stylers.xml failed",
+				"Load \"$STR_REPLACE$\" failed!",
+				"Load stylers.xml failed",
 				MB_OK,
 				0,
 				_pXmlUserStylerDoc._path.c_str());
@@ -1237,13 +1237,13 @@ bool NppParameters::reloadStylers(const wchar_t* stylePath)
 bool NppParameters::reloadLang()
 {
 	// use user path
-	std::wstring nativeLangPath(_localizationSwitcher._nativeLangPath);
+	NppString nativeLangPath(_localizationSwitcher._nativeLangPath);
 
 	// if "nativeLang.xml" does not exist, use npp path
 	if (!doesFileExist(nativeLangPath.c_str()))
 	{
 		nativeLangPath = _nppPath;
-		pathAppend(nativeLangPath, std::wstring(L"nativeLang.xml"));
+		pathAppend(nativeLangPath, NppString("nativeLang.xml"));
 		if (!doesFileExist(nativeLangPath.c_str()))
 			return false;
 	}
@@ -1261,12 +1261,12 @@ bool NppParameters::reloadLang()
 	return loadOkay;
 }
 
-std::wstring NppParameters::getSpecialFolderLocation(int folderKind)
+NppString NppParameters::getSpecialFolderLocation(int folderKind)
 {
-	wchar_t path[MAX_PATH];
+	NppChar path[MAX_PATH];
 	const HRESULT specialLocationResult = SHGetFolderPath(nullptr, folderKind, nullptr, SHGFP_TYPE_CURRENT, path);
 
-	std::wstring result;
+	NppString result;
 	if (SUCCEEDED(specialLocationResult))
 	{
 		result = path;
@@ -1275,17 +1275,17 @@ std::wstring NppParameters::getSpecialFolderLocation(int folderKind)
 }
 
 
-std::wstring NppParameters::getSettingsFolder() const
+NppString NppParameters::getSettingsFolder() const
 {
 	if (_isLocal)
 		return _nppPath;
 
-	std::wstring settingsFolderPath = getSpecialFolderLocation(CSIDL_APPDATA);
+	NppString settingsFolderPath = getSpecialFolderLocation(CSIDL_APPDATA);
 
 	if (settingsFolderPath.empty())
 		return _nppPath;
 
-	pathAppend(settingsFolderPath, L"Notepad++");
+	pathAppend(settingsFolderPath, "Notepad++");
 	return settingsFolderPath;
 }
 
@@ -1298,7 +1298,7 @@ bool NppParameters::load()
 	_isx64 = sizeof(void *) == 8;
 
 	// Make localConf.xml path
-	std::wstring localConfPath(_nppPath);
+	NppString localConfPath(_nppPath);
 	pathAppend(localConfPath, localConfFile);
 
 	// Test if doLocalConf.xml exists
@@ -1311,8 +1311,8 @@ bool NppParameters::load()
 		// We check if OS is Vista or greater version
 		if (_winVersion >= WV_VISTA)
 		{
-			std::wstring progPath = getSpecialFolderLocation(CSIDL_PROGRAM_FILES);
-			wchar_t nppDirLocation[MAX_PATH];
+			NppString progPath = getSpecialFolderLocation(CSIDL_PROGRAM_FILES);
+			NppChar nppDirLocation[MAX_PATH];
 			wcscpy_s(nppDirLocation, _nppPath.c_str());
 			::PathRemoveFileSpec(nppDirLocation);
 
@@ -1322,33 +1322,33 @@ bool NppParameters::load()
 	}
 
 	_pluginRootDir = _nppPath;
-	pathAppend(_pluginRootDir, L"plugins");
+	pathAppend(_pluginRootDir, "plugins");
 
 	//
 	// the 3rd priority: general default configuration
 	//
-	std::wstring nppPluginRootParent;
+	NppString nppPluginRootParent;
 	if (_isLocal)
 	{
 		_userPath = nppPluginRootParent = _nppPath;
 		_userPluginConfDir = _pluginRootDir;
-		pathAppend(_userPluginConfDir, L"Config");
+		pathAppend(_userPluginConfDir, "Config");
 	}
 	else
 	{
 		_userPath = getSpecialFolderLocation(CSIDL_APPDATA);
 
-		pathAppend(_userPath, L"Notepad++");
+		pathAppend(_userPath, "Notepad++");
 		if (!doesDirectoryExist(_userPath.c_str()))
 			::CreateDirectory(_userPath.c_str(), NULL);
 
 		_appdataNppDir = _userPluginConfDir = _userPath;
 
-		pathAppend(_userPluginConfDir, L"plugins");
+		pathAppend(_userPluginConfDir, "plugins");
 		if (!doesDirectoryExist(_userPluginConfDir.c_str()))
 			::CreateDirectory(_userPluginConfDir.c_str(), NULL);
 
-		pathAppend(_userPluginConfDir, L"Config");
+		pathAppend(_userPluginConfDir, "Config");
 		if (!doesDirectoryExist(_userPluginConfDir.c_str()))
 			::CreateDirectory(_userPluginConfDir.c_str(), NULL);
 
@@ -1357,7 +1357,7 @@ bool NppParameters::load()
 	}
 
 	_pluginConfDir = _pluginRootDir; // for plugin list home
-	pathAppend(_pluginConfDir, L"Config");
+	pathAppend(_pluginConfDir, "Config");
 
 	if (!doesDirectoryExist(nppPluginRootParent.c_str()))
 		::CreateDirectory(nppPluginRootParent.c_str(), NULL);
@@ -1367,8 +1367,8 @@ bool NppParameters::load()
 	_sessionPath = _userPath; // Session stores the absolute file path, it should never be on cloud
 
 	// Detection cloud settings
-	std::wstring cloudChoicePath{_userPath};
-	cloudChoicePath += L"\\cloud\\choice";
+	NppString cloudChoicePath{_userPath};
+	cloudChoicePath += "\\cloud\\choice";
 
 	//
 	// the 2nd priority: Cloud Choice Path
@@ -1377,7 +1377,7 @@ bool NppParameters::load()
 	if (_isCloud)
 	{
 		// Read cloud choice
-		std::wstring cloudChoiceStrW = L"";
+		NppString cloudChoiceStrW = "";
 		bool bLoadingFailed = false;
 		std::string cloudChoiceStr = getFileContent(cloudChoicePath.c_str(), &bLoadingFailed);
 		if (!bLoadingFailed)
@@ -1406,10 +1406,10 @@ bool NppParameters::load()
 		{
 			// The following text is not translatable.
 			// _pNativeLangSpeaker is initialized AFTER _userPath being determined because nativeLang.xml is from _userPath.
-			std::wstring errMsg = L"The given path\r";
+			NppString errMsg = "The given path\r";
 			errMsg += _cmdSettingsDir;
-			errMsg += L"\nvia command line \"-settingsDir=\" is not a valid directory.\rThis argument will be ignored.";
-			NppDarkMode::darkMessageBoxW(nullptr, errMsg.c_str(), L"Invalid directory", MB_OK);
+			errMsg += "\nvia command line \"-settingsDir=\" is not a valid directory.\rThis argument will be ignored.";
+			NppDarkMode::darkMessageBoxW(nullptr, errMsg.c_str(), "Invalid directory", MB_OK);
 		}
 		else
 		{
@@ -1421,11 +1421,11 @@ bool NppParameters::load()
 	//--------------------------//
 	// langs.xml : for per-user //
 	//--------------------------//
-	std::wstring langs_xml_path(_userPath);
-	pathAppend(langs_xml_path, L"langs.xml");
+	NppString langs_xml_path(_userPath);
+	pathAppend(langs_xml_path, "langs.xml");
 
-	std::wstring modelLangsPath(_nppPath);
-	pathAppend(modelLangsPath, L"langs.model.xml");
+	NppString modelLangsPath(_nppPath);
+	pathAppend(modelLangsPath, "langs.model.xml");
 
 	BOOL doRecover = FALSE;
 	if (doesFileExist(langs_xml_path.c_str()))
@@ -1440,13 +1440,13 @@ bool NppParameters::load()
 				{
 					doRecover = _pNativeLangSpeaker->messageBox("LoadLangsFailed",
 						NULL,
-						L"Load langs.xml failed!\rDo you want to recover your langs.xml?",
-						L"Configurator",
+						"Load langs.xml failed!\rDo you want to recover your langs.xml?",
+						"Configurator",
 						MB_YESNO);
 				}
 				else
 				{
-					doRecover = NppDarkMode::darkMessageBoxW(nullptr, L"Load langs.xml failed!\rDo you want to recover your langs.xml?", L"Configurator", MB_YESNO);
+					doRecover = NppDarkMode::darkMessageBoxW(nullptr, "Load langs.xml failed!\rDo you want to recover your langs.xml?", "Configurator", MB_YESNO);
 				}
 			}
 		}
@@ -1469,13 +1469,13 @@ bool NppParameters::load()
 		{
 			_pNativeLangSpeaker->messageBox("LoadLangsFailedFinal",
 				NULL,
-				L"Load langs.xml failed!",
-				L"Configurator",
+				"Load langs.xml failed!",
+				"Configurator",
 				MB_OK);
 		}
 		else
 		{
-			NppDarkMode::darkMessageBoxW(nullptr, L"Load langs.xml failed!", L"Configurator", MB_OK);
+			NppDarkMode::darkMessageBoxW(nullptr, "Load langs.xml failed!", "Configurator", MB_OK);
 		}
 
 		delete _pXmlDoc._doc;
@@ -1489,11 +1489,11 @@ bool NppParameters::load()
 	//---------------------------//
 	// config.xml : for per-user //
 	//---------------------------//
-	std::wstring configPath(_userPath);
-	pathAppend(configPath, L"config.xml");
+	NppString configPath(_userPath);
+	pathAppend(configPath, "config.xml");
 
-	std::wstring srcConfigPath(_nppPath);
-	pathAppend(srcConfigPath, L"config.model.xml");
+	NppString srcConfigPath(_nppPath);
+	pathAppend(srcConfigPath, "config.model.xml");
 
 	if (!doesFileExist(configPath.c_str()))
 		::CopyFile(srcConfigPath.c_str(), configPath.c_str(), FALSE);
@@ -1516,12 +1516,12 @@ bool NppParameters::load()
 	//----------------------------//
 
 	_stylerPath = _userPath;
-	pathAppend(_stylerPath, L"stylers.xml");
+	pathAppend(_stylerPath, "stylers.xml");
 
 	if (!doesFileExist(_stylerPath.c_str()))
 	{
-		std::wstring srcStylersPath(_nppPath);
-		pathAppend(srcStylersPath, L"stylers.model.xml");
+		NppString srcStylersPath(_nppPath);
+		pathAppend(srcStylersPath, "stylers.model.xml");
 		::CopyFile(srcStylersPath.c_str(), _stylerPath.c_str(), TRUE);
 	}
 
@@ -1538,15 +1538,15 @@ bool NppParameters::load()
 		{
 			_pNativeLangSpeaker->messageBox("LoadStylersFailed",
 				NULL,
-				L"Load \"$STR_REPLACE$\" failed!",
-				L"Load stylers.xml failed",
+				"Load \"$STR_REPLACE$\" failed!",
+				"Load stylers.xml failed",
 				MB_OK,
 				0,
 				_stylerPath.c_str());
 		}
 		else
 		{
-			NppDarkMode::darkMessageBoxW(nullptr, _stylerPath.c_str(), L"Load stylers.xml failed", MB_OK);
+			NppDarkMode::darkMessageBoxW(nullptr, _stylerPath.c_str(), "Load stylers.xml failed", MB_OK);
 		}
 		delete _pXmlUserStylerDoc._doc;
 		_pXmlUserStylerDoc._doc = nullptr;
@@ -1563,11 +1563,11 @@ bool NppParameters::load()
 	// userDefineLang.xml : for per-user //
 	//-----------------------------------//
 	_userDefineLangsFolderPath = _userDefineLangPath = _userPath;
-	pathAppend(_userDefineLangPath, L"userDefineLang.xml");
-	pathAppend(_userDefineLangsFolderPath, L"userDefineLangs");
+	pathAppend(_userDefineLangPath, "userDefineLang.xml");
+	pathAppend(_userDefineLangsFolderPath, "userDefineLangs");
 
-	std::vector<std::wstring> udlFiles;
-	getFilesInFolder(udlFiles, L"*.xml", _userDefineLangsFolderPath);
+	std::vector<NppString> udlFiles;
+	getFilesInFolder(udlFiles, "*.xml", _userDefineLangsFolderPath);
 
 	_pXmlUserLangDoc._path = _userDefineLangPath;
 	_pXmlUserLangDoc._doc = new NppXml::NewDocument();
@@ -1613,9 +1613,9 @@ bool NppParameters::load()
 	// We'll look in the Notepad++ Dir.			    //
 	//----------------------------------------------//
 
-	std::wstring nativeLangPath;
+	NppString nativeLangPath;
 	nativeLangPath = _userPath;
-	pathAppend(nativeLangPath, L"nativeLang.xml");
+	pathAppend(nativeLangPath, "nativeLang.xml");
 
 	// LocalizationSwitcher should use always user path
 	_localizationSwitcher._nativeLangPath = nativeLangPath;
@@ -1624,7 +1624,7 @@ bool NppParameters::load()
 	{
 		// overwrite nativeLangPath variable
 		nativeLangPath = _nppPath;
-		pathAppend(nativeLangPath, L"localization\\");
+		pathAppend(nativeLangPath, "localization\\");
 		pathAppend(nativeLangPath, _startWithLocFileName);
 	}
 	else // use %appdata% location, or (if absence then) npp installed location
@@ -1632,7 +1632,7 @@ bool NppParameters::load()
 		if (!doesFileExist(nativeLangPath.c_str()))
 		{
 			nativeLangPath = _nppPath;
-			pathAppend(nativeLangPath, L"nativeLang.xml");
+			pathAppend(nativeLangPath, "nativeLang.xml");
 		}
 	}
 
@@ -1648,8 +1648,8 @@ bool NppParameters::load()
 	//---------------------------------------//
 	// toolbarButtonsConf.xml : for per-user //
 	//---------------------------------------//
-	std::wstring toolbarButtonsConfXmlPath(_userPath);
-	pathAppend(toolbarButtonsConfXmlPath, L"toolbarButtonsConf.xml");
+	NppString toolbarButtonsConfXmlPath(_userPath);
+	pathAppend(toolbarButtonsConfXmlPath, "toolbarButtonsConf.xml");
 
 	_pXmlToolButtonsConfDoc = new NppXml::NewDocument();
 	loadOkay = NppXml::loadFile(_pXmlToolButtonsConfDoc, toolbarButtonsConfXmlPath.c_str());
@@ -1668,7 +1668,7 @@ bool NppParameters::load()
 
 	if (!doesFileExist(_shortcutsPath.c_str()))
 	{
-		std::wstring srcShortcutsPath(_nppPath);
+		NppString srcShortcutsPath(_nppPath);
 		pathAppend(srcShortcutsPath, SHORTCUTSXML_MODEL_FILENAME);
 		if (doesFileExist(srcShortcutsPath.c_str()))
 			::CopyFile(srcShortcutsPath.c_str(), _shortcutsPath.c_str(), TRUE);
@@ -1724,7 +1724,7 @@ bool NppParameters::load()
 
 	if (!doesFileExist(_contextMenuPath.c_str()))
 	{
-		std::wstring srcContextMenuPath(_nppPath);
+		NppString srcContextMenuPath(_nppPath);
 		pathAppend(srcContextMenuPath, CONTEXTMENUXML_MODEL_FILENAME);
 
 		if (doesFileExist(srcContextMenuPath.c_str()))
@@ -1746,7 +1746,7 @@ bool NppParameters::load()
 	// tabContextMenu.xml : for per-user, optional //
 	//---------------------------------------------//
 	_tabContextMenuPath = _userPath;
-	pathAppend(_tabContextMenuPath, L"tabContextMenu.xml");
+	pathAppend(_tabContextMenuPath, "tabContextMenu.xml");
 
 	_pXmlTabContextMenuDoc = new NppXml::NewDocument();
 	loadOkay = NppXml::loadFileContextMenu(_pXmlTabContextMenuDoc, _tabContextMenuPath.c_str());
@@ -1760,7 +1760,7 @@ bool NppParameters::load()
 	// session.xml : for per-user //
 	//----------------------------//
 
-	pathAppend(_sessionPath, L"session.xml");
+	pathAppend(_sessionPath, "session.xml");
 
 	// Don't load session.xml if not required in order to speed up!!
 	const NppGUI & nppGUI = (NppParameters::getInstance()).getNppGUI();
@@ -1775,7 +1775,7 @@ bool NppParameters::load()
 
 		if (!loadOkay)
 		{
-			std::wstring sessionInCaseOfCorruption_bak = _sessionPath;
+			NppString sessionInCaseOfCorruption_bak = _sessionPath;
 			sessionInCaseOfCorruption_bak += SESSION_BACKUP_EXT;
 			if (doesFileExist(sessionInCaseOfCorruption_bak.c_str()))
 			{
@@ -1825,7 +1825,7 @@ bool NppParameters::load()
 		}
 	}
 
-	std::wstring filePath, filePath2, issueFileName;
+	NppString filePath, filePath2, issueFileName;
 	//-------------------------------------------------------------//
 	// nppLogNetworkDriveIssue.xml                                 //
 	// This empty xml file is optional - user adds this empty file //
@@ -1833,7 +1833,7 @@ bool NppParameters::load()
 	//-------------------------------------------------------------//
 	filePath = _nppPath;
 	issueFileName = nppLogNetworkDriveIssue;
-	issueFileName += L".xml";
+	issueFileName += ".xml";
 	pathAppend(filePath, issueFileName);
 	_doNppLogNetworkDriveIssue = doesFileExist(filePath.c_str());
 	if (!_doNppLogNetworkDriveIssue)
@@ -1850,7 +1850,7 @@ bool NppParameters::load()
 	// for the Win10+ OS app-restart feature.                      //
 	//-------------------------------------------------------------//
 	filePath = _nppPath;
-	std::wstring noRegForOSAppRestartTrigger = L"noRestartAutomatically.xml";
+	NppString noRegForOSAppRestartTrigger = "noRestartAutomatically.xml";
 	pathAppend(filePath, noRegForOSAppRestartTrigger);
 	_isRegForOSAppRestartDisabled = doesFileExist(filePath.c_str());
 	if (!_isRegForOSAppRestartDisabled)
@@ -1866,7 +1866,7 @@ bool NppParameters::load()
 	// will be disabled, even though WinGUp is present.            //
 	//-------------------------------------------------------------//
 	filePath = _nppPath;
-	std::wstring disableNppAutoUpdateFileName = L"disableNppAutoUpdate.xml";
+	NppString disableNppAutoUpdateFileName = "disableNppAutoUpdate.xml";
 	pathAppend(filePath, disableNppAutoUpdateFileName);
 	_isNppAutoUpdateDisabled = doesFileExist(filePath.c_str());
 
@@ -1902,7 +1902,7 @@ void NppParameters::saveConfig_xml() const
 }
 
 
-void NppParameters::setWorkSpaceFilePath(int i, const wchar_t* wsFile)
+void NppParameters::setWorkSpaceFilePath(int i, const NppChar* wsFile)
 {
 	if (i < 0 || i > 2 || !wsFile)
 		return;
@@ -1942,12 +1942,12 @@ bool NppParameters::isExistingExternalLangName(const char* newName) const
 }
 
 
-const wchar_t* NppParameters::getUserDefinedLangNameFromExt(const wchar_t* ext, const wchar_t* fullName) const
+const NppChar* NppParameters::getUserDefinedLangNameFromExt(const NppChar* ext, const NppChar* fullName) const
 {
 	if ((!ext) || (!ext[0]))
 		return nullptr;
 
-	std::vector<std::wstring> extVect;
+	std::vector<NppString> extVect;
 	int iMatched = -1;
 	for (int i = 0 ; i < _nbUserLang ; ++i)
 	{
@@ -1980,7 +1980,7 @@ const wchar_t* NppParameters::getUserDefinedLangNameFromExt(const wchar_t* ext, 
 }
 
 
-int NppParameters::getExternalLangIndexFromName(const wchar_t* externalLangName) const
+int NppParameters::getExternalLangIndexFromName(const NppChar* externalLangName) const
 {
 	for (int i = 0 ; i < _nbExternalLang ; ++i)
 	{
@@ -1991,7 +1991,7 @@ int NppParameters::getExternalLangIndexFromName(const wchar_t* externalLangName)
 }
 
 
-const UserLangContainer* NppParameters::getULCFromName(const wchar_t* userLangName) const
+const UserLangContainer* NppParameters::getULCFromName(const NppChar* userLangName) const
 {
 	for (int i = 0 ; i < _nbUserLang ; ++i)
 	{
@@ -2006,7 +2006,7 @@ const UserLangContainer* NppParameters::getULCFromName(const wchar_t* userLangNa
 
 COLORREF NppParameters::getCurLineHilitingColour()
 {
-	const Style* pStyle = _widgetStyleArray.findByName(L"Current line background colour");
+	const Style* pStyle = _widgetStyleArray.findByName("Current line background colour");
 	if (!pStyle)
 		return static_cast<COLORREF>(-1);
 	return pStyle->_bgColor;
@@ -2015,7 +2015,7 @@ COLORREF NppParameters::getCurLineHilitingColour()
 
 void NppParameters::setCurLineHilitingColour(COLORREF colour2Set)
 {
-	Style * pStyle = _widgetStyleArray.findByName(L"Current line background colour");
+	Style * pStyle = _widgetStyleArray.findByName("Current line background colour");
 	if (!pStyle)
 		return;
 	pStyle->_bgColor = colour2Set;
@@ -2025,9 +2025,9 @@ void NppParameters::setCurLineHilitingColour(COLORREF colour2Set)
 
 static int CALLBACK EnumFontFamExProc(const LOGFONT* lpelfe, const TEXTMETRIC*, DWORD, LPARAM lParam)
 {
-	auto& strVect = *reinterpret_cast<std::vector<std::wstring>*>(lParam);
+	auto& strVect = *reinterpret_cast<std::vector<NppString>*>(lParam);
 	const auto vectSize = static_cast<int>(strVect.size());
-	const wchar_t* lfFaceName = (reinterpret_cast<const ENUMLOGFONTEX*>(lpelfe))->elfLogFont.lfFaceName;
+	const NppChar* lfFaceName = (reinterpret_cast<const ENUMLOGFONTEX*>(lpelfe))->elfLogFont.lfFaceName;
 
 	//Search through all the fonts, EnumFontFamiliesEx never states anything about order
 	//Start at the end though, that's the most likely place to find a duplicate
@@ -2052,7 +2052,7 @@ void NppParameters::setFontList(HWND hWnd)
 	LOGFONT lf{};
 	_fontlist.clear();
 	_fontlist.reserve(64); // arbitrary
-	_fontlist.emplace_back(L"");
+	_fontlist.emplace_back("");
 
 	lf.lfCharSet = DEFAULT_CHARSET;
 	lf.lfFaceName[0]='\0';
@@ -2061,7 +2061,7 @@ void NppParameters::setFontList(HWND hWnd)
 	::EnumFontFamiliesEx(hDC, &lf, EnumFontFamExProc, reinterpret_cast<LPARAM>(&_fontlist), 0);
 }
 
-bool NppParameters::isInFontList(const std::wstring& fontName2Search) const
+bool NppParameters::isInFontList(const NppString& fontName2Search) const
 {
 	if (fontName2Search.empty())
 		return false;
@@ -2115,15 +2115,15 @@ bool NppParameters::getUserStylersFromXmlTree()
 bool NppParameters::updateFromModelXml(NppXml::Element& rootUser, ConfXml whichConf)
 {
 	// Determine conf-specific information first
-	std::wstring modelXmlFilename;
+	NppString modelXmlFilename;
 	NppXml::Document pXmlDocument = nullptr;
 	std::string mainElementName;
-	std::wstring docPath;
+	NppString docPath;
 	switch (whichConf)
 	{
 		case ConfXml::lang:
 		{
-			modelXmlFilename = L"langs.model.xml";
+			modelXmlFilename = "langs.model.xml";
 			pXmlDocument = _pXmlDoc._doc;
 			docPath = _pXmlDoc._path;
 			mainElementName = "Languages";
@@ -2131,7 +2131,7 @@ bool NppParameters::updateFromModelXml(NppXml::Element& rootUser, ConfXml whichC
 		}
 		case ConfXml::styles:
 		{
-			modelXmlFilename = L"stylers.model.xml";
+			modelXmlFilename = "stylers.model.xml";
 			pXmlDocument = _pXmlUserStylerDoc._doc;
 			docPath = _pXmlUserStylerDoc._path;
 			mainElementName = "LexerStyles";
@@ -2145,7 +2145,7 @@ bool NppParameters::updateFromModelXml(NppXml::Element& rootUser, ConfXml whichC
 	}
 
 	// Need the name of the XML model document
-	std::wstring modelXmlPath(_nppPath);
+	NppString modelXmlPath(_nppPath);
 	pathAppend(modelXmlPath, modelXmlFilename);
 
 	// compare the *.model.xml's filesystem "modified" timestamp (date only) to the value stored in the user file modelFileLastModifiedDate attribute
@@ -2435,11 +2435,11 @@ void NppParameters::updateLangXml(NppXml::Element& mainElemUser, const NppXml::E
 	return;
 }
 
-void NppParameters::updateStylesXml(const NppXml::Element& rootUser, const std::wstring& userDocPath, const NppXml::Element& rootModel, NppXml::Element& mainElemUser, const NppXml::Element& mainElemModel)
+void NppParameters::updateStylesXml(const NppXml::Element& rootUser, const NppString& userDocPath, const NppXml::Element& rootModel, NppXml::Element& mainElemUser, const NppXml::Element& mainElemModel)
 {
 	std::string defaultFgColor, defaultBgColor;
 
-	auto endsWith = [](std::wstring const& fullString, std::wstring const& suffix) -> bool
+	auto endsWith = [](NppString const& fullString, NppString const& suffix) -> bool
 	{
 		if (fullString.length() >= suffix.length())
 		{
@@ -2451,7 +2451,7 @@ void NppParameters::updateStylesXml(const NppXml::Element& rootUser, const std::
 			return false;
 		}
 	};
-	const bool useDefaultColors = !endsWith(userDocPath, L"stylers.xml"); // use the Colors from "Default Style", except when it's stylers.xml
+	const bool useDefaultColors = !endsWith(userDocPath, "stylers.xml"); // use the Colors from "Default Style", except when it's stylers.xml
 
 	// Start with GlobalStyles
 	//		(even though it comes later in the actual XML file, need to be able to extract the defaultFgColor and defaultBgColor before doing the individual lexers)
@@ -2939,12 +2939,12 @@ bool NppParameters::reloadContextMenuFromXmlTree(HMENU mainMenuHandle, HMENU plu
 	return getContextMenuFromXmlTree(mainMenuHandle, pluginsMenu);
 }
 
-int NppParameters::getCmdIdFromMenuEntryItemName(HMENU mainMenuHandle, const std::wstring& menuEntryName, const std::wstring& menuItemName)
+int NppParameters::getCmdIdFromMenuEntryItemName(HMENU mainMenuHandle, const NppString& menuEntryName, const NppString& menuItemName)
 {
 	int nbMenuEntry = ::GetMenuItemCount(mainMenuHandle);
 	for (int i = 0; i < nbMenuEntry; ++i)
 	{
-		wchar_t menuEntryString[menuItemStrLenMax];
+		NppChar menuEntryString[menuItemStrLenMax];
 		::GetMenuString(mainMenuHandle, i, menuEntryString, menuItemStrLenMax, MF_BYPOSITION);
 		if (_wcsicmp(menuEntryName.c_str(), purgeMenuItemString(menuEntryString).c_str()) == 0)
 		{
@@ -2969,7 +2969,7 @@ int NppParameters::getCmdIdFromMenuEntryItemName(HMENU mainMenuHandle, const std
 				else
 				{
 					//  Check current menu position.
-					wchar_t cmdStr[menuItemStrLenMax];
+					NppChar cmdStr[menuItemStrLenMax];
 					::GetMenuString(currMenu, currMenuPos, cmdStr, menuItemStrLenMax, MF_BYPOSITION);
 					if (_wcsicmp(menuItemName.c_str(), purgeMenuItemString(cmdStr).c_str()) == 0)
 					{
@@ -2999,12 +2999,12 @@ int NppParameters::getCmdIdFromMenuEntryItemName(HMENU mainMenuHandle, const std
 	return -1;
 }
 
-int NppParameters::getPluginCmdIdFromMenuEntryItemName(HMENU pluginsMenu, const std::wstring& pluginName, const std::wstring& pluginCmdName)
+int NppParameters::getPluginCmdIdFromMenuEntryItemName(HMENU pluginsMenu, const NppString& pluginName, const NppString& pluginCmdName)
 {
 	int nbPlugins = ::GetMenuItemCount(pluginsMenu);
 	for (int i = 0; i < nbPlugins; ++i)
 	{
-		wchar_t menuItemString[menuItemStrLenMax];
+		NppChar menuItemString[menuItemStrLenMax];
 		::GetMenuString(pluginsMenu, i, menuItemString, menuItemStrLenMax, MF_BYPOSITION);
 		if (_wcsicmp(pluginName.c_str(), purgeMenuItemString(menuItemString).c_str()) == 0)
 		{
@@ -3012,7 +3012,7 @@ int NppParameters::getPluginCmdIdFromMenuEntryItemName(HMENU pluginsMenu, const 
 			int nbPluginCmd = ::GetMenuItemCount(pluginMenu);
 			for (int j = 0; j < nbPluginCmd; ++j)
 			{
-				wchar_t pluginCmdStr[menuItemStrLenMax];
+				NppChar pluginCmdStr[menuItemStrLenMax];
 				::GetMenuString(pluginMenu, j, pluginCmdStr, menuItemStrLenMax, MF_BYPOSITION);
 				if (_wcsicmp(pluginCmdName.c_str(), purgeMenuItemString(pluginCmdStr).c_str()) == 0)
 				{
@@ -3051,8 +3051,8 @@ bool NppParameters::getContextMenuFromXmlTree(HMENU mainMenuHandle, HMENU plugin
 			const char* folderNameTranslateID_A = NppXml::attribute(childNode, "TranslateID");
 			const char* displayAsA = NppXml::attribute(childNode, "ItemNameAs");
 
-			std::wstring folderName = folderNameDefaultA ? wmc.char2wchar(folderNameDefaultA, SC_CP_UTF8) : L"";
-			std::wstring displayAs = displayAsA ? wmc.char2wchar(displayAsA, SC_CP_UTF8) : L"";
+			NppString folderName = folderNameDefaultA ? wmc.char2wchar(folderNameDefaultA, SC_CP_UTF8) : "";
+			NppString displayAs = displayAsA ? wmc.char2wchar(displayAsA, SC_CP_UTF8) : "";
 
 			if (folderNameTranslateID_A)
 			{
@@ -3069,8 +3069,8 @@ bool NppParameters::getContextMenuFromXmlTree(HMENU mainMenuHandle, HMENU plugin
 				const char* menuEntryNameA = NppXml::attribute(childNode, "MenuEntryName");
 				const char* menuItemNameA = NppXml::attribute(childNode, "MenuItemName");
 
-				std::wstring menuEntryName = menuEntryNameA ? wmc.char2wchar(menuEntryNameA, SC_CP_UTF8) : L"";
-				std::wstring menuItemName = menuItemNameA ? wmc.char2wchar(menuItemNameA, SC_CP_UTF8) : L"";
+				NppString menuEntryName = menuEntryNameA ? wmc.char2wchar(menuEntryNameA, SC_CP_UTF8) : "";
+				NppString menuItemName = menuItemNameA ? wmc.char2wchar(menuItemNameA, SC_CP_UTF8) : "";
 
 				if (!menuEntryName.empty() && !menuItemName.empty())
 				{
@@ -3083,8 +3083,8 @@ bool NppParameters::getContextMenuFromXmlTree(HMENU mainMenuHandle, HMENU plugin
 					const char* pluginNameA = NppXml::attribute(childNode, "PluginEntryName");
 					const char* pluginCmdNameA = NppXml::attribute(childNode, "PluginCommandItemName");
 
-					std::wstring pluginName = pluginNameA ? wmc.char2wchar(pluginNameA, SC_CP_UTF8) : L"";
-					std::wstring pluginCmdName = pluginCmdNameA ? wmc.char2wchar(pluginCmdNameA, SC_CP_UTF8) : L"";
+					NppString pluginName = pluginNameA ? wmc.char2wchar(pluginNameA, SC_CP_UTF8) : "";
+					NppString pluginCmdName = pluginCmdNameA ? wmc.char2wchar(pluginCmdNameA, SC_CP_UTF8) : "";
 
 					// if plugin menu exists, also the value of PluginEntryName and PluginCommandItemName are valid
 					if (pluginsMenu && !pluginName.empty() && !pluginCmdName.empty())
@@ -3101,7 +3101,7 @@ bool NppParameters::getContextMenuFromXmlTree(HMENU mainMenuHandle, HMENU plugin
 }
 
 
-void NppParameters::setWorkingDir(const wchar_t * newPath)
+void NppParameters::setWorkingDir(const NppChar * newPath)
 {
 	if (newPath && newPath[0])
 	{
@@ -3116,7 +3116,7 @@ void NppParameters::setWorkingDir(const wchar_t * newPath)
 	}
 }
 
-bool NppParameters::loadSession(Session& session, const wchar_t* sessionFileName, const bool bSuppressErrorMsg)
+bool NppParameters::loadSession(Session& session, const NppChar* sessionFileName, const bool bSuppressErrorMsg)
 {
 	NppXml::Document pXmlSessionDocument = new NppXml::NewDocument();
 	bool loadOkay = NppXml::loadFile(pXmlSessionDocument, sessionFileName);
@@ -3127,8 +3127,8 @@ bool NppParameters::loadSession(Session& session, const wchar_t* sessionFileName
 	{
 		_pNativeLangSpeaker->messageBox("SessionFileInvalidError",
 			nullptr,
-			L"Session file is either corrupted or not valid.",
-			L"Could not Load Session",
+			"Session file is either corrupted or not valid.",
+			"Could not Load Session",
 			MB_OK);
 	}
 
@@ -3185,7 +3185,7 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 				const char* fileName = NppXml::attribute(childNode, "filename");
 				if (fileName)
 				{
-					std::wstring wstrFileName = string2wstring(fileName);
+					NppString wstrFileName = string2wstring(fileName);
 
 					if (isUncPath(wstrFileName))
 					{
@@ -3238,9 +3238,9 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 
 					const char* langName = NppXml::attribute(childNode, "lang");
 
-					std::wstring wstrLangName = langName ? string2wstring(langName) : L"";
+					NppString wstrLangName = langName ? string2wstring(langName) : "";
 
-					const wchar_t* pBackupFilePath = wmc.char2wchar(NppXml::attribute(childNode, "backupFilePath"), CP_UTF8);
+					const NppChar* pBackupFilePath = wmc.char2wchar(NppXml::attribute(childNode, "backupFilePath"), CP_UTF8);
 
 					if (isUncPath(pBackupFilePath))
 					{
@@ -3267,11 +3267,11 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 						}
 					}
 
-					wchar_t normalizedBackupFilePath[MAX_PATH]{};
+					NppChar normalizedBackupFilePath[MAX_PATH]{};
 
 					if (pBackupFilePath && wcslen(pBackupFilePath) < MAX_PATH)
 					{
-						std::wstring sanitizedPath = pBackupFilePath;
+						NppString sanitizedPath = pBackupFilePath;
 						std::replace(sanitizedPath.begin(), sanitizedPath.end(), L'/', L'\\');
 
 						if (!::PathCanonicalize(normalizedBackupFilePath, sanitizedPath.c_str()))
@@ -3279,19 +3279,19 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 					}
 					else if (pBackupFilePath)
 					{
-						wchar_t* fn = ::PathFindFileNameW(pBackupFilePath);
+						NppChar* fn = ::PathFindFileNameW(pBackupFilePath);
 						StringCchCopyW(normalizedBackupFilePath, MAX_PATH, fn);
 					}
 
-					std::wstring currentBackupFilePath = NppParameters::getInstance().getUserPath() + L"\\backup\\";
+					NppString currentBackupFilePath = NppParameters::getInstance().getUserPath() + "\\backup\\";
 
-					wchar_t normalizedBackupDir[MAX_PATH] {};
+					NppChar normalizedBackupDir[MAX_PATH] {};
 					if (::GetFullPathNameW(currentBackupFilePath.c_str(), MAX_PATH, normalizedBackupDir, NULL) == 0)
 						StringCchCopyW(normalizedBackupDir, MAX_PATH, currentBackupFilePath.c_str());
 
 					if (normalizedBackupFilePath[0])
 					{
-						std::wstring backupFilePath = normalizedBackupFilePath;
+						NppString backupFilePath = normalizedBackupFilePath;
 						bool isConfined = false;
 						size_t normalizedBackupDirLen = wcslen(normalizedBackupDir);
 						if (backupFilePath.size() >= normalizedBackupDirLen)
@@ -3303,9 +3303,9 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 						if (!isConfined)
 						{
 							// reconstruct backupFilePath
-							wchar_t* fn = ::PathFindFileNameW(normalizedBackupFilePath);
+							NppChar* fn = ::PathFindFileNameW(normalizedBackupFilePath);
 
-							std::wstring safePath = normalizedBackupDir;
+							NppString safePath = normalizedBackupDir;
 							safePath += fn;
 							StringCchCopyW(normalizedBackupFilePath, MAX_PATH, safePath.c_str());
 						}
@@ -3376,7 +3376,7 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 			const char* fileName = NppXml::attribute(childNode, "foldername");
 			if (fileName && fileName[0])
 			{
-				std::wstring rootFolder = string2wstring(fileName);
+				NppString rootFolder = string2wstring(fileName);
 
 				if (isUncPath(rootFolder))
 				{
@@ -3403,10 +3403,10 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 					}
 				}
 
-				std::wstring lowerRoot = stringToLower(rootFolder);
+				NppString lowerRoot = stringToLower(rootFolder);
 				FileBrowserRootsInfo fileRootInfo(std::move(rootFolder));
 
-				std::unordered_set<std::wstring> seenLower;
+				std::unordered_set<NppString> seenLower;
 				for (NppXml::Element expNode = NppXml::firstChildElement(childNode, "expanded");
 					expNode;
 					expNode = NppXml::nextSiblingElement(expNode, "expanded"))
@@ -3415,8 +3415,8 @@ bool NppParameters::getSessionFromXmlTree(const NppXml::Document& pSessionDoc, S
 					if (!pathAttr || !pathAttr[0])
 						continue;
 
-					std::wstring expandedPath = string2wstring(pathAttr);
-					std::wstring lowerExpanded = stringToLower(expandedPath);
+					NppString expandedPath = string2wstring(pathAttr);
+					NppString lowerExpanded = stringToLower(expandedPath);
 
 					if (lowerExpanded.rfind(lowerRoot, 0) != 0)
 						continue;
@@ -3455,10 +3455,10 @@ void NppParameters::feedFileListParameters(const NppXml::Element& element)
 		childNode && (_nbRecentFile < NB_MAX_LRF_FILE);
 		childNode = NppXml::nextSiblingElement(childNode, "File"))
 	{
-		const std::wstring filePath = string2wstring(NppXml::attribute(childNode, "filename", ""));
+		const NppString filePath = string2wstring(NppXml::attribute(childNode, "filename", ""));
 		if (!filePath.empty())
 		{
-			_LRFileList[_nbRecentFile] = std::make_unique<std::wstring>(filePath);
+			_LRFileList[_nbRecentFile] = std::make_unique<NppString>(filePath);
 			++_nbRecentFile;
 		}
 	}
@@ -3482,11 +3482,11 @@ void NppParameters::feedFileBrowserParameters(const NppXml::Element& element)
 		const char* filePath = NppXml::attribute(childNode, "foldername");
 		if (filePath && filePath[0])
 		{
-			std::wstring rootFolder = string2wstring(filePath);
-			std::wstring lowerRoot = stringToLower(rootFolder);
+			NppString rootFolder = string2wstring(filePath);
+			NppString lowerRoot = stringToLower(rootFolder);
 			FileBrowserRootsInfo fileRootInfo(std::move(rootFolder));
 
-			std::unordered_set<std::wstring> seenLower;
+			std::unordered_set<NppString> seenLower;
 			for (NppXml::Element expNode = NppXml::firstChildElement(childNode, "expanded");
 				expNode;
 				expNode = NppXml::nextSiblingElement(expNode, "expanded"))
@@ -3495,8 +3495,8 @@ void NppParameters::feedFileBrowserParameters(const NppXml::Element& element)
 				if (!pathAttr || !pathAttr[0])
 					continue;
 
-				std::wstring expandedPath = string2wstring(pathAttr);
-				std::wstring lowerExpanded = stringToLower(expandedPath);
+				NppString expandedPath = string2wstring(pathAttr);
+				NppString lowerExpanded = stringToLower(expandedPath);
 
 				if (lowerExpanded.rfind(lowerRoot, 0) != 0)
 					continue;
@@ -4035,8 +4035,8 @@ std::pair<unsigned char, unsigned char> NppParameters::feedUserLang(const NppXml
 		childNode && (_nbUserLang < NB_MAX_USER_LANG);
 		childNode = NppXml::nextSiblingElement(childNode, "UserLang"))
 	{
-		std::wstring name = string2wstring(NppXml::attribute(childNode, "name", ""));
-		std::wstring ext = string2wstring(NppXml::attribute(childNode, "ext", ""));
+		NppString name = string2wstring(NppXml::attribute(childNode, "name", ""));
+		NppString ext = string2wstring(NppXml::attribute(childNode, "ext", ""));
 		std::string udlVersion = NppXml::attribute(childNode, "udlVersion", "");
 
 		if (name.empty())
@@ -4088,7 +4088,7 @@ std::pair<unsigned char, unsigned char> NppParameters::feedUserLang(const NppXml
 	return std::pair<unsigned char, unsigned char>(static_cast<unsigned char>(iBegin), static_cast<unsigned char>(iEnd));
 }
 
-std::pair<unsigned char, unsigned char> NppParameters::importUDLFromFile(const std::wstring& sourceFile)
+std::pair<unsigned char, unsigned char> NppParameters::importUDLFromFile(const NppString& sourceFile)
 {
 	NppXml::Document pXmlUserLangDoc = new NppXml::NewDocument();
 
@@ -4112,7 +4112,7 @@ std::pair<unsigned char, unsigned char> NppParameters::importUDLFromFile(const s
 	return addUdlResult;
 }
 
-bool NppParameters::exportUDLToFile(size_t langIndex2export, const std::wstring& fileName2save)
+bool NppParameters::exportUDLToFile(size_t langIndex2export, const NppString& fileName2save)
 {
 	if (langIndex2export >= NB_MAX_USER_LANG)
 		return false;
@@ -4131,14 +4131,14 @@ bool NppParameters::exportUDLToFile(size_t langIndex2export, const std::wstring&
 	return result;
 }
 
-LangType NppParameters::getLangFromExt(const wchar_t *ext)
+LangType NppParameters::getLangFromExt(const NppChar *ext)
 {
 	// first check a user defined extensions for styles
 	LexerStylerArray &lexStyleList = getLStylerArray();
 	for (size_t i = 0 ; i < lexStyleList.getNbLexer(); ++i)
 	{
 		const LexerStyler& styler = lexStyleList.getLexerFromIndex(i);
-		const wchar_t *extList = styler.getLexerUserExt();
+		const NppChar *extList = styler.getLexerUserExt();
 
 		if (isInList(ext, extList))
 			return getLangIDFromStr(styler.getLexerName());
@@ -4149,7 +4149,7 @@ LangType NppParameters::getLangFromExt(const wchar_t *ext)
 	while (i >= 0)
 	{
 		const Lang* l = getLangFromIndex(i--);
-		const wchar_t *defList = l->getDefaultExtList();
+		const NppChar *defList = l->getDefaultExtList();
 
 		if (defList[0] && isInList(ext, defList))
 			return l->getLangID();
@@ -4157,16 +4157,16 @@ LangType NppParameters::getLangFromExt(const wchar_t *ext)
 	return L_TEXT;
 }
 
-void NppParameters::setCloudChoice(const wchar_t* pathChoice) const
+void NppParameters::setCloudChoice(const NppChar* pathChoice) const
 {
-	std::wstring cloudChoicePath = getSettingsFolder();
-	cloudChoicePath += L"\\cloud\\";
+	NppString cloudChoicePath = getSettingsFolder();
+	cloudChoicePath += "\\cloud\\";
 
 	if (!doesDirectoryExist(cloudChoicePath.c_str()))
 	{
 		::CreateDirectory(cloudChoicePath.c_str(), NULL);
 	}
-	cloudChoicePath += L"choice";
+	cloudChoicePath += "choice";
 
 	WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
 	std::string cloudPathA = wmc.wchar2char(pathChoice, SC_CP_UTF8);
@@ -4176,9 +4176,9 @@ void NppParameters::setCloudChoice(const wchar_t* pathChoice) const
 
 void NppParameters::removeCloudChoice() const
 {
-	std::wstring cloudChoicePath = getSettingsFolder();
+	NppString cloudChoicePath = getSettingsFolder();
 
-	cloudChoicePath += L"\\cloud\\choice";
+	cloudChoicePath += "\\cloud\\choice";
 	if (doesFileExist(cloudChoicePath.c_str()))
 	{
 		::DeleteFile(cloudChoicePath.c_str());
@@ -4191,7 +4191,7 @@ bool NppParameters::isCloudPathChanged() const
 		return false;
 	else if (_initialCloudChoice.size() - _nppGUI._cloudPath.size() == 1)
 	{
-		wchar_t c = _initialCloudChoice.at(_initialCloudChoice.size()-1);
+		NppChar c = _initialCloudChoice.at(_initialCloudChoice.size()-1);
 		if (c == '\\' || c == '/')
 		{
 			if (_initialCloudChoice.starts_with(_nppGUI._cloudPath))
@@ -4200,7 +4200,7 @@ bool NppParameters::isCloudPathChanged() const
 	}
 	else if (_nppGUI._cloudPath.size() - _initialCloudChoice.size() == 1)
 	{
-		wchar_t c = _nppGUI._cloudPath.at(_nppGUI._cloudPath.size() - 1);
+		NppChar c = _nppGUI._cloudPath.at(_nppGUI._cloudPath.size() - 1);
 		if (c == '\\' || c == '/')
 		{
 			if (_nppGUI._cloudPath.starts_with(_initialCloudChoice))
@@ -4210,7 +4210,7 @@ bool NppParameters::isCloudPathChanged() const
 	return true;
 }
 
-bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& cloudSettingsPath) const
+bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const NppString& cloudSettingsPath) const
 {
 	bool isOK = false;
 
@@ -4218,8 +4218,8 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 		return false;
 
 	// config.xml
-	std::wstring cloudConfigPath = cloudSettingsPath;
-	pathAppend(cloudConfigPath, L"config.xml");
+	NppString cloudConfigPath = cloudSettingsPath;
+	pathAppend(cloudConfigPath, "config.xml");
 	if (!doesFileExist(cloudConfigPath.c_str()) && _xmlUserDoc._doc)
 	{
 		isOK = NppXml::saveFile(_xmlUserDoc._doc, cloudConfigPath.c_str());
@@ -4228,8 +4228,8 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 	}
 
 	// stylers.xml
-	std::wstring cloudStylersPath = cloudSettingsPath;
-	pathAppend(cloudStylersPath, L"stylers.xml");
+	NppString cloudStylersPath = cloudSettingsPath;
+	pathAppend(cloudStylersPath, "stylers.xml");
 	if (!doesFileExist(cloudStylersPath.c_str()) && _pXmlUserStylerDoc._doc)
 	{
 		isOK = NppXml::saveFile(_pXmlUserStylerDoc._doc, cloudStylersPath.c_str());
@@ -4238,8 +4238,8 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 	}
 
 	// langs.xml
-	std::wstring cloudLangsPath = cloudSettingsPath;
-	pathAppend(cloudLangsPath, L"langs.xml");
+	NppString cloudLangsPath = cloudSettingsPath;
+	pathAppend(cloudLangsPath, "langs.xml");
 	if (!doesFileExist(cloudLangsPath.c_str()) && _pXmlDoc._doc)
 	{
 		isOK = NppXml::saveFile(_pXmlDoc._doc, cloudLangsPath.c_str());
@@ -4248,8 +4248,8 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 	}
 
 	// userDefineLang.xml
-	std::wstring cloudUserLangsPath = cloudSettingsPath;
-	pathAppend(cloudUserLangsPath, L"userDefineLang.xml");
+	NppString cloudUserLangsPath = cloudSettingsPath;
+	pathAppend(cloudUserLangsPath, "userDefineLang.xml");
 	if (!doesFileExist(cloudUserLangsPath.c_str()) && _pXmlUserLangDoc._doc)
 	{
 		isOK = NppXml::saveFile(_pXmlUserLangDoc._doc, cloudUserLangsPath.c_str());
@@ -4258,7 +4258,7 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 	}
 
 	// shortcuts.xml
-	std::wstring cloudShortcutsPath = cloudSettingsPath;
+	NppString cloudShortcutsPath = cloudSettingsPath;
 	pathAppend(cloudShortcutsPath, SHORTCUTSXML_FILENAME);
 	if (!doesFileExist(cloudShortcutsPath.c_str()) && _pXmlShortcutDoc)
 	{
@@ -4268,8 +4268,8 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 	}
 
 	// contextMenu.xml
-	std::wstring cloudContextMenuPath = cloudSettingsPath;
-	pathAppend(cloudContextMenuPath, L"contextMenu.xml");
+	NppString cloudContextMenuPath = cloudSettingsPath;
+	pathAppend(cloudContextMenuPath, "contextMenu.xml");
 	if (!doesFileExist(cloudContextMenuPath.c_str()) && _pXmlContextMenuDoc)
 	{
 		isOK = NppXml::saveFile(_pXmlContextMenuDoc, cloudContextMenuPath.c_str());
@@ -4278,8 +4278,8 @@ bool NppParameters::writeSettingsFilesOnCloudForThe1stTime(const std::wstring& c
 	}
 
 	// nativeLang.xml
-	std::wstring cloudNativeLangPath = cloudSettingsPath;
-	pathAppend(cloudNativeLangPath, L"nativeLang.xml");
+	NppString cloudNativeLangPath = cloudSettingsPath;
+	pathAppend(cloudNativeLangPath, "nativeLang.xml");
 	if (!doesFileExist(cloudNativeLangPath.c_str()) && _pXmlNativeLangDoc != nullptr)
 	{
 		isOK = NppXml::saveFile(_pXmlNativeLangDoc, cloudNativeLangPath.c_str());
@@ -4360,7 +4360,7 @@ void NppParameters::writeNonDefaultUDL()
 			if (udl._indexRange.second == udl._indexRange.first) // no more udl for this xmldoc container
 			{
 				// no need to save, delete file
-				const std::wstring& docFilePath = udl._path;
+				const NppString& docFilePath = udl._path;
 				if (!docFilePath.empty() && doesFileExist(docFilePath.c_str()))
 				{
 					::DeleteFile(docFilePath.c_str());
@@ -4504,9 +4504,9 @@ void NppParameters::insertScintKey(NppXml::Element& scintKeyRoot, const Scintill
 }
 
 
-void NppParameters::writeSession(const Session& session, const wchar_t* fileName)
+void NppParameters::writeSession(const Session& session, const NppChar* fileName)
 {
-	const wchar_t* sessionPathName = fileName ? fileName : _sessionPath.c_str();
+	const NppChar* sessionPathName = fileName ? fileName : _sessionPath.c_str();
 
 	//
 	// Make sure session file is not read-only
@@ -4516,7 +4516,7 @@ void NppParameters::writeSession(const Session& session, const wchar_t* fileName
 	//
 	// Backup session file before overriting it
 	//
-	std::wstring backupPathName;
+	NppString backupPathName;
 	BOOL doesBackupCopyExist = FALSE;
 	if (doesFileExist(sessionPathName))
 	{
@@ -4528,7 +4528,7 @@ void NppParameters::writeSession(const Session& session, const wchar_t* fileName
 		doesBackupCopyExist = CopyFile(sessionPathName, backupPathName.c_str(), FALSE);
 		if (!doesBackupCopyExist && !isEndSessionCritical())
 		{
-			std::wstring errTitle = L"Session file backup error: ";
+			NppString errTitle = "Session file backup error: ";
 			errTitle += GetLastErrorAsString(0);
 			NppDarkMode::darkMessageBoxW(nullptr, sessionPathName, errTitle.c_str(), MB_OK);
 		}
@@ -4656,7 +4656,7 @@ void NppParameters::writeSession(const Session& session, const wchar_t* fileName
 	}
 	else if (!isEndSessionCritical())
 	{
-		NppDarkMode::darkMessageBoxW(nullptr, sessionPathName, L"Error of saving session XML file", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
+		NppDarkMode::darkMessageBoxW(nullptr, sessionPathName, "Error of saving session XML file", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
 	}
 
 	//
@@ -4667,10 +4667,10 @@ void NppParameters::writeSession(const Session& session, const wchar_t* fileName
 		if (doesBackupCopyExist) // session backup file exists, restore it
 		{
 			if (!isEndSessionCritical())
-				NppDarkMode::darkMessageBoxW(nullptr, backupPathName.c_str(), L"Saving session error - restoring from the backup:", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
+				NppDarkMode::darkMessageBoxW(nullptr, backupPathName.c_str(), "Saving session error - restoring from the backup:", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
 
-			std::wstring sessionPathNameFail2Load = sessionPathName;
-			sessionPathNameFail2Load += L".fail2Load";
+			NppString sessionPathNameFail2Load = sessionPathName;
+			sessionPathNameFail2Load += ".fail2Load";
 			ReplaceFile(sessionPathName, backupPathName.c_str(), sessionPathNameFail2Load.c_str(), REPLACEFILE_IGNORE_MERGE_ERRORS | REPLACEFILE_IGNORE_ACL_ERRORS, 0, 0);
 		}
 	}
@@ -4782,7 +4782,7 @@ void NppParameters::writeShortcuts()
 }
 
 
-int NppParameters::addUserLangToEnd(const UserLangContainer* userLang, const wchar_t *newName)
+int NppParameters::addUserLangToEnd(const UserLangContainer* userLang, const NppChar *newName)
 {
 	if (isExistingUserLangName(newName))
 		return -1;
@@ -4792,7 +4792,7 @@ int NppParameters::addUserLangToEnd(const UserLangContainer* userLang, const wch
 	++_nbUserLang;
 	unsigned char iEnd = _nbUserLang;
 
-	_pXmlUserLangsDoc.emplace_back(nullptr, L"", true, true, std::pair(iBegin, iEnd));
+	_pXmlUserLangsDoc.emplace_back(nullptr, "", true, true, std::pair(iBegin, iEnd));
 
 	// imported UDL from xml file will be added into default udl, so we should make default udl dirty
 	setUdlXmlDirtyFromXmlDoc(_pXmlUserLangDoc._doc);
@@ -5002,10 +5002,10 @@ bool NppParameters::feedStylerArray(const NppXml::Element& element)
 
 int NppParameters::addStyleDefaultColors(
 	NppXml::Element& globalStyleRoot,
-	const std::wstring& name,
+	const NppString& name,
 	const std::string& fgColor,
 	const std::string& bgColor,
-	const std::wstring& fromStyle,
+	const NppString& fromStyle,
 	const std::string& styleID
 )
 {
@@ -5081,16 +5081,16 @@ void NppParameters::addDefaultStyles(const NppXml::Element& element)
 		}
 	}
 
-	addStyleDefaultColors(globalStyleRoot, L"Multi-selected text color", "", "C0C0C0", L"Selected text colour"); // liteGrey
-	addStyleDefaultColors(globalStyleRoot, L"Multi-edit carets color", "404040", "", L"Caret colour"); // darkGrey
+	addStyleDefaultColors(globalStyleRoot, "Multi-selected text color", "", "C0C0C0", "Selected text colour"); // liteGrey
+	addStyleDefaultColors(globalStyleRoot, "Multi-edit carets color", "404040", "", "Caret colour"); // darkGrey
 
-	addStyleDefaultColors(globalStyleRoot, L"Bookmark margin", "", "C0C0C0", L"Line number margin");
-	addStyleDefaultColors(globalStyleRoot, L"Change History margin", "", "C0C0C0", L"Line number margin");
+	addStyleDefaultColors(globalStyleRoot, "Bookmark margin", "", "C0C0C0", "Line number margin");
+	addStyleDefaultColors(globalStyleRoot, "Change History margin", "", "C0C0C0", "Line number margin");
 
-	addStyleDefaultColors(globalStyleRoot, L"Change History modified", "FF8000", "FF8000");
-	addStyleDefaultColors(globalStyleRoot, L"Change History revert modified", "A0C000", "A0C000");
-	addStyleDefaultColors(globalStyleRoot, L"Change History revert origin", "40A0BF", "40A0BF");
-	addStyleDefaultColors(globalStyleRoot, L"Change History saved", "00A000", "00A000");
+	addStyleDefaultColors(globalStyleRoot, "Change History modified", "FF8000", "FF8000");
+	addStyleDefaultColors(globalStyleRoot, "Change History revert modified", "A0C000", "A0C000");
+	addStyleDefaultColors(globalStyleRoot, "Change History revert origin", "40A0BF", "40A0BF");
+	addStyleDefaultColors(globalStyleRoot, "Change History saved", "00A000", "00A000");
 
 	addStyleDefaultColors(globalStyleRoot, FINDDLG_STAUSNOTFOUND_COLOR, "FF0000", "");
 	addStyleDefaultColors(globalStyleRoot, FINDDLG_STAUSMESSAGE_COLOR, "0000FF", "");
@@ -5107,8 +5107,8 @@ void NppParameters::addDefaultStyles(const NppXml::Element& element)
 	addStyleDefaultColors(globalStyleRoot, TABBAR_INDIVIDUALCOLOR_DM_4, "", "804849");
 	addStyleDefaultColors(globalStyleRoot, TABBAR_INDIVIDUALCOLOR_DM_5, "", "754880");
 
-	addStyleDefaultColors(globalStyleRoot, L"EOL custom color", "DADADA");
-	addStyleDefaultColors(globalStyleRoot, g_npcStyleName, "DADADA", "", L"White space symbol");
+	addStyleDefaultColors(globalStyleRoot, "EOL custom color", "DADADA");
+	addStyleDefaultColors(globalStyleRoot, g_npcStyleName, "DADADA", "", "White space symbol");
 }
 
 void LexerStylerArray::addLexerStyler(const char* lexerName, const char* lexerDesc, const char* lexerUserExt, const NppXml::Element& lexerNode)
@@ -5351,7 +5351,7 @@ bool NppParameters::writeProjectPanelsSettings()
 	return true;
 }
 
-bool NppParameters::writeFileBrowserSettings(const std::vector<std::wstring>& rootPaths, const std::wstring& latestSelectedItemPath, const std::unordered_set<std::wstring>& expandedPaths)
+bool NppParameters::writeFileBrowserSettings(const std::vector<NppString>& rootPaths, const NppString& latestSelectedItemPath, const std::unordered_set<NppString>& expandedPaths)
 {
 	if (!_xmlUserDoc._doc) return false;
 
@@ -5381,11 +5381,11 @@ bool NppParameters::writeFileBrowserSettings(const std::vector<std::wstring>& ro
 			NppXml::Element fbRootNode = NppXml::createChildElement(fileBrowserRootNode, "root");
 			NppXml::setAttribute(fbRootNode, "foldername", wstring2string(rootPath));
 
-			std::vector<std::wstring> sortedExpanded;
+			std::vector<NppString> sortedExpanded;
 			for (const auto& ep : expandedPaths)
 			{
-				std::wstring lowerEp = stringToLower(ep);
-				std::wstring lowerRoot = stringToLower(rootPath);
+				NppString lowerEp = stringToLower(ep);
+				NppString lowerRoot = stringToLower(rootPath);
 				if (lowerEp.rfind(lowerRoot, 0) == 0)
 				{
 					sortedExpanded.push_back(ep);
@@ -5403,7 +5403,7 @@ bool NppParameters::writeFileBrowserSettings(const std::vector<std::wstring>& ro
 	return true;
 }
 
-bool NppParameters::writeHistory(const wchar_t* fullpath)
+bool NppParameters::writeHistory(const NppChar* fullpath)
 {
 	NppXml::Element nppRoot = NppXml::firstChildElement(_xmlUserDoc._doc, "NotepadPlus");
 	if (!nppRoot)
@@ -5439,12 +5439,12 @@ NppXml::Element NppParameters::getChildElementByAttribute(const NppXml::Element&
 }
 
 // 2 restes : L_H, L_USER
-LangType NppParameters::getLangIDFromStr(const wchar_t *langName)
+LangType NppParameters::getLangIDFromStr(const NppChar *langName)
 {
 	int lang = static_cast<int>(L_TEXT);
 	for (; lang < static_cast<int>(L_EXTERNAL); ++lang)
 	{
-		const wchar_t* name = ScintillaEditView::_langNameInfoArray[lang]._langName;
+		const NppChar* name = ScintillaEditView::_langNameInfoArray[lang]._langName;
 		if (std::wcscmp(name, langName) == 0) //found lang?
 		{
 			return static_cast<LangType>(lang);
@@ -5463,194 +5463,194 @@ LangType NppParameters::getLangIDFromStr(const wchar_t *langName)
 	return L_TEXT;
 }
 
-std::wstring NppParameters::getLocPathFromStr(const std::wstring & localizationCode)
+NppString NppParameters::getLocPathFromStr(const NppString & localizationCode)
 {
-	if (localizationCode == L"en" || localizationCode == L"en-au" || localizationCode == L"en-bz" || localizationCode == L"en-ca" || localizationCode == L"en-cb" || localizationCode == L"en-gb" || localizationCode == L"en-ie" || localizationCode == L"en-jm" || localizationCode == L"en-nz" || localizationCode == L"en-ph" || localizationCode == L"en-tt" || localizationCode == L"en-us" || localizationCode == L"en-za" || localizationCode == L"en-zw")
-		return L"english.xml";
-	if (localizationCode == L"af")
-		return L"afrikaans.xml";
-	if (localizationCode == L"sq")
-		return L"albanian.xml";
-	if (localizationCode == L"ar" || localizationCode == L"ar-dz" || localizationCode == L"ar-bh" || localizationCode == L"ar-eg" ||localizationCode == L"ar-iq" || localizationCode == L"ar-jo" || localizationCode == L"ar-kw" || localizationCode == L"ar-lb" || localizationCode == L"ar-ly" || localizationCode == L"ar-ma" || localizationCode == L"ar-om" || localizationCode == L"ar-qa" || localizationCode == L"ar-sa" || localizationCode == L"ar-sy" || localizationCode == L"ar-tn" || localizationCode == L"ar-ae" || localizationCode == L"ar-ye")
-		return L"arabic.xml";
-	if (localizationCode == L"an")
-		return L"aragonese.xml";
-	if (localizationCode == L"az")
-		return L"azerbaijani.xml";
-	if (localizationCode == L"eu")
-		return L"basque.xml";
-	if (localizationCode == L"be")
-		return L"belarusian.xml";
-	if (localizationCode == L"bn")
-		return L"bengali.xml";
-	if (localizationCode == L"bs")
-		return L"bosnian.xml";
-	if (localizationCode == L"pt-br")
-		return L"brazilian_portuguese.xml";
-	if (localizationCode == L"br-fr")
-		return L"breton.xml";
-	if (localizationCode == L"bg")
-		return L"bulgarian.xml";
-	if (localizationCode == L"ca")
-		return L"catalan.xml";
-	if (localizationCode == L"zh-tw" || localizationCode == L"zh-hk" || localizationCode == L"zh-sg")
-		return L"taiwaneseMandarin.xml";
-	if (localizationCode == L"zh" || localizationCode == L"zh-cn")
-		return L"chineseSimplified.xml";
-	if (localizationCode == L"co" || localizationCode == L"co-fr")
-		return L"corsican.xml";
-	if (localizationCode == L"hr")
-		return L"croatian.xml";
-	if (localizationCode == L"cs")
-		return L"czech.xml";
-	if (localizationCode == L"da")
-		return L"danish.xml";
-	if (localizationCode == L"nl" || localizationCode == L"nl-be")
-		return L"dutch.xml";
-	if (localizationCode == L"eo")
-		return L"esperanto.xml";
-	if (localizationCode == L"et")
-		return L"estonian.xml";
-	if (localizationCode == L"fa")
-		return L"farsi.xml";
-	if (localizationCode == L"fi")
-		return L"finnish.xml";
-	if (localizationCode == L"fr" || localizationCode == L"fr-be" || localizationCode == L"fr-ca" || localizationCode == L"fr-fr" || localizationCode == L"fr-lu" || localizationCode == L"fr-mc" || localizationCode == L"fr-ch")
-		return L"french.xml";
-	if (localizationCode == L"fur")
-		return L"friulian.xml";
-	if (localizationCode == L"gl")
-		return L"galician.xml";
-	if (localizationCode == L"ka")
-		return L"georgian.xml";
-	if (localizationCode == L"de" || localizationCode == L"de-at" || localizationCode == L"de-de" || localizationCode == L"de-li" || localizationCode == L"de-lu" || localizationCode == L"de-ch")
-		return L"german.xml";
-	if (localizationCode == L"el")
-		return L"greek.xml";
-	if (localizationCode == L"gu")
-		return L"gujarati.xml";
-	if (localizationCode == L"he")
-		return L"hebrew.xml";
-	if (localizationCode == L"hi")
-		return L"hindi.xml";
-	if (localizationCode == L"hu")
-		return L"hungarian.xml";
-	if (localizationCode == L"id")
-		return L"indonesian.xml";
-	if (localizationCode == L"it" || localizationCode == L"it-ch")
-		return L"italian.xml";
-	if (localizationCode == L"ja")
-		return L"japanese.xml";
-	if (localizationCode == L"kn")
-		return L"kannada.xml";
-	if (localizationCode == L"kk")
-		return L"kazakh.xml";
-	if (localizationCode == L"ko" || localizationCode == L"ko-kp" || localizationCode == L"ko-kr")
-		return L"korean.xml";
-	if (localizationCode == L"ku")
-		return L"kurdish.xml";
-	if (localizationCode == L"ky")
-		return L"kyrgyz.xml";
-	if (localizationCode == L"lv")
-		return L"latvian.xml";
-	if (localizationCode == L"lt")
-		return L"lithuanian.xml";
-	if (localizationCode == L"lb")
-		return L"luxembourgish.xml";
-	if (localizationCode == L"mk")
-		return L"macedonian.xml";
-	if (localizationCode == L"ms")
-		return L"malay.xml";
-	if (localizationCode == L"mr")
-		return L"marathi.xml";
-	if (localizationCode == L"mn")
-		return L"mongolian.xml";
-	if (localizationCode == L"no" || localizationCode == L"nb")
-		return L"norwegian.xml";
-	if (localizationCode == L"nn")
-		return L"nynorsk.xml";
-	if (localizationCode == L"oc")
-		return L"occitan.xml";
-	if (localizationCode == L"pl")
-		return L"polish.xml";
-	if (localizationCode == L"pt" || localizationCode == L"pt-pt")
-		return L"portuguese.xml";
-	if (localizationCode == L"pa" || localizationCode == L"pa-in")
-		return L"punjabi.xml";
-	if (localizationCode == L"ro" || localizationCode == L"ro-mo")
-		return L"romanian.xml";
-	if (localizationCode == L"ru" || localizationCode == L"ru-mo")
-		return L"russian.xml";
-	if (localizationCode == L"sc")
-		return L"sardinian.xml";
-	if (localizationCode == L"sr")
-		return L"serbian.xml";
-	if (localizationCode == L"sr-cyrl-ba" || localizationCode == L"sr-cyrl-sp")
-		return L"serbianCyrillic.xml";
-	if (localizationCode == L"si")
-		return L"sinhala.xml";
-	if (localizationCode == L"sk")
-		return L"slovak.xml";
-	if (localizationCode == L"sl")
-		return L"slovenian.xml";
-	if (localizationCode == L"es" || localizationCode == L"es-bo" || localizationCode == L"es-cl" || localizationCode == L"es-co" || localizationCode == L"es-cr" || localizationCode == L"es-do" || localizationCode == L"es-ec" || localizationCode == L"es-sv" || localizationCode == L"es-gt" || localizationCode == L"es-hn" || localizationCode == L"es-mx" || localizationCode == L"es-ni" || localizationCode == L"es-pa" || localizationCode == L"es-py" || localizationCode == L"es-pe" || localizationCode == L"es-pr" || localizationCode == L"es-es" || localizationCode == L"es-uy" || localizationCode == L"es-ve")
-		return L"spanish.xml";
-	if (localizationCode == L"es-ar")
-		return L"spanish_ar.xml";
-	if (localizationCode == L"sv")
-		return L"swedish.xml";
-	if (localizationCode == L"tl")
-		return L"tagalog.xml";
-	if (localizationCode == L"tg-cyrl-tj")
-		return L"tajikCyrillic.xml";
-	if (localizationCode == L"ta")
-		return L"tamil.xml";
-	if (localizationCode == L"tt")
-		return L"tatar.xml";
-	if (localizationCode == L"te")
-		return L"telugu.xml";
-	if (localizationCode == L"th")
-		return L"thai.xml";
-	if (localizationCode == L"tr")
-		return L"turkish.xml";
-	if (localizationCode == L"uk")
-		return L"ukrainian.xml";
-	if (localizationCode == L"ur" || localizationCode == L"ur-pk")
-		return L"urdu.xml";
-	if (localizationCode == L"ug-cn")
-		return L"uyghur.xml";
-	if (localizationCode == L"uz")
-		return L"uzbek.xml";
-	if (localizationCode == L"uz-cyrl-uz")
-		return L"uzbekCyrillic.xml";
-	if (localizationCode == L"vec")
-		return L"venetian.xml";
-	if (localizationCode == L"vi" || localizationCode == L"vi-vn")
-		return L"vietnamese.xml";
-	if (localizationCode == L"cy-gb")
-		return L"welsh.xml";
-	if (localizationCode == L"zu" || localizationCode == L"zu-za")
-		return L"zulu.xml";
-	if (localizationCode == L"ne" || localizationCode == L"nep")
-		return L"nepali.xml";
-	if (localizationCode == L"oc-aranes")
-		return L"aranese.xml";
-	if (localizationCode == L"exy")
-		return L"extremaduran.xml";
-	if (localizationCode == L"kab")
-		return L"kabyle.xml";
-	if (localizationCode == L"lij")
-		return L"ligurian.xml";
-	if (localizationCode == L"ga")
-		return L"irish.xml";
-	if (localizationCode == L"sgs")
-		return L"samogitian.xml";
-	if (localizationCode == L"yue")
-		return L"hongKongCantonese.xml";
-	if (localizationCode == L"ab" || localizationCode == L"abk")
-		return L"abkhazian.xml";
+	if (localizationCode == "en" || localizationCode == "en-au" || localizationCode == "en-bz" || localizationCode == "en-ca" || localizationCode == "en-cb" || localizationCode == "en-gb" || localizationCode == "en-ie" || localizationCode == "en-jm" || localizationCode == "en-nz" || localizationCode == "en-ph" || localizationCode == "en-tt" || localizationCode == "en-us" || localizationCode == "en-za" || localizationCode == "en-zw")
+		return "english.xml";
+	if (localizationCode == "af")
+		return "afrikaans.xml";
+	if (localizationCode == "sq")
+		return "albanian.xml";
+	if (localizationCode == "ar" || localizationCode == "ar-dz" || localizationCode == "ar-bh" || localizationCode == "ar-eg" ||localizationCode == "ar-iq" || localizationCode == "ar-jo" || localizationCode == "ar-kw" || localizationCode == "ar-lb" || localizationCode == "ar-ly" || localizationCode == "ar-ma" || localizationCode == "ar-om" || localizationCode == "ar-qa" || localizationCode == "ar-sa" || localizationCode == "ar-sy" || localizationCode == "ar-tn" || localizationCode == "ar-ae" || localizationCode == "ar-ye")
+		return "arabic.xml";
+	if (localizationCode == "an")
+		return "aragonese.xml";
+	if (localizationCode == "az")
+		return "azerbaijani.xml";
+	if (localizationCode == "eu")
+		return "basque.xml";
+	if (localizationCode == "be")
+		return "belarusian.xml";
+	if (localizationCode == "bn")
+		return "bengali.xml";
+	if (localizationCode == "bs")
+		return "bosnian.xml";
+	if (localizationCode == "pt-br")
+		return "brazilian_portuguese.xml";
+	if (localizationCode == "br-fr")
+		return "breton.xml";
+	if (localizationCode == "bg")
+		return "bulgarian.xml";
+	if (localizationCode == "ca")
+		return "catalan.xml";
+	if (localizationCode == "zh-tw" || localizationCode == "zh-hk" || localizationCode == "zh-sg")
+		return "taiwaneseMandarin.xml";
+	if (localizationCode == "zh" || localizationCode == "zh-cn")
+		return "chineseSimplified.xml";
+	if (localizationCode == "co" || localizationCode == "co-fr")
+		return "corsican.xml";
+	if (localizationCode == "hr")
+		return "croatian.xml";
+	if (localizationCode == "cs")
+		return "czech.xml";
+	if (localizationCode == "da")
+		return "danish.xml";
+	if (localizationCode == "nl" || localizationCode == "nl-be")
+		return "dutch.xml";
+	if (localizationCode == "eo")
+		return "esperanto.xml";
+	if (localizationCode == "et")
+		return "estonian.xml";
+	if (localizationCode == "fa")
+		return "farsi.xml";
+	if (localizationCode == "fi")
+		return "finnish.xml";
+	if (localizationCode == "fr" || localizationCode == "fr-be" || localizationCode == "fr-ca" || localizationCode == "fr-fr" || localizationCode == "fr-lu" || localizationCode == "fr-mc" || localizationCode == "fr-ch")
+		return "french.xml";
+	if (localizationCode == "fur")
+		return "friulian.xml";
+	if (localizationCode == "gl")
+		return "galician.xml";
+	if (localizationCode == "ka")
+		return "georgian.xml";
+	if (localizationCode == "de" || localizationCode == "de-at" || localizationCode == "de-de" || localizationCode == "de-li" || localizationCode == "de-lu" || localizationCode == "de-ch")
+		return "german.xml";
+	if (localizationCode == "el")
+		return "greek.xml";
+	if (localizationCode == "gu")
+		return "gujarati.xml";
+	if (localizationCode == "he")
+		return "hebrew.xml";
+	if (localizationCode == "hi")
+		return "hindi.xml";
+	if (localizationCode == "hu")
+		return "hungarian.xml";
+	if (localizationCode == "id")
+		return "indonesian.xml";
+	if (localizationCode == "it" || localizationCode == "it-ch")
+		return "italian.xml";
+	if (localizationCode == "ja")
+		return "japanese.xml";
+	if (localizationCode == "kn")
+		return "kannada.xml";
+	if (localizationCode == "kk")
+		return "kazakh.xml";
+	if (localizationCode == "ko" || localizationCode == "ko-kp" || localizationCode == "ko-kr")
+		return "korean.xml";
+	if (localizationCode == "ku")
+		return "kurdish.xml";
+	if (localizationCode == "ky")
+		return "kyrgyz.xml";
+	if (localizationCode == "lv")
+		return "latvian.xml";
+	if (localizationCode == "lt")
+		return "lithuanian.xml";
+	if (localizationCode == "lb")
+		return "luxembourgish.xml";
+	if (localizationCode == "mk")
+		return "macedonian.xml";
+	if (localizationCode == "ms")
+		return "malay.xml";
+	if (localizationCode == "mr")
+		return "marathi.xml";
+	if (localizationCode == "mn")
+		return "mongolian.xml";
+	if (localizationCode == "no" || localizationCode == "nb")
+		return "norwegian.xml";
+	if (localizationCode == "nn")
+		return "nynorsk.xml";
+	if (localizationCode == "oc")
+		return "occitan.xml";
+	if (localizationCode == "pl")
+		return "polish.xml";
+	if (localizationCode == "pt" || localizationCode == "pt-pt")
+		return "portuguese.xml";
+	if (localizationCode == "pa" || localizationCode == "pa-in")
+		return "punjabi.xml";
+	if (localizationCode == "ro" || localizationCode == "ro-mo")
+		return "romanian.xml";
+	if (localizationCode == "ru" || localizationCode == "ru-mo")
+		return "russian.xml";
+	if (localizationCode == "sc")
+		return "sardinian.xml";
+	if (localizationCode == "sr")
+		return "serbian.xml";
+	if (localizationCode == "sr-cyrl-ba" || localizationCode == "sr-cyrl-sp")
+		return "serbianCyrillic.xml";
+	if (localizationCode == "si")
+		return "sinhala.xml";
+	if (localizationCode == "sk")
+		return "slovak.xml";
+	if (localizationCode == "sl")
+		return "slovenian.xml";
+	if (localizationCode == "es" || localizationCode == "es-bo" || localizationCode == "es-cl" || localizationCode == "es-co" || localizationCode == "es-cr" || localizationCode == "es-do" || localizationCode == "es-ec" || localizationCode == "es-sv" || localizationCode == "es-gt" || localizationCode == "es-hn" || localizationCode == "es-mx" || localizationCode == "es-ni" || localizationCode == "es-pa" || localizationCode == "es-py" || localizationCode == "es-pe" || localizationCode == "es-pr" || localizationCode == "es-es" || localizationCode == "es-uy" || localizationCode == "es-ve")
+		return "spanish.xml";
+	if (localizationCode == "es-ar")
+		return "spanish_ar.xml";
+	if (localizationCode == "sv")
+		return "swedish.xml";
+	if (localizationCode == "tl")
+		return "tagalog.xml";
+	if (localizationCode == "tg-cyrl-tj")
+		return "tajikCyrillic.xml";
+	if (localizationCode == "ta")
+		return "tamil.xml";
+	if (localizationCode == "tt")
+		return "tatar.xml";
+	if (localizationCode == "te")
+		return "telugu.xml";
+	if (localizationCode == "th")
+		return "thai.xml";
+	if (localizationCode == "tr")
+		return "turkish.xml";
+	if (localizationCode == "uk")
+		return "ukrainian.xml";
+	if (localizationCode == "ur" || localizationCode == "ur-pk")
+		return "urdu.xml";
+	if (localizationCode == "ug-cn")
+		return "uyghur.xml";
+	if (localizationCode == "uz")
+		return "uzbek.xml";
+	if (localizationCode == "uz-cyrl-uz")
+		return "uzbekCyrillic.xml";
+	if (localizationCode == "vec")
+		return "venetian.xml";
+	if (localizationCode == "vi" || localizationCode == "vi-vn")
+		return "vietnamese.xml";
+	if (localizationCode == "cy-gb")
+		return "welsh.xml";
+	if (localizationCode == "zu" || localizationCode == "zu-za")
+		return "zulu.xml";
+	if (localizationCode == "ne" || localizationCode == "nep")
+		return "nepali.xml";
+	if (localizationCode == "oc-aranes")
+		return "aranese.xml";
+	if (localizationCode == "exy")
+		return "extremaduran.xml";
+	if (localizationCode == "kab")
+		return "kabyle.xml";
+	if (localizationCode == "lij")
+		return "ligurian.xml";
+	if (localizationCode == "ga")
+		return "irish.xml";
+	if (localizationCode == "sgs")
+		return "samogitian.xml";
+	if (localizationCode == "yue")
+		return "hongKongCantonese.xml";
+	if (localizationCode == "ab" || localizationCode == "abk")
+		return "abkhazian.xml";
 
-	return std::wstring();
+	return NppString();
 }
 
 
@@ -5669,8 +5669,8 @@ void NppParameters::feedKeyWordsParameters(const NppXml::Element& element)
 			const char* name = NppXml::attribute(langNode, "name");
 			if (name)
 			{
-				const std::wstring wsName = string2wstring(name);
-				const std::wstring wsExt = string2wstring(NppXml::attribute(langNode, "ext", ""));
+				const NppString wsName = string2wstring(name);
+				const NppString wsExt = string2wstring(NppXml::attribute(langNode, "ext", ""));
 
 				const int tabSettings = NppXml::intAttribute(langNode, "tabSettings", -1);
 				const bool isBackspaceUnindent = getBoolAttribute(langNode, "backspaceUnindent");
@@ -6541,14 +6541,14 @@ void NppParameters::feedGUIParameters(const NppXml::Element& element)
 			using enum OpenSaveDirSetting;
 			_nppGUI._openSaveDir = getRangeDefaultAttribute(childNode, "value", dir_followCurrent, dir_userDef, _nppGUI._openSaveDir);
 
-			const std::wstring path = string2wstring(NppXml::attribute(childNode, "defaultDirPath", ""));
+			const NppString path = string2wstring(NppXml::attribute(childNode, "defaultDirPath", ""));
 			if (!path.empty())
 			{
 				std::wcsncpy(_nppGUI._defaultDir, path.c_str(), MAX_PATH);
 				::ExpandEnvironmentStrings(_nppGUI._defaultDir, _nppGUI._defaultDirExp, MAX_PATH);
 			}
 
-			const std::wstring lastPath = string2wstring(NppXml::attribute(childNode, "lastUsedDirPath", ""));
+			const NppString lastPath = string2wstring(NppXml::attribute(childNode, "lastUsedDirPath", ""));
 			if (!lastPath.empty())
 			{
 				std::wcsncpy(_nppGUI._lastUsedDir, lastPath.c_str(), MAX_PATH);
@@ -6743,7 +6743,7 @@ void NppParameters::feedGUIParameters(const NppXml::Element& element)
 			auto& darkTbInfo = darkDefaults._tbIconInfo;
 			darkThemeName = string2wstring(NppXml::attribute(childNode, "darkThemeName", "DarkModeDefault.xml"));
 			if (darkThemeName.empty())
-				darkThemeName = L"DarkModeDefault.xml";
+				darkThemeName = "DarkModeDefault.xml";
 			darkTbInfo._tbIconSet = getRangeDefaultAttribute(childNode, "darkToolBarIconSet", TB_SMALL, TB_STANDARD, darkTbInfo._tbIconSet);
 			darkTbInfo._tbColor = getRangeDefaultAttribute(childNode, "darkTbFluentColor", defaultColor, custom, darkTbInfo._tbColor);
 			darkTbInfo._tbCustomColor = NppXml::intAttribute(childNode, "darkTbFluentCustomColor", darkTbInfo._tbCustomColor);
@@ -6765,32 +6765,32 @@ void NppParameters::feedGUIParameters(const NppXml::Element& element)
 			// Windows mode is handled later in Notepad_plus_Window::init from Notepad_plus_Window.cpp
 			if (!windowsMode)
 			{
-				std::wstring themePath;
-				std::wstring xmlFileName = _nppGUI._darkmode._isEnabled ? darkThemeName : lightThemeName;
+				NppString themePath;
+				NppString xmlFileName = _nppGUI._darkmode._isEnabled ? darkThemeName : lightThemeName;
 				const bool isLocalOnly = _isLocal && !_isCloud;
 
-				if (!xmlFileName.empty() && std::wcscmp(xmlFileName.c_str(), L"stylers.xml") != 0)
+				if (!xmlFileName.empty() && std::wcscmp(xmlFileName.c_str(), "stylers.xml") != 0)
 				{
 					themePath = isLocalOnly ? _nppPath : _userPath;
-					pathAppend(themePath, L"themes\\");
+					pathAppend(themePath, "themes\\");
 					pathAppend(themePath, xmlFileName);
 
 					if (!isLocalOnly && !doesFileExist(themePath.c_str()))
 					{
 						themePath = _nppPath;
-						pathAppend(themePath, L"themes\\");
+						pathAppend(themePath, "themes\\");
 						pathAppend(themePath, xmlFileName);
 					}
 				}
 				else
 				{
 					themePath = isLocalOnly ? _nppPath : _userPath;
-					pathAppend(themePath, L"stylers.xml");
+					pathAppend(themePath, "stylers.xml");
 
 					if (!isLocalOnly && !doesFileExist(themePath.c_str()))
 					{
 						themePath = _nppPath;
-						pathAppend(themePath, L"stylers.xml");
+						pathAppend(themePath, "stylers.xml");
 					}
 				}
 
@@ -7537,7 +7537,7 @@ void NppParameters::createXmlTreeFromGUIParams()
 
 	// <GUIConfig name="MaintainIndent">1</GUIConfig>
 	{
-		//insertGUIConfigBoolNode(newGUIRoot, L"MaintainIndent", _nppGUI._maintainIndent);
+		//insertGUIConfigBoolNode(newGUIRoot, "MaintainIndent", _nppGUI._maintainIndent);
 		NppXml::Element GUIConfigElement = NppXml::createChildElement(newGUIRoot, "GUIConfig");
 		NppXml::setAttribute(GUIConfigElement, "name", "MaintainIndent");
 		NppXml::createChildText(GUIConfigElement, std::to_string(_nppGUI._maintainIndent));
@@ -8449,47 +8449,47 @@ int NppParameters::langTypeToCommandID(LangType lt) const
 	return id;
 }
 
-std::wstring NppParameters:: getWinVersionStr() const
+NppString NppParameters:: getWinVersionStr() const
 {
 	switch (_winVersion)
 	{
-		case WV_WIN32S: return L"Windows 3.1";
-		case WV_95: return L"Windows 95";
-		case WV_98: return L"Windows 98";
-		case WV_ME: return L"Windows Millennium Edition";
-		case WV_NT: return L"Windows NT";
-		case WV_W2K: return L"Windows 2000";
-		case WV_XP: return L"Windows XP";
-		case WV_S2003: return L"Windows Server 2003";
-		case WV_XPX64: return L"Windows XP 64 bits";
-		case WV_VISTA: return L"Windows Vista";
-		case WV_WIN7: return L"Windows 7";
-		case WV_WIN8: return L"Windows 8";
-		case WV_WIN81: return L"Windows 8.1";
-		case WV_WIN10: return L"Windows 10";
-		case WV_WIN11: return L"Windows 11";
-		default: /*case WV_UNKNOWN:*/ return L"Windows unknown version";
+		case WV_WIN32S: return "Windows 3.1";
+		case WV_95: return "Windows 95";
+		case WV_98: return "Windows 98";
+		case WV_ME: return "Windows Millennium Edition";
+		case WV_NT: return "Windows NT";
+		case WV_W2K: return "Windows 2000";
+		case WV_XP: return "Windows XP";
+		case WV_S2003: return "Windows Server 2003";
+		case WV_XPX64: return "Windows XP 64 bits";
+		case WV_VISTA: return "Windows Vista";
+		case WV_WIN7: return "Windows 7";
+		case WV_WIN8: return "Windows 8";
+		case WV_WIN81: return "Windows 8.1";
+		case WV_WIN10: return "Windows 10";
+		case WV_WIN11: return "Windows 11";
+		default: /*case WV_UNKNOWN:*/ return "Windows unknown version";
 	}
 }
 
-std::wstring NppParameters::getWinVerBitStr() const
+NppString NppParameters::getWinVerBitStr() const
 {
 	switch (_platForm)
 	{
 	case PF_X86:
-		return L"32-bit";
+		return "32-bit";
 
 	case PF_X64:
 	case PF_IA64:
 	case PF_ARM64:
-		return L"64-bit";
+		return "64-bit";
 
 	default:
-		return L"Unknown-bit";
+		return "Unknown-bit";
 	}
 }
 
-std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleArray& globalStylers)
+NppString NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleArray& globalStylers)
 {
 	NppXml::Element root = NppXml::firstChildElement(_pXmlUserStylerDoc._doc, "NotepadPlus");
 	NppXml::Element lexersRoot = NppXml::firstChildElement(root, "LexerStyles");
@@ -8497,7 +8497,7 @@ std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleAr
 		childNode;
 		childNode = NppXml::nextSiblingElement(childNode, "LexerType"))
 	{
-		const std::wstring nm = string2wstring(NppXml::attribute(childNode, "name", ""));
+		const NppString nm = string2wstring(NppXml::attribute(childNode, "name", ""));
 		if (nm.empty())
 			continue;
 
@@ -8512,7 +8512,7 @@ std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleAr
 				grChildNode;
 				grChildNode = NppXml::nextSiblingElement(grChildNode, "WordsStyle"))
 			{
-				const std::wstring styleName = string2wstring(NppXml::attribute(grChildNode, "name", ""));
+				const NppString styleName = string2wstring(NppXml::attribute(grChildNode, "name", ""));
 				const Style* pStyle = pLs->findByName(styleName);
 				Style* pStyle2Sync = pLs2 ? pLs2->findByName(styleName) : nullptr;
 				if (pStyle && pStyle2Sync)
@@ -8531,7 +8531,7 @@ std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleAr
 			childNode;
 			childNode = NppXml::nextSiblingElement(childNode, "LexerType"))
 		{
-			const std::wstring nm = string2wstring(NppXml::attribute(childNode, "name", ""));
+			const NppString nm = string2wstring(NppXml::attribute(childNode, "name", ""));
 			if (nm.empty())
 				continue;
 
@@ -8546,7 +8546,7 @@ std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleAr
 					grChildNode;
 					grChildNode = NppXml::nextSiblingElement(grChildNode, "WordsStyle"))
 				{
-					const std::wstring styleName = string2wstring(NppXml::attribute(grChildNode, "name", ""));
+					const NppString styleName = string2wstring(NppXml::attribute(grChildNode, "name", ""));
 					const Style* pStyle = pLs->findByName(styleName);
 					Style* pStyle2Sync = pLs2 ? pLs2->findByName(styleName) : nullptr;
 					if (pStyle && pStyle2Sync)
@@ -8565,7 +8565,7 @@ std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleAr
 		childNode;
 		childNode = NppXml::nextSiblingElement(childNode, "WidgetStyle"))
 	{
-		const std::wstring styleName = string2wstring(NppXml::attribute(childNode, "name", ""));
+		const NppString styleName = string2wstring(NppXml::attribute(childNode, "name", ""));
 		const Style* pStyle = _widgetStyleArray.findByName(styleName);
 		Style* pStyle2Sync = globalStylers.findByName(styleName);
 		if (pStyle && pStyle2Sync)
@@ -8582,10 +8582,10 @@ std::wstring NppParameters::writeStyles(LexerStylerArray& lexersStylers, StyleAr
 	}
 
 	static_cast<void>(NppXml::saveFile(_pXmlUserStylerDoc._doc, _pXmlUserStylerDoc._path.c_str()));
-	return L"";
+	return "";
 }
 
-bool NppParameters::insertTabInfo(const wchar_t* langName, int tabInfo, bool backspaceUnindent)
+bool NppParameters::insertTabInfo(const NppChar* langName, int tabInfo, bool backspaceUnindent)
 {
 	if (!_pXmlDoc._doc) return false;
 	const std::string sLangName = wstring2string(langName);
@@ -8808,7 +8808,7 @@ void NppParameters::addScintillaModifiedIndex(int index)
 #ifndef	_WIN64
 void NppParameters::safeWow64EnableWow64FsRedirection(BOOL Wow64FsEnableRedirection)
 {
-	HMODULE kernel = GetModuleHandle(L"kernel32");
+	HMODULE kernel = GetModuleHandle("kernel32");
 	if (kernel)
 	{
 		BOOL isWow64 = FALSE;
@@ -9143,7 +9143,7 @@ COLORREF NppParameters::getFindDlgStatusMsgColor(int colourIndex)
 	return findDlgStatusMessageColor[colourIndex];
 }
 
-LanguageNameInfo NppParameters::getLangNameInfoFromNameID(const std::wstring& langNameID)
+LanguageNameInfo NppParameters::getLangNameInfoFromNameID(const NppString& langNameID)
 {
 	for (const auto& lnf : ScintillaEditView::_langNameInfoArray)
 	{
@@ -9153,24 +9153,24 @@ LanguageNameInfo NppParameters::getLangNameInfoFromNameID(const std::wstring& la
 	return LanguageNameInfo{};
 }
 
-void NppParameters::buildGupParams(std::wstring& params)
+void NppParameters::buildGupParams(NppString& params)
 {
-	params = L"-v";
+	params = "-v";
 	params += VERSION_INTERNAL_VALUE;
 	static constexpr int archType64 = NppParameters::archType();
 	if constexpr (archType64 == IMAGE_FILE_MACHINE_AMD64)
 	{
-		params += L" -px64";
+		params += " -px64";
 	}
 	else if constexpr (archType64 == IMAGE_FILE_MACHINE_ARM64)
 	{
-		params += L" -parm64";
+		params += " -parm64";
 	}
 
-	params += L" -infoUrl=";
+	params += " -infoUrl=";
 	params += INFO_URL;
 
-	params += L" -forceDomain=";
+	params += " -forceDomain=";
 	params += FORCED_DOWNLOAD_DOMAIN;
 
 	SecurityGuard sgd;
@@ -9179,30 +9179,30 @@ void NppParameters::buildGupParams(std::wstring& params)
 	// Verify integrity & authenticiy of server-returned XML (XMLDsig) 
 	//
 
-	params += L" -chkCert4InfoXML";
+	params += " -chkCert4InfoXML";
 
-	params += L" -chkCertKeyId4XML=";
+	params += " -chkCertKeyId4XML=";
 	params += sgd.signer_key_id();
 
 	//
 	// Verify integrity & authenticiy of the downloaded installer
 	//
 
-	params += L" -chkCertSig=yes";
+	params += " -chkCertSig=yes";
 
-	params += L" -chkCertRevoc";
-	params += L" -chkCertTrustChain";
+	params += " -chkCertRevoc";
+	params += " -chkCertTrustChain";
 
-	params += L" -chkCertName=";
+	params += " -chkCertName=";
 	params += sgd.signer_display_name();
 
-	params += L" -chkCertSubject=\"";
-	params += stringReplace(sgd.signer_subject(), L"\"", L"{QUOTE}");
-	params += L"\"";
+	params += " -chkCertSubject=\"";
+	params += stringReplace(sgd.signer_subject(), "\"", "{QUOTE}");
+	params += "\"";
 
-	params += L" -chkCertKeyId=";
+	params += " -chkCertKeyId=";
 	params += sgd.signer_key_id();
 
-	params += L" -errLogPath=";
-	params += L"\"%LOCALAPPDATA%\\Notepad++\\log\\securityError.log\"";
+	params += " -errLogPath=";
+	params += "\"%LOCALAPPDATA%\\Notepad++\\log\\securityError.log\"";
 }

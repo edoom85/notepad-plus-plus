@@ -48,7 +48,7 @@ using namespace std;
 
 #include "ThreadSafeQueue.h"
 
-typedef pair<DWORD, std::wstring> TDirectoryChangeNotification;
+typedef pair<DWORD, NppString> TDirectoryChangeNotification;
 
 namespace ReadDirectoryChangesPrivate
 {
@@ -72,7 +72,7 @@ namespace ReadDirectoryChangesPrivate
 /// </para>
 /// <example><code>
 /// 	CReadDirectoryChanges changes;
-/// 	changes.AddDirectory(L"C:\\", false, dwNotificationFlags);
+/// 	changes.AddDirectory("C:\\", false, dwNotificationFlags);
 ///
 ///		const HANDLE handles[] = { hStopEvent, changes.GetWaitHandle() };
 ///
@@ -93,9 +93,9 @@ namespace ReadDirectoryChangesPrivate
 ///				// We've received a notification in the queue.
 ///				{
 ///					DWORD dwAction;
-///					std::wstring wstrFilename;
+///					NppString wstrFilename;
 ///					while (changes.Pop(dwAction, wstrFilename))
-///						wprintf(L"%s %s\n", ExplainAction(dwAction), wstrFilename);
+///						wprintf("%s %s\n", ExplainAction(dwAction), wstrFilename);
 ///				}
 ///				break;
 ///			case WAIT_OBJECT_0 + _countof(handles):
@@ -130,7 +130,7 @@ public:
 	/// ReadDirectoryChangesW call for the given directory with the given flags.
 	/// </para>
 	/// </remarks>
-	void AddDirectory( LPCTSTR wszDirectory, BOOL bWatchSubtree, DWORD dwNotifyFilter, DWORD dwBufferSize=16384 );
+	void AddDirectory( const NppChar* wszDirectory, BOOL bWatchSubtree, DWORD dwNotifyFilter, DWORD dwBufferSize=16384 );
 
 	/// <summary>
 	/// Return a handle for the Win32 Wait... functions that will be
@@ -138,10 +138,10 @@ public:
 	/// </summary>
 	HANDLE GetWaitHandle() { return m_Notifications.GetWaitHandle(); }
 
-	bool Pop(DWORD& dwAction, std::wstring& wstrFilename);
+	bool Pop(DWORD& dwAction, NppString& wstrFilename);
 
 	// "Push" is for usage by ReadChangesRequest.  Not intended for external usage.
-	void Push(DWORD dwAction, std::wstring& wstrFilename);
+	void Push(DWORD dwAction, NppString& wstrFilename);
 
 	unsigned int GetThreadId() { return m_dwThreadId; }
 

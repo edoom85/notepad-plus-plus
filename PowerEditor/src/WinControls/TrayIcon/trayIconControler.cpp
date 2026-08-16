@@ -17,7 +17,7 @@
 
 #include "trayIconControler.h"
 
-trayIconControler::trayIconControler(HWND hwnd, UINT uID, UINT uCBMsg, HICON hicon, const wchar_t *tip)
+trayIconControler::trayIconControler(HWND hwnd, UINT uID, UINT uCBMsg, HICON hicon, const NppChar *tip)
 {
   _nid.cbSize = sizeof(_nid);
   _nid.hWnd = hwnd;

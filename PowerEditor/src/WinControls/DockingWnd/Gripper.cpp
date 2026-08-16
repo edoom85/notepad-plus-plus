@@ -120,7 +120,7 @@ void Gripper::startGrip(DockingCont* pCont, DockingManager* pDockMgr)
 	_hSelf = ::CreateWindowEx(
 					0,
 					MDLG_CLASS_NAME,
-					L"", 0,
+					"", 0,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					NULL,
@@ -233,9 +233,9 @@ void Gripper::create()
     if (!hookMouse)
     {
         DWORD dwError = ::GetLastError();
-        wchar_t  str[128];
-        ::wsprintf(str, L"GetLastError() returned %lu", dwError);
-		NppDarkMode::darkMessageBoxW(nullptr, str, L"SetWindowsHookEx(MOUSE) failed on Gripper::create()", MB_OK | MB_ICONERROR);
+        NppChar  str[128];
+        ::sprintf(str, "GetLastError() returned %lu", dwError);
+		NppDarkMode::darkMessageBoxW(nullptr, str, "SetWindowsHookEx(MOUSE) failed on Gripper::create()", MB_OK | MB_ICONERROR);
     }
 
 	if (ver != WV_UNKNOWN && ver < WV_VISTA)
@@ -244,9 +244,9 @@ void Gripper::create()
 		if (!hookKeyboard)
 		{
 			DWORD dwError = ::GetLastError();
-			wchar_t  str[128];
-			::wsprintf(str, L"GetLastError() returned %lu", dwError);
-			NppDarkMode::darkMessageBoxW(nullptr, str, L"SetWindowsHookEx(KEYBOARD) failed on Gripper::create()", MB_OK | MB_ICONERROR);
+			NppChar  str[128];
+			::sprintf(str, "GetLastError() returned %lu", dwError);
+			NppDarkMode::darkMessageBoxW(nullptr, str, "SetWindowsHookEx(KEYBOARD) failed on Gripper::create()", MB_OK | MB_ICONERROR);
 		}
 	}
 //  Removed regarding W9x systems
@@ -485,8 +485,8 @@ void Gripper::doTabReordering(POINT pt)
 
 #if 0
 	extern HWND g_hMainWnd;
-	wchar_t str[128];
-	wsprintf(str, L"Size: %i", vCont.size());
+	NppChar str[128];
+	sprintf(str, "Size: %i", vCont.size());
 	::SetWindowText(g_hMainWnd, str);
 #endif
 
@@ -522,7 +522,7 @@ bool Gripper::createOverlayWindow()
 		wc.cbSize = sizeof(wc);
 		wc.lpfnWndProc = overlayWndProc;
 		wc.hInstance = _hInst;
-		wc.lpszClassName = L"NppGripperOverlay";
+		wc.lpszClassName = "NppGripperOverlay";
 
 		if (!::RegisterClassEx(&wc))
 			return false;
@@ -537,8 +537,8 @@ bool Gripper::createOverlayWindow()
 
 	_hOverlayWnd = ::CreateWindowEx(
 		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_TRANSPARENT,
-		L"NppGripperOverlay",
-		L"",
+		"NppGripperOverlay",
+		"",
 		WS_POPUP,
 		_xVirtScreen, _yVirtScreen, _overlayWidth, _overlayHeight,
 		nullptr, nullptr, _hInst, nullptr
@@ -929,7 +929,7 @@ void Gripper::initTabInformation()
 	::SendMessage(_hTabSource, TCM_GETITEMRECT, _iItem, reinterpret_cast<LPARAM>(&_rcItem));
 
 	/* store item data */
-	static wchar_t	szText[64];
+	static NppChar	szText[64];
 	_tcItem.mask		= TCIF_PARAM | TCIF_TEXT;
 	_tcItem.pszText		= szText;
 	_tcItem.cchTextMax	= 64;

@@ -120,7 +120,7 @@ private:
 
 	FunctionCallTip _funcCalltip;
 
-	const wchar_t* getApiFileName();
+	const NppChar* getApiFileName();
 	void getWordArray(std::vector<std::string>& wordArray, const char* beginChars, const char* excludeChars) const;
 
 	// Type of autocomplete function

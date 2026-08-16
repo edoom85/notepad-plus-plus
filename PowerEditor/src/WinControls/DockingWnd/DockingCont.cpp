@@ -167,7 +167,7 @@ DockedWidgetData* DockingCont::findDockedWidgetByWnd(HWND hClient)
 	return (it != _dwDataVect.end()) ? *it : nullptr;
 }
 
-DockedWidgetData* DockingCont::findDockedWidgetByName(wchar_t* pszName)
+DockedWidgetData* DockingCont::findDockedWidgetByName(NppChar* pszName)
 {
 	DockedWidgetData*	pTbData		= NULL;
 
@@ -306,9 +306,9 @@ LRESULT DockingCont::runProcCaption(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 				if (!hookMouse)
 				{
 					DWORD dwError = ::GetLastError();
-					wchar_t str[128]{};
-					::wsprintf(str, L"GetLastError() returned %lu", dwError);
-					NppDarkMode::darkMessageBoxW(nullptr, str, L"SetWindowsHookEx(MOUSE) failed on runProcCaption", MB_OK | MB_ICONERROR);
+					NppChar str[128]{};
+					::sprintf(str, "GetLastError() returned %lu", dwError);
+					NppDarkMode::darkMessageBoxW(nullptr, str, "SetWindowsHookEx(MOUSE) failed on runProcCaption", MB_OK | MB_ICONERROR);
 				}
 				::RedrawWindow(hwnd, nullptr, nullptr, RDW_INVALIDATE);
 			}
@@ -419,7 +419,7 @@ LRESULT DockingCont::runProcCaption(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			else
 			{
 				NativeLangSpeaker *pNativeSpeaker = (NppParameters::getInstance()).getNativeLangSpeaker();
-				wstring tip = pNativeSpeaker->getLocalizedStrFromID("close-panel-tip", L"Close");
+				wstring tip = pNativeSpeaker->getLocalizedStrFromID("close-panel-tip", "Close");
 				toolTip.Show(rc, tip.c_str(), pt.x, pt.y + 20);
 			}
 			return 0;
@@ -586,7 +586,7 @@ void DockingCont::drawCaptionItem(DRAWITEMSTRUCT *pDrawItemStruct)
 				ANSI_CHARSET, OUT_DEFAULT_PRECIS,
 				CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
 				DEFAULT_PITCH | FF_ROMAN,
-				L"MS Shell Dlg");
+				"MS Shell Dlg");
 		}
 
 		hOldFont = (HFONT)::SelectObject(hDc, hFont);
@@ -630,7 +630,7 @@ void DockingCont::drawCaptionItem(DRAWITEMSTRUCT *pDrawItemStruct)
 			::SetTextColor(hDc, RGB(0xFF, 0xFF, 0xFF));
 		}
 
-		::DrawText(hDc, L"✕", 1, &rc, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
+		::DrawText(hDc, "✕", 1, &rc, DT_VCENTER | DT_CENTER | DT_SINGLELINE);
 		::SelectObject(hDc, hOld);
 	}
 	else
@@ -1062,8 +1062,8 @@ void DockingCont::drawTabItem(DRAWITEMSTRUCT* pDrawItemStruct)
 	if (!dwData)
 		return;
 
-	const wchar_t* text = dwData->pszName;
-	int length = lstrlen(dwData->pszName);
+	const NppChar* text = dwData->pszName;
+	int length = strlen(dwData->pszName);
 
 	// get drawing context
 	HDC hDc = pDrawItemStruct->hDC;
@@ -1654,7 +1654,7 @@ void DockingCont::selectTab(int iTab)
 	if (iTab == -1)
 		return;
 
-	const wchar_t	*pszMaxTxt	= NULL;
+	const NppChar	*pszMaxTxt	= NULL;
 	TCITEM tcItem {};
 	SIZE size = {};
 	int maxWidth = 0;
@@ -1711,10 +1711,10 @@ void DockingCont::selectTab(int iTab)
 
 		if (dwData)
 		{
-			const wchar_t* pszTabTxt = dwData->pszName;
+			const NppChar* pszTabTxt = dwData->pszName;
 
 			// get current font width
-			GetTextExtentPoint32(hDc, pszTabTxt, lstrlen(pszTabTxt), &size);
+			GetTextExtentPoint32(hDc, pszTabTxt, strlen(pszTabTxt), &size);
 
 			if (maxWidth < size.cx)
 			{
@@ -1733,10 +1733,10 @@ void DockingCont::selectTab(int iTab)
 		if (iItem == iTab && pszMaxTxt)
 		{
 			// fake here an icon before text ...
-			szText = L"        ";
+			szText = "        ";
 			szText += pszMaxTxt;
 		}
-		tcItem.pszText = (wchar_t *)szText.c_str();
+		tcItem.pszText = (NppChar *)szText.c_str();
 		::SendMessage(_hContTab, TCM_SETITEM, iItem, reinterpret_cast<LPARAM>(&tcItem));
 	}
 
@@ -1772,9 +1772,9 @@ bool DockingCont::updateCaption()
 	_pszCaption = dwData->pszName;
 
 	// test if additional information are available
-	if ((dwData->uMask & DWS_ADDINFO) && (lstrlen(dwData->pszAddInfo) != 0))
+	if ((dwData->uMask & DWS_ADDINFO) && (strlen(dwData->pszAddInfo) != 0))
 	{
-		_pszCaption += L" - ";
+		_pszCaption += " - ";
 		_pszCaption += dwData->pszAddInfo;
 	}
 

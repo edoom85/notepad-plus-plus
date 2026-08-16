@@ -259,12 +259,12 @@ void mapOemVirtualKeys()
 			else 
 			{
 				// convert from codepoint to MultiByte UTF8-encoded text
-				wchar_t v2w[2] = { (wchar_t)v2c, 0x00 };
+				NppChar v2w[2] = { (NppChar)v2c, 0x00 };
 				char bytes[8] = {0};
-				int len = WideCharToMultiByte(CP_UTF8, 0, &v2w[0], -1, NULL, 0, NULL, NULL);
+				int len = nppWCtoMB(CP_UTF8, 0, &v2w[0], -1, NULL, 0, NULL, NULL);
 				if (len > 0)
 				{
-					WideCharToMultiByte(CP_UTF8, 0, &v2w[0], -1, &bytes[0], len, NULL, NULL);
+					nppWCtoMB(CP_UTF8, 0, &v2w[0], -1, &bytes[0], len, NULL, NULL);
 				}
 				sprintf_s(oemVirtualKeyMap[namedKeyArray[i].id], MAX_MAPSTR_CHARS, "%s", bytes);
 			}
@@ -483,14 +483,14 @@ void getNameStrFromCmd(DWORD cmd, wstring & str)
 	else
 	{
 		HWND hNotepad_plus = ::FindWindow(Notepad_plus_Window::getClassName(), NULL);
-		wchar_t cmdName[menuItemStrLenMax];
+		NppChar cmdName[menuItemStrLenMax];
 		HMENU m = reinterpret_cast<HMENU>(::SendMessage(hNotepad_plus, NPPM_INTERNAL_GETMENU, 0, 0));
 		int nbChar = ::GetMenuString(m, cmd, cmdName, menuItemStrLenMax, MF_BYCOMMAND);
 		if (!nbChar)
 			return;
 		bool fin = false;
 		int j = 0;
-		size_t len = lstrlen(cmdName);
+		size_t len = strlen(cmdName);
 		for (size_t i = 0 ; i < len; ++i)
 		{
 			switch(cmdName[i])
@@ -662,7 +662,7 @@ intptr_t CALLBACK Shortcut::run_dlgProc(UINT Message, WPARAM wParam, LPARAM lPar
 
 					if (_canModifyName)
 					{
-						wchar_t editName[menuItemStrLenMax]{};
+						NppChar editName[menuItemStrLenMax]{};
 						::SendDlgItemMessage(_hSelf, IDC_NAME_EDIT, WM_GETTEXT, menuItemStrLenMax, reinterpret_cast<LPARAM>(editName));
 						setName(wstring2string(editName, CP_UTF8).c_str());
 					}
@@ -1072,9 +1072,9 @@ void recordedMacroStep::PlayBack(Window* pNotepad, ScintillaEditView *pEditView)
 		if (_macroType == mtUseSParameter) 
 		{
 			/*
-			int byteBufferLength = ::WideCharToMultiByte(static_cast<UINT>(pEditView->execute(SCI_GETCODEPAGE)), 0, _sParameter.c_str(), -1, NULL, 0, NULL, NULL);
+			int byteBufferLength = ::nppWCtoMB(static_cast<UINT>(pEditView->execute(SCI_GETCODEPAGE)), 0, _sParameter.c_str(), -1, NULL, 0, NULL, NULL);
 			auto byteBuffer = std::make_unique< char[] >(byteBufferLength);
-			::WideCharToMultiByte(static_cast<UINT>(pEditView->execute(SCI_GETCODEPAGE)), 0, _sParameter.c_str(), -1, byteBuffer.get(), byteBufferLength, NULL, NULL);
+			::nppWCtoMB(static_cast<UINT>(pEditView->execute(SCI_GETCODEPAGE)), 0, _sParameter.c_str(), -1, byteBuffer.get(), byteBufferLength, NULL, NULL);
 			auto lParam = reinterpret_cast<LPARAM>(byteBuffer.get());
 			pEditView->execute(_message, _wParameter, lParam);
 			*/
@@ -1150,7 +1150,7 @@ void ScintillaAccelerator::updateKeys()
 
 void ScintillaAccelerator::updateMenuItemByID(const ScintillaKeyMap& skm, int id)
 {
-	wchar_t cmdName[menuItemStrLenMax];
+	NppChar cmdName[menuItemStrLenMax];
 	::GetMenuString(_hAccelMenu, id, cmdName, menuItemStrLenMax, MF_BYCOMMAND);
 	int i = 0;
 	while (cmdName[i] != 0)
@@ -1165,7 +1165,7 @@ void ScintillaAccelerator::updateMenuItemByID(const ScintillaKeyMap& skm, int id
 	wstring menuItem = cmdName;
 	if (skm.isEnabled())
 	{
-		menuItem += L"\t";
+		menuItem += "\t";
 		menuItem += string2wstring(skm.toString(), CP_UTF8);
 	}
 	::ModifyMenu(_hAccelMenu, id, MF_BYCOMMAND, id, menuItem.c_str());
@@ -1433,45 +1433,45 @@ void CommandShortcut::setCategoryFromMenu(HMENU hMenu)
 	NativeLangSpeaker* pNativeSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
 
 	if (_id >= IDM_WINDOW_WINDOWS && _id <= IDM_WINDOW_SORT_FS_DSC)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "Window", L"Window");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "Window", "Window");
 	else if ( _id >= IDM_VIEW_GOTO_ANOTHER_VIEW && _id <= IDM_VIEW_GOTO_END)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", L"View");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", "View");
 	else if (_id == IDM_EDIT_LTR || _id == IDM_EDIT_RTL)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", L"View");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", "View");
 	else if (_id == IDC_PREV_DOC || _id == IDC_NEXT_DOC)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", L"View");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", "View");
 	else if (_id == IDM_FORMAT_TODOS || _id == IDM_FORMAT_TOUNIX || _id == IDM_FORMAT_TOMAC)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "edit", L"Edit");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "edit", "Edit");
 	else if (_id == IDM_EDIT_AUTOCOMPLETE || _id == IDM_EDIT_AUTOCOMPLETE_CURRENTFILE || _id == IDM_EDIT_FUNCCALLTIP ||
 		_id == IDM_EDIT_AUTOCOMPLETE_PATH || _id == IDM_EDIT_FUNCCALLTIP_PREVIOUS || _id == IDM_EDIT_FUNCCALLTIP_NEXT)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "edit", L"Edit");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "edit", "Edit");
 	else if (_id == IDM_LANGSTYLE_CONFIG_DLG)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "settings", L"Settings");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "settings", "Settings");
 	else if (_id == IDM_MACRO_STARTRECORDINGMACRO  ||_id == IDM_MACRO_STOPRECORDINGMACRO  || _id == IDM_MACRO_RUNMULTIMACRODLG ||
 		_id == IDM_MACRO_PLAYBACKRECORDEDMACRO  ||_id == IDM_MACRO_SAVECURRENTMACRO || _id == IDC_EDIT_TOGGLEMACRORECORDING)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "macro", L"Macro");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "macro", "Macro");
 
 
 	else if ( _id < IDM_EDIT)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "file", L"File");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "file", "File");
 	else if ( _id < IDM_SEARCH)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "edit",L"Edit");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "edit","Edit");
 	else if ( _id < IDM_VIEW)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "search", L"Search");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "search", "Search");
 	else if ( _id < IDM_FORMAT)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", L"View");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "view", "View");
 	else if ( _id < IDM_LANG)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "encoding", L"Encoding");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "encoding", "Encoding");
 	else if ( _id < IDM_ABOUT)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "language", L"Language");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "language", "Language");
 	else if ( _id < IDM_SETTING)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "about", L"About");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "about", "About");
 	else if ( _id < IDM_TOOL)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "settings", L"Settings");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "settings", "Settings");
 	else if ( _id < IDM_EXECUTE)
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "tools", L"Tools");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "tools", "Tools");
 	else // _id >= IDM_EXECUTE
-		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "run", L"Run");
+		pNativeSpeaker->getMainMenuEntryName(_category, hMenu, "run", "Run");
 }
 
 CommandShortcut& CommandShortcut::operator = (const Shortcut& sct)

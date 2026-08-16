@@ -313,7 +313,7 @@ Utf8_16_Write::~Utf8_16_Write()
 	closeFile();
 }
 
-bool Utf8_16_Write::openFile(const wchar_t *name)
+bool Utf8_16_Write::openFile(const NppChar *name)
 {
 	m_dwLastFileError = NO_ERROR;
 

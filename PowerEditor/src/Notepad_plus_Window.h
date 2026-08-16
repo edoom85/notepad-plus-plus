@@ -22,7 +22,7 @@ constexpr int splitterSize = 8;
 class Notepad_plus_Window : public Window
 {
 public:
-	void init(HINSTANCE, HWND, const wchar_t *cmdLine, CmdLineParams *cmdLineParams);
+	void init(HINSTANCE, HWND, const NppChar *cmdLine, CmdLineParams *cmdLineParams);
 
 	bool isDlgsMsg(MSG *msg) const;
 
@@ -30,7 +30,7 @@ public:
 		return _notepad_plus_plus_core.getAccTable();
 	}
 
-	bool emergency(const std::wstring& emergencySavedDir) {
+	bool emergency(const NppString& emergencySavedDir) {
 		return _notepad_plus_plus_core.emergency(emergencySavedDir);
 	}
 
@@ -42,7 +42,7 @@ public:
 		_isPrelaunch = val;
 	}
 
-	std::wstring getPluginListVerStr() const {
+	NppString getPluginListVerStr() const {
 		return _notepad_plus_plus_core.getPluginListVerStr();
 	}
 
@@ -52,7 +52,7 @@ public:
 		::DestroyWindow(_hSelf);
 	}
 
-	static const wchar_t * getClassName() {
+	static const NppChar * getClassName() {
 		return _className;
 	}
 
@@ -75,9 +75,9 @@ public:
 #ifndef NDEBUG
 			if (!_isClipboardListener)
 			{
-				std::wstring msg = L"AddClipboardFormatListener failed!\n\nErrorCode: ";
+				NppString msg = "AddClipboardFormatListener failed!\n\nErrorCode: ";
 				msg += std::to_wstring(::GetLastError());
-				::MessageBoxW(_hSelf, msg.c_str(), L"Notepad_plus_Window::addClipboardListener", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
+				::MessageBoxW(_hSelf, msg.c_str(), "Notepad_plus_Window::addClipboardListener", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
 			}
 #endif
 		}
@@ -94,9 +94,9 @@ public:
 			BOOL bRemoved = ::RemoveClipboardFormatListener(_hSelf);
 			if (!bRemoved)
 			{
-				std::wstring msg = L"RemoveClipboardFormatListener failed!\n\nErrorCode: ";
+				NppString msg = "RemoveClipboardFormatListener failed!\n\nErrorCode: ";
 				msg += std::to_wstring(::GetLastError());
-				::MessageBoxW(_hSelf, msg.c_str(), L"Notepad_plus_Window::removeClipboardListener", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
+				::MessageBoxW(_hSelf, msg.c_str(), "Notepad_plus_Window::removeClipboardListener", MB_OK | MB_APPLMODAL | MB_ICONWARNING);
 			}
 #endif
 		}
@@ -107,12 +107,12 @@ private:
 	static LRESULT CALLBACK Notepad_plus_Proc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 	LRESULT runProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
-	static constexpr wchar_t _className[32] = L"Notepad++";
+	static constexpr NppChar _className[32] = "Notepad++";
 	bool _isPrelaunch = false;
 	bool _disablePluginsManager = false;
 
 	QuoteParams _quoteParams; // keep the availability of quote parameters for thread using
-	std::wstring _userQuote; // keep the availability of this string for thread using
+	NppString _userQuote; // keep the availability of this string for thread using
 
 	HICON _hIconAbsent = nullptr;
 

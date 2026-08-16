@@ -206,7 +206,7 @@ private:
 
         lLayout->addWidget(new QLabel("Lenguaje por defecto para documentos nuevos:", grpLang));
         auto* comboLang = new QComboBox(grpLang);
-        comboLang->addItems({"Texto plano", "C++", "Python", "JavaScript", "HTML", "XML", "JSON", "Markdown", "Bash / Shell"});
+        comboLang->addItems({"Texto plano", "C++", "Python", "JavaScript", "HTM", "XM", "JSON", "Markdown", "Bash / Shell"});
         lLayout->addWidget(comboLang);
 
         layout->addWidget(grpLang);

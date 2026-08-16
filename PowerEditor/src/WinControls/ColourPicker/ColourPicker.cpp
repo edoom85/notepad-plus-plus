@@ -28,8 +28,8 @@ void ColourPicker::init(HINSTANCE hInst, HWND parent)
 
 	_hSelf = ::CreateWindowEx(
 		0,
-		L"Button",
-		L"F",
+		"Button",
+		"F",
 		WS_CHILD | WS_VISIBLE,
 		0, 0, 25, 25,
 		_hParent, nullptr, _hInst, nullptr);

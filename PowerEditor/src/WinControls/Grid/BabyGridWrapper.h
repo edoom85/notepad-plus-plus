@@ -49,7 +49,7 @@ public:
 		::SendMessage(_hSelf, BGM_SETCOLSNUMBERED, isNumbered ? TRUE : FALSE, 0);
 	}
 
-	void setText(size_t row, size_t col, const wchar_t* text) {
+	void setText(size_t row, size_t col, const NppChar* text) {
 		BGCELL cell;
 		cell.row = int(row);
 		cell.col = int(col);

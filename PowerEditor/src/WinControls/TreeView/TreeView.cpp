@@ -35,7 +35,7 @@ void TreeView::init(HINSTANCE hInst, HWND parent, int treeViewID)
 
 	_hSelf = CreateWindowEx(0,
 							WC_TREEVIEW,
-							L"Tree View",
+							"Tree View",
 							WS_CHILD | WS_BORDER | treeViewStyles,
 							0,
 							0,
@@ -151,7 +151,7 @@ LPARAM TreeView::getItemParam(HTREEITEM Item2Get) const
 {
 	if (!Item2Get)
 		return false;
-	//wchar_t textBuffer[MAX_PATH];
+	//NppChar textBuffer[MAX_PATH];
 	TVITEM tvItem{};
 	tvItem.hItem = Item2Get;
 	tvItem.mask = TVIF_PARAM;
@@ -164,8 +164,8 @@ LPARAM TreeView::getItemParam(HTREEITEM Item2Get) const
 wstring TreeView::getItemDisplayName(HTREEITEM Item2Set) const
 {
 	if (!Item2Set)
-		return L"";
-	wchar_t textBuffer[MAX_PATH] = { '\0' };
+		return "";
+	NppChar textBuffer[MAX_PATH] = { '\0' };
 	TVITEM tvItem{};
 	tvItem.hItem = Item2Set;
 	tvItem.mask = TVIF_TEXT;
@@ -175,7 +175,7 @@ wstring TreeView::getItemDisplayName(HTREEITEM Item2Set) const
 	return tvItem.pszText;
 }
 
-bool TreeView::renameItem(const HTREEITEM Item2Set, const wchar_t* newName)
+bool TreeView::renameItem(const HTREEITEM Item2Set, const NppChar* newName)
 {
 	if (!Item2Set || !newName)
 		return false;
@@ -193,7 +193,7 @@ bool TreeView::renameItem(const HTREEITEM Item2Set, const wchar_t* newName)
 		hItem = getChildFrom(hParent); // get current level 1st item, Item2Set is a child node
 	while (hItem)
 	{
-		wchar_t textBuffer[MAX_PATH]{};
+		NppChar textBuffer[MAX_PATH]{};
 		tvItem.hItem = hItem;
 		tvItem.pszText = textBuffer;
 		::SendMessageW(_hSelf, TVM_GETITEM, 0, reinterpret_cast<LPARAM>(&tvItem));
@@ -210,13 +210,13 @@ bool TreeView::renameItem(const HTREEITEM Item2Set, const wchar_t* newName)
 	return true;
 }
 
-HTREEITEM TreeView::addItem(const wchar_t *itemName, HTREEITEM hParentItem, int iImage, LPARAM lParam)
+HTREEITEM TreeView::addItem(const NppChar *itemName, HTREEITEM hParentItem, int iImage, LPARAM lParam)
 {
 	TVITEM tvi{};
 	tvi.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
 
 	// Set the item label.
-	tvi.pszText = (LPTSTR)itemName;
+	tvi.pszText = (NppChar*)itemName;
 	tvi.cchTextMax = MAX_PATH;
 
 	// Set icon
@@ -264,7 +264,7 @@ void TreeView::dupTree(HTREEITEM hTree2Dup, HTREEITEM hParentItem)
 {
 	for (HTREEITEM hItem = getChildFrom(hTree2Dup); hItem != NULL; hItem = getNextSibling(hItem))
 	{
-		wchar_t textBuffer[MAX_PATH]{};
+		NppChar textBuffer[MAX_PATH]{};
 		TVITEM tvItem{};
 		tvItem.hItem = hItem;
 		tvItem.pszText = textBuffer;
@@ -281,7 +281,7 @@ void TreeView::dupTree(HTREEITEM hTree2Dup, HTREEITEM hParentItem)
 	}
 }
 
-HTREEITEM TreeView::searchSubItemByName(const wchar_t *itemName, HTREEITEM hParentItem)
+HTREEITEM TreeView::searchSubItemByName(const NppChar *itemName, HTREEITEM hParentItem)
 {
 	HTREEITEM hItem = nullptr;
 	if (hParentItem != nullptr)
@@ -291,7 +291,7 @@ HTREEITEM TreeView::searchSubItemByName(const wchar_t *itemName, HTREEITEM hPare
 
 	while (hItem != nullptr)
 	{
-		wchar_t textBuffer[MAX_PATH] = { '\0' };
+		NppChar textBuffer[MAX_PATH] = { '\0' };
 		TVITEM tvItem{};
 		tvItem.hItem = hItem;
 		tvItem.pszText = textBuffer;
@@ -578,7 +578,7 @@ bool TreeView::isParent(HTREEITEM targetItem, HTREEITEM draggedItem)
 
 void TreeView::moveTreeViewItem(HTREEITEM draggedItem, HTREEITEM targetItem)
 {
-	wchar_t textBuffer[MAX_PATH]{};
+	NppChar textBuffer[MAX_PATH]{};
 	TVITEM tvDraggingItem{};
 	tvDraggingItem.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 	tvDraggingItem.pszText = textBuffer;
@@ -627,8 +627,8 @@ bool TreeView::swapTreeViewItem(HTREEITEM itemGoDown, HTREEITEM itemGoUp)
 		return false;
 
 	// get both item infos
-	wchar_t textBufferUp[MAX_PATH]{};
-	wchar_t textBufferDown[MAX_PATH]{};
+	NppChar textBufferUp[MAX_PATH]{};
+	NppChar textBufferDown[MAX_PATH]{};
 	TVITEM tvUpItem{};
 	TVITEM tvDownItem{};
 	tvUpItem.mask = TVIF_TEXT | TVIF_PARAM | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
@@ -723,7 +723,7 @@ bool TreeView::searchLeafRecusivelyAndBuildTree(HTREEITEM tree2Build, const wstr
 	if (!tree2Search)
 		return false;
 
-	wchar_t textBuffer[MAX_PATH] = { '\0' };
+	NppChar textBuffer[MAX_PATH] = { '\0' };
 	TVITEM tvItem{};
 	tvItem.hItem = tree2Search;
 	tvItem.pszText = textBuffer;
@@ -763,7 +763,7 @@ bool TreeView::retrieveFoldingStateTo(TreeStateNode & treeState2Construct, HTREE
 	if (!treeviewNode)
 		return false;
 
-	wchar_t textBuffer[MAX_PATH] = { '\0' };
+	NppChar textBuffer[MAX_PATH] = { '\0' };
 	TVITEM tvItem{};
 	tvItem.hItem = treeviewNode;
 	tvItem.pszText = textBuffer;

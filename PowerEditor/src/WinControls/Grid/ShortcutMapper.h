@@ -27,7 +27,7 @@ enum GridState {STATE_MENU, STATE_MACRO, STATE_USER, STATE_PLUGIN, STATE_SCINTIL
 class ShortcutMapper : public StaticDialog {
 public:
 	ShortcutMapper() : StaticDialog(), _currentState(STATE_MENU) {
-		_shortcutFilter = std::vector<std::wstring>();
+		_shortcutFilter = std::vector<NppString>();
 		_dialogInitDone = false;
 	}
 	~ShortcutMapper() override = default;
@@ -43,10 +43,10 @@ public:
 	}
 	void getClientRect(RECT & rc) const override;
 
-	bool findKeyConflicts(__inout_opt std::wstring * const keyConflictLocation,
+	bool findKeyConflicts(__inout_opt NppString * const keyConflictLocation,
 							const KeyCombo & itemKeyCombo, const size_t & itemIndex) const;
 
-	std::wstring getTextFromCombo(HWND hCombo);
+	NppString getTextFromCombo(HWND hCombo);
 	bool isFilterValid(Shortcut sc);
 	bool isFilterValid(PluginCmdShortcut sc);
 	bool isFilterValid(ScintillaKeyMap sc);
@@ -63,16 +63,16 @@ private:
 	HWND _hTabCtrl = nullptr;
 
 	const static int _nbTab = 5;
-	std::wstring _tabNames[_nbTab];
-	std::vector<std::wstring> _shortcutFilter;
+	NppString _tabNames[_nbTab];
+	std::vector<NppString> _shortcutFilter;
 	std::vector<size_t> _shortcutIndex;
 
 	//save/restore the last view
 	std::vector<size_t> _lastHomeRow;
 	std::vector<size_t> _lastCursorRow;
 
-	std::wstring _conflictInfoOk;
-	std::wstring _conflictInfoEditing;
+	NppString _conflictInfoOk;
+	NppString _conflictInfoEditing;
 
 	std::vector<HFONT> _hGridFonts;
 
@@ -90,7 +90,7 @@ private:
 	void initTabs();
 	void initBabyGrid();
 	void fillOutBabyGrid();
-	std::wstring getTabString(size_t i) const;
+	NppString getTabString(size_t i) const;
 
 	bool isConflict(const KeyCombo & lhs, const KeyCombo & rhs) const
 	{

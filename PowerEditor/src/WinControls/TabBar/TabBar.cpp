@@ -54,7 +54,7 @@ void TabBar::init(HINSTANCE hInst, HWND parent, bool isVertical, bool isMultiLin
 	_hSelf = ::CreateWindowEx(
 				0,
 				WC_TABCONTROL,
-				L"Tab",
+				"Tab",
 				style,
 				0, 0, 0, 0,
 				_hParent,
@@ -87,7 +87,7 @@ void TabBar::destroy()
 }
 
 
-int TabBar::insertAtEnd(const wchar_t *subTabName)
+int TabBar::insertAtEnd(const NppChar *subTabName)
 {
 	TCITEM tie{};
 	tie.mask = TCIF_TEXT | TCIF_IMAGE;
@@ -96,12 +96,12 @@ int TabBar::insertAtEnd(const wchar_t *subTabName)
 	if (_hasImgLst)
 		index = 0;
 	tie.iImage = index;
-	tie.pszText = const_cast<wchar_t*>(subTabName);
+	tie.pszText = const_cast<NppChar*>(subTabName);
 	return int(::SendMessage(_hSelf, TCM_INSERTITEM, _nbItem++, reinterpret_cast<LPARAM>(&tie)));
 }
 
 
-void TabBar::getCurrentTitle(wchar_t *title, int titleLen)
+void TabBar::getCurrentTitle(NppChar *title, int titleLen)
 {
 	TCITEM tci{};
 	tci.mask = TCIF_TEXT;
@@ -302,7 +302,7 @@ void TabBarPlus::init(HINSTANCE hInst, HWND parent, bool isVertical, bool isMult
 	int style = WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE | TCS_FOCUSNEVER | TCS_TABS | vertical | multiLine;
 	style |= TCS_OWNERDRAWFIXED;
 
-	_hSelf = ::CreateWindowEx(0, WC_TABCONTROL,	L"Tab", style,	0, 0, 0, 0, _hParent, NULL, _hInst, 0);
+	_hSelf = ::CreateWindowEx(0, WC_TABCONTROL,	"Tab", style,	0, 0, 0, 0, _hParent, NULL, _hInst, 0);
 
 	if (!_hSelf)
 	{
@@ -1426,7 +1426,7 @@ void TabBarPlus::drawItem(DRAWITEMSTRUCT* pDrawItemStruct, bool isDarkMode)
 
 	bool isSelected = (nTab == ::SendMessage(_hSelf, TCM_GETCURSEL, 0, 0));
 
-	wchar_t label[MAX_PATH] = { '\0' };
+	NppChar label[MAX_PATH] = { '\0' };
 	TCITEM tci{};
 	tci.mask = TCIF_TEXT | TCIF_IMAGE | TCIF_PARAM;
 	tci.pszText = label;
@@ -1749,7 +1749,7 @@ void TabBarPlus::drawItem(DRAWITEMSTRUCT* pDrawItemStruct, bool isDarkMode)
 			SelectObject(hDC, _hLargeFont);
 	}
 	SIZE charPixel{};
-	::GetTextExtentPoint(hDC, L" ", 1, &charPixel);
+	::GetTextExtentPoint(hDC, " ", 1, &charPixel);
 	int spaceUnit = charPixel.cx;
 
 	TEXTMETRIC textMetrics{};
@@ -1762,9 +1762,9 @@ void TabBarPlus::drawItem(DRAWITEMSTRUCT* pDrawItemStruct, bool isDarkMode)
 	// This code will read in one character at a time and remove every first ampersand (&).
 	// ex. If input "test && test &&& test &&&&" then output will be "test & test && test &&&".
 	// Tab's caption must be encoded like this because otherwise tab control would make tab too small or too big for the text.
-	wchar_t decodedLabel[MAX_PATH] = { '\0' };
-	const wchar_t* in = label;
-	wchar_t* out = decodedLabel;
+	NppChar decodedLabel[MAX_PATH] = { '\0' };
+	const NppChar* in = label;
+	NppChar* out = decodedLabel;
 	while (*in != 0)
 		if (*in == '&')
 			while (*(++in) == '&')
@@ -1824,9 +1824,9 @@ void TabBarPlus::draggingCursor(POINT screenPoint)
 		::SetCursor(::LoadCursor(NULL, IDC_ARROW));
 	else
 	{
-		wchar_t className[256] = { '\0' };
+		NppChar className[256] = { '\0' };
 		::GetClassName(hWin, className, 256);
-		if ((!std::wcscmp(className, L"Scintilla")) || (!std::wcscmp(className, WC_TABCONTROL)))
+		if ((!std::wcscmp(className, "Scintilla")) || (!std::wcscmp(className, WC_TABCONTROL)))
 		{
 			if (::GetKeyState(VK_LCONTROL) & 0x80000000)
 				::SetCursor(::LoadCursor(_hInst, MAKEINTRESOURCE(IDC_DRAG_PLUS_TAB)));
@@ -1859,8 +1859,8 @@ bool TabBarPlus::exchangeTabItemData(int oldTab, int newTab, bool setToActive/* 
 	TCITEM itemData_nDraggedTab{}, itemData_shift{};
 	itemData_nDraggedTab.mask = itemData_shift.mask = TCIF_IMAGE | TCIF_TEXT | TCIF_PARAM;
 	const int stringSize = 256;
-	wchar_t str1[stringSize] = { '\0' };
-	wchar_t str2[stringSize] = { '\0' };
+	NppChar str1[stringSize] = { '\0' };
+	NppChar str2[stringSize] = { '\0' };
 
 	itemData_nDraggedTab.pszText = str1;
 	itemData_nDraggedTab.cchTextMax = (stringSize);

@@ -119,7 +119,7 @@ namespace // anonymous
 		return result;
 	}
 
-	bool setDialogFolder(IFileDialog* dialog, const wchar_t* path)
+	bool setDialogFolder(IFileDialog* dialog, const NppChar* path)
 	{
 		com_ptr<IShellItem> shellItem;
 		HRESULT hr = SHCreateItemFromParsingName(path,
@@ -189,7 +189,7 @@ namespace // anonymous
 			::SetCurrentDirectory(_dir);
 		}
 	private:
-		wchar_t _dir[MAX_PATH];
+		NppChar _dir[MAX_PATH];
 	};
 
 } // anonymous namespace
@@ -398,7 +398,7 @@ private:
 					NppParameters& nppParam = NppParameters::getInstance();
 					NativeLangSpeaker* pNativeSpeaker = nppParam.getNativeLangSpeaker();
 					wstring tipText = pNativeSpeaker->getLocalizedStrFromID("fileSaveAsCopySaveButton-tip",
-						L"Hold Shift while pressing Save to open the copy after saving.");
+						"Hold Shift while pressing Save to open the copy after saving.");
 					int ctrlId = GetDlgCtrlID(_hwndButton);
 					if (ctrlId != 0)
 					{
@@ -461,7 +461,7 @@ private:
 		if (extIndex >= 0 && extIndex < static_cast<int>(_filterSpec.size()))
 		{
 			const wstring ext = get1stExt(_filterSpec[extIndex].ext);
-			if (!ext.ends_with(L".*"))
+			if (!ext.ends_with(".*"))
 				return replaceExt(name, ext);
 		}
 		return false;
@@ -471,9 +471,9 @@ private:
 	{
 		if (::PathIsRelative(fileName.c_str()))
 		{
-			wchar_t buffer[MAX_PATH] = { '\0' };
+			NppChar buffer[MAX_PATH] = { '\0' };
 			const wstring folder = getDialogFolder(_dialog);
-			LPTSTR ret = ::PathCombine(buffer, folder.c_str(), fileName.c_str());
+			NppChar* ret = ::PathCombine(buffer, folder.c_str(), fileName.c_str());
 			if (ret)
 				return buffer;
 		}
@@ -525,7 +525,7 @@ private:
 		if (nameChanged)
 		{
 			// Clear the name first to ensure it's updated properly.
-			_dialog->SetFileName(L"");
+			_dialog->SetFileName("");
 			_dialog->SetFileName(fileName.c_str());
 			// Put the caret right after the typed name (before the appended extension)
 			// instead of leaving everything selected, since the selection is implicitly
@@ -559,7 +559,7 @@ private:
 	static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM param)
 	{
 		const int bufferLen = MAX_PATH;
-		static wchar_t buffer[bufferLen];
+		static NppChar buffer[bufferLen];
 		static bool isRTL = false;
 
 		auto* inst = reinterpret_cast<FileDialogEventHandler*>(param);
@@ -568,17 +568,17 @@ private:
 
 		if (IsWindowEnabled(hwnd) && GetClassName(hwnd, buffer, bufferLen) != 0)
 		{
-			if (lstrcmpi(buffer, L"ComboBox") == 0)
+			if (lstrcmpi(buffer, "ComboBox") == 0)
 			{
 				// The edit box of interest is a child of the combo box and has empty window text.
 				// We use the first combo box, but there might be the others (file type dropdown, address bar, etc).
-				HWND hwndChild = FindWindowEx(hwnd, nullptr, L"Edit", L"");
+				HWND hwndChild = FindWindowEx(hwnd, nullptr, "Edit", "");
 				if (hwndChild && !inst->_hwndNameEdit)
 				{
 					inst->_hwndNameEdit = hwndChild;
 				}
 			}
-			else if (lstrcmpi(buffer, L"Button") == 0)
+			else if (lstrcmpi(buffer, "Button") == 0)
 			{
 				// Find the OK button.
 				// Preconditions:
@@ -759,7 +759,7 @@ public:
 				if (!hasExt(newFileName))
 				{
 					const wstring ext = get1stExt(_filterSpec[_fileTypeIndex].ext);
-					if (!ext.ends_with(L".*"))
+					if (!ext.ends_with(".*"))
 						newFileName += ext;
 				}
 			}
@@ -820,7 +820,7 @@ public:
 		return true;
 	}
 
-	bool addCheckbox(int id, const wchar_t* label, bool value, bool enabled = true)
+	bool addCheckbox(int id, const NppChar* label, bool value, bool enabled = true)
 	{
 		if (!_customize)
 			return false;
@@ -955,12 +955,12 @@ public:
 	}
 
 	HWND _hwndOwner = nullptr;
-	const wchar_t* _title = nullptr;
-	const wchar_t* _defExt = nullptr;
+	const NppChar* _title = nullptr;
+	const NppChar* _defExt = nullptr;
 	wstring _initialFolder;
 	wstring _fallbackFolder;
-	const wchar_t* _checkboxLabel = nullptr;
-	const wchar_t* _initialFileName = nullptr;
+	const NppChar* _checkboxLabel = nullptr;
+	const NppChar* _initialFileName = nullptr;
 	bool _isCheckboxActive = true;
 	std::vector<Filter> _filterSpec;
 	int _fileTypeIndex = -1;	// preferred file type index
@@ -985,22 +985,22 @@ CustomFileDialog::CustomFileDialog(HWND hwnd) : _impl{ std::make_unique<Impl>() 
 
 	NppParameters& params = NppParameters::getInstance();
 	NppGUI& nppGUI = params.getNppGUI();
-	const wchar_t* workDir = nppGUI._openSaveDir == dir_last ? nppGUI._lastUsedDir : params.getWorkingDir();
+	const NppChar* workDir = nppGUI._openSaveDir == dir_last ? nppGUI._lastUsedDir : params.getWorkingDir();
 	if (workDir)
 		_impl->_fallbackFolder = workDir;
 }
 
 CustomFileDialog::~CustomFileDialog() = default;
 
-void CustomFileDialog::setTitle(const wchar_t* title)
+void CustomFileDialog::setTitle(const NppChar* title)
 {
 	_impl->_title = title;
 }
 
-void CustomFileDialog::setExtFilter(const wchar_t *extText, const wchar_t *exts)
+void CustomFileDialog::setExtFilter(const NppChar *extText, const NppChar *exts)
 {
 	// Add an asterisk before each dot in file patterns
-	wstring newExts{ exts ? exts : L"" };
+	wstring newExts{ exts ? exts : "" };
 	for (size_t pos = 0; pos < newExts.size(); ++pos)
 	{
 		pos = newExts.find(L'.', pos);
@@ -1013,13 +1013,13 @@ void CustomFileDialog::setExtFilter(const wchar_t *extText, const wchar_t *exts)
 		}
 	}
 
-	if (newExts.find(L"*.*") == 0)
+	if (newExts.find("*.*") == 0)
 		_impl->_wildcardIndex = static_cast<int>(_impl->_filterSpec.size());
 
 	_impl->_filterSpec.push_back({ extText, newExts });
 }
 
-void CustomFileDialog::setExtFilter(const wchar_t *extText, std::initializer_list<const wchar_t*> extList)
+void CustomFileDialog::setExtFilter(const NppChar *extText, std::initializer_list<const NppChar*> extList)
 {
 	wstring exts;
 	for (auto&& x : extList)
@@ -1031,22 +1031,22 @@ void CustomFileDialog::setExtFilter(const wchar_t *extText, std::initializer_lis
 	setExtFilter(extText, exts.c_str());
 }
 
-void CustomFileDialog::setDefExt(const wchar_t* ext)
+void CustomFileDialog::setDefExt(const NppChar* ext)
 {
 	_impl->_defExt = ext;
 }
 
-void CustomFileDialog::setDefFileName(const wchar_t* fn)
+void CustomFileDialog::setDefFileName(const NppChar* fn)
 {
 	_impl->_initialFileName = fn;
 }
 
-void CustomFileDialog::setFolder(const wchar_t* folder)
+void CustomFileDialog::setFolder(const NppChar* folder)
 {
-	_impl->_initialFolder = folder ? folder : L"";
+	_impl->_initialFolder = folder ? folder : "";
 }
 
-void CustomFileDialog::setCheckbox(const wchar_t* text, bool isActive)
+void CustomFileDialog::setCheckbox(const NppChar* text, bool isActive)
 {
 	_impl->_checkboxLabel = text;
 	_impl->_isCheckboxActive = isActive;
@@ -1109,7 +1109,7 @@ wstring CustomFileDialog::doSaveDlg()
 
 	_impl->addFlags(FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST | FOS_FORCEFILESYSTEM | FOS_NOTESTFILECREATE);
 	bool bOk = _impl->show();
-	return bOk ? _impl->getResultFilename() : L"";
+	return bOk ? _impl->getResultFilename() : "";
 }
 
 wstring CustomFileDialog::doOpenSingleFileDlg()
@@ -1121,7 +1121,7 @@ wstring CustomFileDialog::doOpenSingleFileDlg()
 
 	_impl->addFlags(FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST | FOS_FORCEFILESYSTEM);
 	bool bOk = _impl->show();
-	return bOk ? _impl->getResultFilename() : L"";
+	return bOk ? _impl->getResultFilename() : "";
 }
 
 std::vector<wstring> CustomFileDialog::doOpenMultiFilesDlg()
@@ -1145,5 +1145,5 @@ wstring CustomFileDialog::pickFolder()
 
 	_impl->addFlags(FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST | FOS_FORCEFILESYSTEM | FOS_PICKFOLDERS);
 	bool bOk = _impl->show();
-	return bOk ? _impl->getResultFilename() : L"";
+	return bOk ? _impl->getResultFilename() : "";
 }

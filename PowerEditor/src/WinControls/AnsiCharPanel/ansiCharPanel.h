@@ -24,7 +24,7 @@
 #include "ansiCharPanel_rc.h"
 #include "asciiListView.h"
 
-#define AI_PROJECTPANELTITLE		L"ASCII Codes Insertion Panel"
+#define AI_PROJECTPANELTITLE		"ASCII Codes Insertion Panel"
 
 class ScintillaEditView;
 

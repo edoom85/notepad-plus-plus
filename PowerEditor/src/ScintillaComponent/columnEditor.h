@@ -60,6 +60,6 @@ private :
 	using Window::init;
 
 	void setNumericFields(const ColumnEditorParam& colEditParam);
-	int getNumericFieldValueFromText(NumBase formatChoice, const std::wstring& str);
-	int sendValidationErrorMessage(int whichFlashRed, NumBase formatChoice, wchar_t str[]);
+	int getNumericFieldValueFromText(NumBase formatChoice, const NppString& str);
+	int sendValidationErrorMessage(int whichFlashRed, NumBase formatChoice, NppChar str[]);
 };

@@ -190,10 +190,10 @@ void TaskListDlg::drawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	RECT rect = lpDrawItemStruct->rcItem;
 	HDC hDC = lpDrawItemStruct->hDC;
 	int nItem = lpDrawItemStruct->itemID;
-	const wchar_t *label = _taskListInfo._tlfsLst[nItem]._fn.c_str();
+	const NppChar *label = _taskListInfo._tlfsLst[nItem]._fn.c_str();
 	int iImage = _taskListInfo._tlfsLst[nItem]._status;
 
-	const int aSpaceWidth = ListView_GetStringWidth(_taskList.getHSelf(), L" ");
+	const int aSpaceWidth = ListView_GetStringWidth(_taskList.getHSelf(), " ");
 
 	COLORREF textColor = NppDarkMode::isEnabled() ? NppDarkMode::getDarkerTextColor() : darkGrey;
 	int imgStyle = ILD_SELECTED;

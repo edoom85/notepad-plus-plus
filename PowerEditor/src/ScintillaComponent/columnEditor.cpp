@@ -74,9 +74,9 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 
 			setNumericFields(colEditParam);
 			
-			::SendDlgItemMessage(_hSelf, IDC_COL_LEADING_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"None"));
-			::SendDlgItemMessage(_hSelf, IDC_COL_LEADING_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Zeros"));
-			::SendDlgItemMessage(_hSelf, IDC_COL_LEADING_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"Spaces"));
+			::SendDlgItemMessage(_hSelf, IDC_COL_LEADING_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("None"));
+			::SendDlgItemMessage(_hSelf, IDC_COL_LEADING_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Zeros"));
+			::SendDlgItemMessage(_hSelf, IDC_COL_LEADING_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("Spaces"));
 			WPARAM curSel = 0;
 			switch (colEditParam._leadingChoice)
 			{
@@ -100,8 +100,8 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 			::SendDlgItemMessage(_hSelf, format, BM_SETCHECK,  TRUE, 0);
 
 			// populate the Hex-Case dropdown and activate correct case
-			::SendDlgItemMessage(_hSelf, IDC_COL_HEXUC_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"a-f"));
-			::SendDlgItemMessage(_hSelf, IDC_COL_HEXUC_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(L"A-F"));
+			::SendDlgItemMessage(_hSelf, IDC_COL_HEXUC_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("a-f"));
+			::SendDlgItemMessage(_hSelf, IDC_COL_HEXUC_COMBO, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>("A-F"));
 			WPARAM uc = (colEditParam._formatChoice == BASE_16_UPPERCASE) ? 1 : 0;
 			::SendDlgItemMessage(_hSelf, IDC_COL_HEXUC_COMBO, CB_SETCURSEL, uc, 0);	// activate correct case
 
@@ -206,7 +206,7 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 
 					if (isTextMode)
 					{
-						wchar_t strW[stringSize]{};
+						NppChar strW[stringSize]{};
 						::SendDlgItemMessage(_hSelf, IDC_COL_TEXT_EDIT, WM_GETTEXT, stringSize, reinterpret_cast<LPARAM>(strW));
 
 						const std::string str = wstring2string(strW);
@@ -270,7 +270,7 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 					{
 						ColumnEditorParam colEditParam = NppParameters::getInstance()._columnEditParam;
 
-						wchar_t str[stringSize]{};
+						NppChar str[stringSize]{};
 						::GetDlgItemText(_hSelf, IDC_COL_INITNUM_EDIT, str, stringSize);
 
 						const int initialNumber = getNumericFieldValueFromText(colEditParam._formatChoice, str);
@@ -347,7 +347,7 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 							}
 
 							static constexpr int lineAllocatedLen = 1024;
-							auto line = std::make_unique<wchar_t[]>(lineAllocatedLen);
+							auto line = std::make_unique<NppChar[]>(lineAllocatedLen);
 
 							size_t base = 10;
 							bool useUppercase = false;
@@ -379,20 +379,20 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 
 								if (lineLen > lineAllocatedLen)
 								{
-									line.reset(new wchar_t[lineLen]);
+									line.reset(new NppChar[lineLen]);
 								}
 								(*_ppEditView)->getGenericText(line.get(), lineLen, lineBegin, lineEnd);
 
-								std::wstring s2r(line.get());
+								NppString s2r(line.get());
 
 								//
 								// Calcule wstring
 								//
-								variedFormatNumber2String<wchar_t>(str, stringSize, numbers.at(i - cursorLine), base, useUppercase, nb, getLeading());
+								variedFormatNumber2String<NppChar>(str, stringSize, numbers.at(i - cursorLine), base, useUppercase, nb, getLeading());
 
 								if (lineEndCol < cursorCol)
 								{
-									std::wstring s_space(cursorCol - lineEndCol, ' ');
+									NppString s_space(cursorCol - lineEndCol, ' ');
 									s2r.append(s_space);
 									s2r.append(str);
 								}
@@ -452,7 +452,7 @@ intptr_t CALLBACK ColumnEditorDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 						{
 							ColumnEditorParam& colEditParam = NppParameters::getInstance()._columnEditParam;
 							static constexpr int stringSize = MAX_PATH;
-							wchar_t str[stringSize]{};
+							NppChar str[stringSize]{};
 
 							switch (LOWORD(wParam))
 							{
@@ -682,17 +682,17 @@ void ColumnEditorDlg::setNumericFields(const ColumnEditorParam& colEditParam)
 		if (colEditParam._initialNum != -1)
 			::SetDlgItemInt(_hSelf, IDC_COL_INITNUM_EDIT, colEditParam._initialNum, FALSE);
 		else
-			::SetDlgItemText(_hSelf, IDC_COL_INITNUM_EDIT, L"");
+			::SetDlgItemText(_hSelf, IDC_COL_INITNUM_EDIT, "");
 
 		if (colEditParam._increaseNum != -1)
 			::SetDlgItemInt(_hSelf, IDC_COL_INCREASENUM_EDIT, colEditParam._increaseNum, FALSE);
 		else
-			::SetDlgItemText(_hSelf, IDC_COL_INCREASENUM_EDIT, L"");
+			::SetDlgItemText(_hSelf, IDC_COL_INCREASENUM_EDIT, "");
 
 		if (colEditParam._repeatNum != -1)
 			::SetDlgItemInt(_hSelf, IDC_COL_REPEATNUM_EDIT, colEditParam._repeatNum, FALSE);
 		else
-			::SetDlgItemText(_hSelf, IDC_COL_REPEATNUM_EDIT, L"");
+			::SetDlgItemText(_hSelf, IDC_COL_REPEATNUM_EDIT, "");
 	}
 	else
 	{
@@ -716,38 +716,38 @@ void ColumnEditorDlg::setNumericFields(const ColumnEditorParam& colEditParam)
 		bool useUpper = (colEditParam._formatChoice == BASE_16_UPPERCASE);
 
 		static constexpr int stringSize = 1024;
-		wchar_t str[stringSize]{};
+		NppChar str[stringSize]{};
 
 		if (colEditParam._initialNum != -1)
 		{
-			variedFormatNumber2String<wchar_t>(str, stringSize, colEditParam._initialNum, base, useUpper, getNbDigits(colEditParam._initialNum, base), getLeading());
+			variedFormatNumber2String<NppChar>(str, stringSize, colEditParam._initialNum, base, useUpper, getNbDigits(colEditParam._initialNum, base), getLeading());
 			::SetDlgItemText(_hSelf, IDC_COL_INITNUM_EDIT, str);
 		}
 		else
-			::SetDlgItemText(_hSelf, IDC_COL_INITNUM_EDIT, L"");
+			::SetDlgItemText(_hSelf, IDC_COL_INITNUM_EDIT, "");
 
 		if (colEditParam._increaseNum != -1)
 		{
-			variedFormatNumber2String<wchar_t>(str, stringSize, colEditParam._increaseNum, base, useUpper, getNbDigits(colEditParam._increaseNum, base), getLeading());
+			variedFormatNumber2String<NppChar>(str, stringSize, colEditParam._increaseNum, base, useUpper, getNbDigits(colEditParam._increaseNum, base), getLeading());
 			::SetDlgItemText(_hSelf, IDC_COL_INCREASENUM_EDIT, str);
 		}
 		else
-			::SetDlgItemText(_hSelf, IDC_COL_INCREASENUM_EDIT, L"");
+			::SetDlgItemText(_hSelf, IDC_COL_INCREASENUM_EDIT, "");
 
 		if (colEditParam._repeatNum != -1)
 		{
-			variedFormatNumber2String<wchar_t>(str, stringSize, colEditParam._repeatNum, base, useUpper, getNbDigits(colEditParam._repeatNum, base), getLeading());
+			variedFormatNumber2String<NppChar>(str, stringSize, colEditParam._repeatNum, base, useUpper, getNbDigits(colEditParam._repeatNum, base), getLeading());
 			::SetDlgItemText(_hSelf, IDC_COL_REPEATNUM_EDIT, str);
 		}
 		else
-			::SetDlgItemText(_hSelf, IDC_COL_REPEATNUM_EDIT, L"");
+			::SetDlgItemText(_hSelf, IDC_COL_REPEATNUM_EDIT, "");
 
 	}
 	return;
 }
 
 // Convert the string to an integer, depending on base
-int ColumnEditorDlg::getNumericFieldValueFromText(NumBase formatChoice, const std::wstring& str)
+int ColumnEditorDlg::getNumericFieldValueFromText(NumBase formatChoice, const NppString& str)
 {
 	if (str.empty())
 		return 0;
@@ -790,33 +790,33 @@ int ColumnEditorDlg::getNumericFieldValueFromText(NumBase formatChoice, const st
 	}
 }
 
-int ColumnEditorDlg::sendValidationErrorMessage(int whichFlashRed, NumBase formatChoice, wchar_t str[])
+int ColumnEditorDlg::sendValidationErrorMessage(int whichFlashRed, NumBase formatChoice, NppChar str[])
 {
-	wchar_t wcMsg[1024];
-	const wchar_t* wcRadixNote = nullptr;
+	NppChar wcMsg[1024];
+	const NppChar* wcRadixNote = nullptr;
 	EDITBALLOONTIP ebt{};
 	ebt.cbStruct = sizeof(EDITBALLOONTIP);
-	ebt.pszTitle = L"Invalid Numeric Entry";
+	ebt.pszTitle = "Invalid Numeric Entry";
 	switch (formatChoice)
 	{
 		using enum NumBase;
 		case BASE_16:
 		case BASE_16_UPPERCASE:
-			wcRadixNote = L"Hex numbers use 0-9, A-F!";
+			wcRadixNote = "Hex numbers use 0-9, A-F!";
 			break;
 		case BASE_08:
-			wcRadixNote = L"Oct numbers only use 0-7!";
+			wcRadixNote = "Oct numbers only use 0-7!";
 			break;
 		case BASE_02:
-			wcRadixNote = L"Bin numbers only use 0-1!";
+			wcRadixNote = "Bin numbers only use 0-1!";
 			break;
 		default:
-			wcRadixNote = L"Decimal numbers only use 0-9!";
+			wcRadixNote = "Decimal numbers only use 0-9!";
 			break;
 	}
 	if (str[0])
 	{
-		swprintf_s(wcMsg, L"Entered string \"%s\":\r\n%s", str, wcRadixNote);
+		swprintf_s(wcMsg, "Entered string \"%s\":\r\n%s", str, wcRadixNote);
 		ebt.pszText = wcMsg;
 	}
 	ebt.ttiIcon = TTI_ERROR_LARGE;    // tooltip icon

@@ -151,7 +151,7 @@ static LRESULT CALLBACK StatusBarSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, L
 			auto holdFont = static_cast<HFONT>(::SelectObject(hdc, pStatusBarInfo->_hFont));
 
 			int nParts = static_cast<int>(SendMessage(hWnd, SB_GETPARTS, 0, 0));
-			std::wstring str;
+			NppString str;
 			for (int i = 0; i < nParts; ++i)
 			{
 				RECT rcPart{};
@@ -174,7 +174,7 @@ static LRESULT CALLBACK StatusBarSubclass(HWND hWnd, UINT uMsg, WPARAM wParam, L
 
 				DWORD cchText = 0;
 				cchText = LOWORD(SendMessage(hWnd, SB_GETTEXTLENGTH, i, 0));
-				str.resize(size_t{ cchText } + 1); // technically the std::wstring might not have an internal null character at the end of the buffer, so add one
+				str.resize(size_t{ cchText } + 1); // technically the NppString might not have an internal null character at the end of the buffer, so add one
 				LRESULT lr = ::SendMessage(hWnd, SB_GETTEXT, i, reinterpret_cast<LPARAM>(str.data()));
 				str.resize(cchText); // remove the extra NULL character
 				bool ownerDraw = false;
@@ -273,7 +273,7 @@ void StatusBar::init(HINSTANCE hInst, HWND hPere, int nbParts)
 	_hSelf = ::CreateWindowEx(
 		0,
 		STATUSCLASSNAME,
-		L"",
+		"",
 		WS_CHILD | SBARS_SIZEGRIP ,
 		0, 0, 0, 0,
 		_hParent, nullptr, _hInst, 0);
@@ -353,7 +353,7 @@ void StatusBar::adjustParts(int clientWidth)
 }
 
 
-bool StatusBar::setText(const wchar_t* str, int whichPart)
+bool StatusBar::setText(const NppChar* str, int whichPart)
 {
 	if ((size_t) whichPart < _partWidthArray.size())
 	{
@@ -369,7 +369,7 @@ bool StatusBar::setText(const wchar_t* str, int whichPart)
 }
 
 
-bool StatusBar::setOwnerDrawText(const wchar_t* str)
+bool StatusBar::setOwnerDrawText(const NppChar* str)
 {
 	if (str != nullptr)
 		_lastSetText = str;

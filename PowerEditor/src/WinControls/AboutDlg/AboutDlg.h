@@ -67,7 +67,7 @@ class DebugInfoDlg : public StaticDialog
 public:
 	DebugInfoDlg() = default;
 
-	void init(HINSTANCE hInst, HWND parent, bool isAdmin, const std::wstring& loadedPlugins) {
+	void init(HINSTANCE hInst, HWND parent, bool isAdmin, const NppString& loadedPlugins) {
 		_isAdmin = isAdmin;
 		_loadedPlugins = loadedPlugins;
 		Window::init(hInst, parent);
@@ -84,11 +84,11 @@ protected:
 
 private:
 	typedef const CHAR * (__cdecl * PWINEGETVERSION)();
-	std::wstring _debugInfoStr;
-	std::wstring _debugInfoDisplay;
-	const std::wstring _cmdLinePlaceHolder { L"$COMMAND_LINE_PLACEHOLDER$" };
+	NppString _debugInfoStr;
+	NppString _debugInfoDisplay;
+	const NppString _cmdLinePlaceHolder { "$COMMAND_LINE_PLACEHOLDER$" };
 	bool _isAdmin = false;
-	std::wstring _loadedPlugins;
+	NppString _loadedPlugins;
 };
 
 
@@ -111,7 +111,7 @@ class DoSaveOrNotBox : public StaticDialog
 public:
 	DoSaveOrNotBox() = default;
 
-	void init(HINSTANCE hInst, HWND parent, const wchar_t* fn, bool isMulti) {
+	void init(HINSTANCE hInst, HWND parent, const NppChar* fn, bool isMulti) {
 		Window::init(hInst, parent);
 		if (fn)
 			_fn = fn;
@@ -134,7 +134,7 @@ protected:
 
 private:
 	int _clickedButtonId = -1;
-	std::wstring _fn;
+	NppString _fn;
 	bool _isMulti = false;
 };
 
@@ -165,7 +165,7 @@ class NetworkPathWarningBox : public StaticDialog
 public:
 	NetworkPathWarningBox() = default;
 
-	void init(HINSTANCE hInst, HWND parent, const std::wstring& path, const char* titleTag = nullptr) {
+	void init(HINSTANCE hInst, HWND parent, const NppString& path, const char* titleTag = nullptr) {
 		Window::init(hInst, parent);
 		_networkPath = path;
 		if (titleTag)
@@ -187,6 +187,6 @@ protected:
 
 private:
 	int _clickedButtonId = -1;
-	std::wstring _networkPath;
+	NppString _networkPath;
 	std::string _titleTag;
 };

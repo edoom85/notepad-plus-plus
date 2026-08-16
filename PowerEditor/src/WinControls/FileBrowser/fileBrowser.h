@@ -27,18 +27,18 @@
 #include "TreeView.h"
 #include "fileBrowser_rc.h"
 
-#define FB_PANELTITLE         L"Folder as Workspace"
-#define FB_ADDROOT            L"Add"
-#define FB_REMOVEALLROOTS     L"Remove All"
-#define FB_REMOVEROOTFOLDER   L"Remove"
-#define FB_COPYPATH           L"Copy path"
-#define FB_COPYFILENAME       L"Copy file name"
-#define FB_FINDINFILES        L"Find in Files..."
-#define FB_EXPLORERHERE       L"Explorer here"
-#define FB_CMDHERE            L"CMD here"
-#define FB_POWERSHELLHERE     L"PowerShell here"
-#define FB_OPENINNPP          L"Open"
-#define FB_SHELLEXECUTE       L"Run by system"
+#define FB_PANELTITLE         "Folder as Workspace"
+#define FB_ADDROOT            "Add"
+#define FB_REMOVEALLROOTS     "Remove All"
+#define FB_REMOVEROOTFOLDER   "Remove"
+#define FB_COPYPATH           "Copy path"
+#define FB_COPYFILENAME       "Copy file name"
+#define FB_FINDINFILES        "Find in Files..."
+#define FB_EXPLORERHERE       "Explorer here"
+#define FB_CMDHERE            "CMD here"
+#define FB_POWERSHELLHERE     "PowerShell here"
+#define FB_OPENINNPP          "Open"
+#define FB_SHELLEXECUTE       "Run by system"
 
 #define FOLDERASWORKSPACE_NODE "FolderAsWorkspace"
 
@@ -52,12 +52,12 @@ friend class FolderInfo;
 
 public:
 	FileInfo() = delete; // constructor by default is forbidden
-	explicit FileInfo(const std::wstring& name) noexcept : _name(name) {}
-	const std::wstring& getName() const { return _name; }
-	void setName(const std::wstring& name) { _name = name; }
+	explicit FileInfo(const NppString& name) noexcept : _name(name) {}
+	const NppString& getName() const { return _name; }
+	void setName(const NppString& name) { _name = name; }
 
 private:
-	std::wstring _name;
+	NppString _name;
 };
 
 class FolderInfo final
@@ -67,24 +67,24 @@ friend class FolderUpdater;
 
 public:
 	FolderInfo() = delete; // constructor by default is forbidden
-	FolderInfo(const std::wstring& name, FolderInfo* parent) : _name(name), _parent(parent) {}
-	void setRootPath(const std::wstring& rootPath) { _rootPath = rootPath; }
-	const std::wstring& getRootPath() const { return _rootPath; }
-	void setName(const std::wstring& name) { _name = name; }
-	const std::wstring& getName() const { return _name; }
-	void addFile(const std::wstring& fn) { _files.push_back(FileInfo(fn)); }
+	FolderInfo(const NppString& name, FolderInfo* parent) : _name(name), _parent(parent) {}
+	void setRootPath(const NppString& rootPath) { _rootPath = rootPath; }
+	const NppString& getRootPath() const { return _rootPath; }
+	void setName(const NppString& name) { _name = name; }
+	const NppString& getName() const { return _name; }
+	void addFile(const NppString& fn) { _files.push_back(FileInfo(fn)); }
 	void addSubFolder(FolderInfo subDirectoryStructure) { _subFolders.push_back(subDirectoryStructure); }
 
-	bool addToStructure(std::wstring & fullpath, std::vector<std::wstring> linarPathArray);
-	bool removeFromStructure(std::vector<std::wstring> linarPathArray);
-	bool renameInStructure(std::vector<std::wstring> linarPathArrayFrom, std::vector<std::wstring> linarPathArrayTo);
+	bool addToStructure(NppString & fullpath, std::vector<NppString> linarPathArray);
+	bool removeFromStructure(std::vector<NppString> linarPathArray);
+	bool renameInStructure(std::vector<NppString> linarPathArrayFrom, std::vector<NppString> linarPathArrayTo);
 
 private:
 	std::vector<FolderInfo> _subFolders;
 	std::vector<FileInfo> _files;
-	std::wstring _name;
+	NppString _name;
 	FolderInfo* _parent = nullptr;
-	std::wstring _rootPath; // set only for root folder; empty for normal folder
+	NppString _rootPath; // set only for root folder; empty for normal folder
 };
 
 enum BrowserNodeType {
@@ -107,15 +107,15 @@ private:
 	HANDLE _EventHandle = nullptr;
 	static DWORD WINAPI watching(void* params);
 
-	static void processChange(DWORD dwAction, std::vector<std::wstring> filesToChange, FolderUpdater* thisFolderUpdater);
+	static void processChange(DWORD dwAction, std::vector<NppString> filesToChange, FolderUpdater* thisFolderUpdater);
 };
 
 struct SortingData4lParam {
-	std::wstring _rootPath; // Only for the root. It should be empty if it's not root
-	std::wstring _label;    // TreeView item label
+	NppString _rootPath; // Only for the root. It should be empty if it's not root
+	NppString _label;    // TreeView item label
 	bool _isFolder = false;   // if it's not a folder, then it's a file
 
-	SortingData4lParam(std::wstring rootPath, std::wstring label, bool isFolder) : _rootPath(rootPath), _label(label), _isFolder(isFolder) {}
+	SortingData4lParam(NppString rootPath, NppString label, bool isFolder) : _rootPath(rootPath), _label(label), _isFolder(isFolder) {}
 };
 
 
@@ -136,28 +136,28 @@ public:
 		TreeView_SetTextColor(_treeView.getHSelf(), fgColour);
 	}
 
-	std::wstring getNodePath(HTREEITEM node) const;
-	std::wstring getNodeName(HTREEITEM node) const;
-	void addRootFolder(std::wstring rootFolderPath, std::unordered_set<std::wstring>* pExpandedPaths = nullptr);
+	NppString getNodePath(HTREEITEM node) const;
+	NppString getNodeName(HTREEITEM node) const;
+	void addRootFolder(NppString rootFolderPath, std::unordered_set<NppString>* pExpandedPaths = nullptr);
 
-	void applyExpandState(HTREEITEM rootHItem, std::unordered_set<std::wstring>* pExpandedPaths);
-	std::vector<std::wstring> getExpandedPathsFromFaW() const;
+	void applyExpandState(HTREEITEM rootHItem, std::unordered_set<NppString>* pExpandedPaths);
+	std::vector<NppString> getExpandedPathsFromFaW() const;
 
-	HTREEITEM getRootFromFullPath(const std::wstring & rootPath) const;
-	HTREEITEM findChildNodeFromName(HTREEITEM parent, const std::wstring& label) const;
+	HTREEITEM getRootFromFullPath(const NppString & rootPath) const;
+	HTREEITEM findChildNodeFromName(HTREEITEM parent, const NppString& label) const;
 
-	HTREEITEM findInTree(const std::wstring& rootPath, HTREEITEM node, std::vector<std::wstring> linarPathArray) const;
+	HTREEITEM findInTree(const NppString& rootPath, HTREEITEM node, std::vector<NppString> linarPathArray) const;
 
 	void deleteAllFromTree() {
 		popupMenuCmd(IDM_FILEBROWSER_REMOVEALLROOTS);
 	}
 
-	bool renameInTree(const std::wstring& rootPath, HTREEITEM node, const std::vector<std::wstring>& linarPathArrayFrom, const std::wstring & renameTo);
+	bool renameInTree(const NppString& rootPath, HTREEITEM node, const std::vector<NppString>& linarPathArrayFrom, const NppString & renameTo);
 
-	std::vector<std::wstring> getRoots() const;
-	std::wstring getSelectedItemPath() const;
+	std::vector<NppString> getRoots() const;
+	NppString getSelectedItemPath() const;
 
-	bool selectItemFromPath(const std::wstring& itemPath) const;
+	bool selectItemFromPath(const NppString& itemPath) const;
 
 protected:
 	HWND _hToolbarMenu = nullptr;
@@ -173,13 +173,13 @@ protected:
 	HMENU _hFileMenu = NULL;
 	std::vector<FolderUpdater *> _folderUpdaters;
 
-	std::wstring _selectedNodeFullPath; // this member is used only for PostMessage call
+	NppString _selectedNodeFullPath; // this member is used only for PostMessage call
 
 	std::vector<SortingData4lParam*> _sortingDataArray;
 
-	std::wstring _expandAllFolders = L"Unfold all";
-	std::wstring _collapseAllFolders = L"Fold all";
-	std::wstring _locateCurrentFile = L"Locate current file";
+	NppString _expandAllFolders = "Unfold all";
+	NppString _collapseAllFolders = "Fold all";
+	NppString _locateCurrentFile = "Locate current file";
 
 	void initPopupMenus();
 	void destroyMenus();
@@ -190,10 +190,10 @@ protected:
 	bool selectCurrentEditingFile() const;
 
 	struct FilesToChange {
-		std::wstring _commonPath; // Common path between all the files. _rootPath + _linarWithoutLastPathElement
-		std::wstring _rootPath;
-		std::vector<std::wstring> _linarWithoutLastPathElement;
-		std::vector<std::wstring> _files; // file/folder names
+		NppString _commonPath; // Common path between all the files. _rootPath + _linarWithoutLastPathElement
+		NppString _rootPath;
+		std::vector<NppString> _linarWithoutLastPathElement;
+		std::vector<NppString> _files; // file/folder names
 	};
 
 	std::vector<FilesToChange> getFilesFromParam(LPARAM lParam) const;
@@ -204,15 +204,15 @@ protected:
 
 	std::vector<HTREEITEM> findInTree(FilesToChange & group, HTREEITEM node) const;
 
-	std::vector<HTREEITEM> findChildNodesFromNames(HTREEITEM parent, std::vector<std::wstring> & labels) const;
+	std::vector<HTREEITEM> findChildNodesFromNames(HTREEITEM parent, std::vector<NppString> & labels) const;
 
-	void removeNamesAlreadyInNode(HTREEITEM parent, std::vector<std::wstring> & labels) const;
+	void removeNamesAlreadyInNode(HTREEITEM parent, std::vector<NppString> & labels) const;
 
 	intptr_t CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 	void notified(LPNMHDR notification);
 	void showContextMenu(int x, int y);
 	void openSelectFile();
-	void getDirectoryStructure(const wchar_t *dir, const std::vector<std::wstring> & patterns, FolderInfo & directoryStructure, bool isRecursive, bool isInHiddenDir); 
+	void getDirectoryStructure(const NppChar *dir, const std::vector<NppString> & patterns, FolderInfo & directoryStructure, bool isRecursive, bool isInHiddenDir); 
 	HTREEITEM createFolderItemsFromDirStruct(HTREEITEM hParentItem, const FolderInfo & directoryStructure);
 	static int CALLBACK categorySortFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort);
 };

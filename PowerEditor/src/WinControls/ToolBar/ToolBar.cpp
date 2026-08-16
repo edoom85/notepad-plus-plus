@@ -57,38 +57,38 @@ struct ToolbarIconIdUnit
 };
 
 static constexpr ToolbarIconIdUnit toolbarIconIDs[]{
-	{ L"new", false },
-	{ L"open", false },
-	{ L"save", true },
-	{ L"save-all", true },
-	{ L"close", false },
-	{ L"close-all", false },
-	{ L"print", false },
-	{ L"cut", true },
-	{ L"copy", true },
-	{ L"paste", true },
-	{ L"undo", true },
-	{ L"redo", true },
-	{ L"find", false },
-	{ L"replace", false },
-	{ L"zoom-in", false },
-	{ L"zoom-out", false },
-	{ L"sync-vertical", false },
-	{ L"sync-horizontal", false },
-	{ L"word-wrap", false },
-	{ L"all-chars", false },
-	{ L"indent-guide", false },
-	{ L"udl-dlg", false },
-	{ L"doc-map", false },
-	{ L"doc-list", false },
-	{ L"function-list", false },
-	{ L"folder-as-workspace", false },
-	{ L"monitoring", true },
-	{ L"record", true },
-	{ L"stop-record", true },
-	{ L"playback", true },
-	{ L"playback-multiple", true },
-	{ L"save-macro", true }
+	{ "new", false },
+	{ "open", false },
+	{ "save", true },
+	{ "save-all", true },
+	{ "close", false },
+	{ "close-all", false },
+	{ "print", false },
+	{ "cut", true },
+	{ "copy", true },
+	{ "paste", true },
+	{ "undo", true },
+	{ "redo", true },
+	{ "find", false },
+	{ "replace", false },
+	{ "zoom-in", false },
+	{ "zoom-out", false },
+	{ "sync-vertical", false },
+	{ "sync-horizontal", false },
+	{ "word-wrap", false },
+	{ "all-chars", false },
+	{ "indent-guide", false },
+	{ "udl-dlg", false },
+	{ "doc-map", false },
+	{ "doc-list", false },
+	{ "function-list", false },
+	{ "folder-as-workspace", false },
+	{ "monitoring", true },
+	{ "record", true },
+	{ "stop-record", true },
+	{ "playback", true },
+	{ "playback-multiple", true },
+	{ "save-macro", true }
 };
 
 static void destroyHBmpElementsInVector(std::vector<HBITMAP>& vectorHBmp)
@@ -184,10 +184,10 @@ void ToolBar::initTheme(NppXml::Document toolIconsDocRoot)
 			namespace fs = ::std::filesystem;
 			NppParameters& nppParams = NppParameters::getInstance();
 			fs::path iconFolderDir = nppParams.getUserPath();
-			iconFolderDir /= L"toolbarIcons";
+			iconFolderDir /= "toolbarIcons";
 
 			const char* folderName = NppXml::attribute(_toolIcons, "icoFolderName");
-			iconFolderDir /= (folderName ? string2wstring(folderName, CP_UTF8) : L"default");
+			iconFolderDir /= (folderName ? string2wstring(folderName, CP_UTF8) : "default");
 
 			if (isUncPath(iconFolderDir))
 			{
@@ -218,8 +218,8 @@ void ToolBar::initTheme(NppXml::Document toolIconsDocRoot)
 			}
 
 			size_t i = 0;
-			fs::path disabled_suffix = L"_disabled";
-			fs::path ext = L".ico";
+			fs::path disabled_suffix = "_disabled";
+			fs::path ext = ".ico";
 			for (const ToolbarIconIdUnit& icoUnit : toolbarIconIDs)
 			{
 				fs::path locator = iconFolderDir;
@@ -465,7 +465,7 @@ void ToolBar::reset(bool create)
 		_hSelf = ::CreateWindowEx(
 			WS_EX_PALETTEWINDOW,
 			TOOLBARCLASSNAME,
-			L"",
+			"",
 			WS_TOOLBARSTYLE | dwExtraStyle,
 			0, 0,
 			0, 0,
@@ -665,7 +665,7 @@ void ToolBar::doPopup(POINT chevPoint)
 	if (start < _nbCurrentButtons)
 	{	//some buttons are hidden
 		HMENU menu = ::CreatePopupMenu();
-		std::wstring text;
+		NppString text;
 		while (start < _nbCurrentButtons)
 		{
 			int cmd = _pTBB[start].idCommand;
@@ -677,7 +677,7 @@ void ToolBar::doPopup(POINT chevPoint)
 				else
 					AppendMenu(menu, MF_DISABLED|MF_GRAYED, cmd, text.c_str());
 			} else
-				AppendMenu(menu, MF_SEPARATOR, 0, L"");
+				AppendMenu(menu, MF_SEPARATOR, 0, "");
 			
 			++start;
 		}

@@ -21,13 +21,13 @@
 struct MenuItemUnit final
 {
 	unsigned long _cmdID = 0;
-	std::wstring _itemName;
-	std::wstring _parentFolderName;
+	NppString _itemName;
+	NppString _parentFolderName;
 
 	MenuItemUnit() = default;
-	MenuItemUnit(unsigned long cmdID, const std::wstring& itemName, const std::wstring& parentFolderName = std::wstring())
+	MenuItemUnit(unsigned long cmdID, const NppString& itemName, const NppString& parentFolderName = NppString())
 		: _cmdID(cmdID), _itemName(itemName), _parentFolderName(parentFolderName) {}
-	MenuItemUnit(unsigned long cmdID, const wchar_t* itemName, const wchar_t* parentFolderName = nullptr);
+	MenuItemUnit(unsigned long cmdID, const NppChar* itemName, const NppChar* parentFolderName = nullptr);
 };
 
 

@@ -1,13 +1,13 @@
 // Platform/PlatformString.h — Abstracción de strings Unicode portables
 // Parte del plan de migración Notepad++ → Linux nativo
 //
-// Notepad++ usa std::wstring (UTF-16) pervasivamente en Windows.
+// Notepad++ usa NppString (UTF-16) pervasivamente en Windows.
 // En Linux usamos std::string (UTF-8) de forma nativa.
 //
 // Este header define:
 //   NppString  — string nativa de la plataforma
 //   NppChar    — caracter nativo
-//   NppT(x)   — literal de string (L"..." en Win, "..." en Linux)
+//   NppT(x)   — literal de string ("..." en Win, "..." en Linux)
 //   NppSV      — string_view nativa
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
@@ -17,12 +17,12 @@
 #include <string>
 #include <string_view>
 
-// ─── Windows: UTF-16 (wchar_t), igual que antes ──────────────────────────────
+// ─── Windows: UTF-16 (NppChar), igual que antes ──────────────────────────────
 
 #ifdef _WIN32
 
-  using NppChar   = wchar_t;
-  using NppString = std::wstring;
+  using NppChar   = NppChar;
+  using NppString = NppString;
   using NppSV     = std::wstring_view;
   #define NppT(x) L##x
 
@@ -48,7 +48,30 @@
     inline NppString    fromUtf8(const std::string& s) { return s; }
   }
 
+  // Stubs de compatibilidad para MultiByteToWideChar y WideCharToMultiByte en Linux
+  #include <cstring>
+  inline int nppMBtoWC(unsigned int, unsigned long, const char* src, int cbSrc, char* dst, int cchDst) {
+      if (!src || !dst) return 0;
+      int len = (cbSrc < 0) ? static_cast<int>(strlen(src)) + 1 : cbSrc;
+      if (cchDst > 0) {
+          int copyLen = (len < cchDst) ? len : cchDst;
+          std::memcpy(dst, src, copyLen);
+      }
+      return len;
+  }
+
+  inline int nppWCtoMB(unsigned int, unsigned long, const char* src, int cchSrc, char* dst, int cbDst, const char* = nullptr, void* = nullptr) {
+      if (!src || !dst) return 0;
+      int len = (cchSrc < 0) ? static_cast<int>(strlen(src)) + 1 : cchSrc;
+      if (cbDst > 0) {
+          int copyLen = (len < cbDst) ? len : cbDst;
+          std::memcpy(dst, src, copyLen);
+      }
+      return len;
+  }
+
 #endif
+
 
 // ─── Helpers cross-platform ──────────────────────────────────────────────────
 

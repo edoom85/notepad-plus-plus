@@ -21,7 +21,7 @@
 #include "functionParser.h"
 #include "TreeView.h"
 
-#define FL_PANELTITLE     L"Function List"
+#define FL_PANELTITLE     "Function List"
 #define FL_FUNCTIONLISTROOTNODE "FunctionList"
 
 #define FL_SORTLOCALNODENAME        "SortTip"
@@ -55,11 +55,11 @@ root
 */
 
 struct SearchParameters {
-	std::wstring _text2Find;
+	NppString _text2Find;
 	bool _doSort = false;
 
 	bool hasParams() const {
-		return (_text2Find != L"" || _doSort);
+		return (_text2Find != "" || _doSort);
 	}
 };
 
@@ -94,8 +94,8 @@ public:
 	void sortOrUnsort();
 	void reload();
 	void markEntry();
-	bool serialize(const std::wstring & outputFilename = L"");
-	void addEntry(const wchar_t* nodeName, const wchar_t* displayText, size_t pos);
+	bool serialize(const NppString & outputFilename = "");
+	void addEntry(const NppChar* nodeName, const NppChar* displayText, size_t pos);
 	void removeAllEntries();
 	void searchFuncAndSwitchView();
 
@@ -118,13 +118,13 @@ private:
 	long _findEndLine = -1;
 	HTREEITEM _findItem = nullptr;
 
-	std::wstring _sortTipStr = L"Sort";
-	std::wstring _reloadTipStr = L"Reload";
-	std::wstring _preferenceTipStr = L"Preferences";
+	NppString _sortTipStr = "Sort";
+	NppString _reloadTipStr = "Reload";
+	NppString _preferenceTipStr = "Preferences";
 
 	std::vector<foundInfo> _foundFuncInfos;
 
-	std::vector<std::wstring*> _posStrs;
+	std::vector<NppString*> _posStrs;
 
 	ScintillaEditView **_ppEditView = nullptr;
 	FunctionParsersManager _funcParserMgr;
@@ -134,8 +134,8 @@ private:
 	using DockingDlgInterface::init;
 
 	void notified(LPNMHDR notification);
-	void addInStateArray(TreeStateNode tree2Update, const wchar_t *searchText, bool isSorted);
-	TreeParams* getFromStateArray(const std::wstring& fullFilePath);
+	void addInStateArray(TreeStateNode tree2Update, const NppChar *searchText, bool isSorted);
+	TreeParams* getFromStateArray(const NppString& fullFilePath);
 	bool openSelection(const TreeView &treeView);
 	bool shouldSort();
 	void setSort(bool isEnabled);

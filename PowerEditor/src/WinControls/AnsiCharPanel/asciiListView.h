@@ -24,8 +24,8 @@ public:
 	void setValues(int codepage = 0);
 	void resetValues(int codepage);
 
-	std::wstring getAscii(unsigned char value);
-	std::wstring getHtmlName(unsigned char value);
+	NppString getAscii(unsigned char value);
+	NppString getHtmlName(unsigned char value);
 	int getHtmlNumber(unsigned char value);
 private:
 	int _codepage = -1;

@@ -43,7 +43,7 @@ public :
 	void addIcon(int iconID, int cx = 16, int cy = 16, int failIconID = -1, bool isToolbarNormal = false) const;
 	void addIcon(HICON hIcon) const;
 
-	bool changeIcon(size_t index, const wchar_t *iconLocation) const;
+	bool changeIcon(size_t index, const NppChar *iconLocation) const;
 
 private :
 	HIMAGELIST _hImglst = nullptr;
@@ -152,7 +152,7 @@ public:
 		return _tbiis[i]._stdIcon;
 	}
 
-	bool replaceIcon(size_t witchList, size_t iconIndex, const wchar_t *iconLocation) const {
+	bool replaceIcon(size_t witchList, size_t iconIndex, const NppChar *iconLocation) const {
 		if ((witchList != HLIST_DEFAULT) && (witchList != HLIST_DISABLE) && 
 			(witchList != HLIST_DEFAULT2) && (witchList != HLIST_DISABLE2) &&
 			(witchList != HLIST_DEFAULT_DM) && (witchList != HLIST_DISABLE_DM) && 

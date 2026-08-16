@@ -131,7 +131,7 @@ bool IsHighContrast()
 void SetTitleBarThemeColor(HWND hWnd, BOOL dark)
 {
 	if (g_buildNumber < 18362)
-		SetPropW(hWnd, L"UseImmersiveDarkModeColors", reinterpret_cast<HANDLE>(static_cast<intptr_t>(dark)));
+		SetPropW(hWnd, "UseImmersiveDarkModeColors", reinterpret_cast<HANDLE>(static_cast<intptr_t>(dark)));
 	else if (_SetWindowCompositionAttribute)
 	{
 		WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &dark, sizeof(dark) };
@@ -155,7 +155,7 @@ void RefreshTitleBarThemeColor(HWND hWnd)
 
 bool IsColorSchemeChangeMessage(LPARAM lParam)
 {
-	const bool isMsg = lParam && (_wcsicmp(reinterpret_cast<LPCWSTR>(lParam), L"ImmersiveColorSet") == 0);
+	const bool isMsg = lParam && (_wcsicmp(reinterpret_cast<LPCWSTR>(lParam), "ImmersiveColorSet") == 0);
 	if (isMsg)
 	{
 		if (_RefreshImmersiveColorPolicyState != nullptr)
@@ -225,7 +225,7 @@ static bool IsWindowOrParentUsingDarkScrollBar(HWND hwnd)
 
 static void FixDarkScrollBar()
 {
-	HMODULE hComctl = LoadLibraryEx(L"comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	HMODULE hComctl = LoadLibraryEx("comctl32.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 	if (hComctl)
 	{
 		auto addr = FindDelayLoadThunkInModule(hComctl, "uxtheme.dll", 49); // OpenNcThemeData
@@ -235,12 +235,12 @@ static void FixDarkScrollBar()
 			if (VirtualProtect(addr, sizeof(IMAGE_THUNK_DATA), PAGE_READWRITE, &oldProtect) && _OpenNcThemeData)
 			{
 				auto MyOpenThemeData = [](HWND hWnd, LPCWSTR classList) WINAPI_LAMBDA_RETURN(HTHEME) {
-					if (wcscmp(classList, L"ScrollBar") == 0)
+					if (wcscmp(classList, "ScrollBar") == 0)
 					{
 						if (IsWindowOrParentUsingDarkScrollBar(hWnd))
 						{
 							hWnd = nullptr;
-							classList = L"Explorer::ScrollBar";
+							classList = "Explorer::ScrollBar";
 						}
 					}
 					return _OpenNcThemeData(hWnd, classList);
@@ -284,7 +284,7 @@ DWORD GetWindowsBuildNumber()
 void InitDarkMode()
 {
 	fnRtlGetNtVersionNumbers RtlGetNtVersionNumbers = nullptr;
-	HMODULE hNtdllModule = GetModuleHandle(L"ntdll.dll");
+	HMODULE hNtdllModule = GetModuleHandle("ntdll.dll");
 	if (hNtdllModule)
 	{
 		RtlGetNtVersionNumbers = reinterpret_cast<fnRtlGetNtVersionNumbers>(GetProcAddress(hNtdllModule, "RtlGetNtVersionNumbers"));
@@ -297,7 +297,7 @@ void InitDarkMode()
 		g_buildNumber &= ~0xF0000000;
 		if (major == 10 && minor == 0 && CheckBuildNumber(g_buildNumber))
 		{
-			HMODULE hUxtheme = LoadLibraryEx(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+			HMODULE hUxtheme = LoadLibraryEx("uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 			if (hUxtheme)
 			{
 				_OpenNcThemeData = reinterpret_cast<fnOpenNcThemeData>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(49)));
@@ -314,7 +314,7 @@ void InitDarkMode()
 				_FlushMenuThemes = reinterpret_cast<fnFlushMenuThemes>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(136)));
 				_IsDarkModeAllowedForWindow = reinterpret_cast<fnIsDarkModeAllowedForWindow>(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(137)));
 
-				HMODULE hUser32Module = GetModuleHandleW(L"user32.dll");
+				HMODULE hUser32Module = GetModuleHandleW("user32.dll");
 				if (hUser32Module)
 				{
 					_SetWindowCompositionAttribute = reinterpret_cast<fnSetWindowCompositionAttribute>(GetProcAddress(hUser32Module, "SetWindowCompositionAttribute"));
@@ -353,7 +353,7 @@ class ModuleHandle
 public:
 	ModuleHandle() = delete;
 
-	explicit ModuleHandle(const wchar_t* moduleName) noexcept
+	explicit ModuleHandle(const NppChar* moduleName) noexcept
 		: m_hModule(::GetModuleHandleW(moduleName))
 		, m_shared(m_hModule != nullptr)
 	{
@@ -416,7 +416,7 @@ struct HookData
 	T m_trueFn = nullptr;
 	size_t m_ref = 0;
 	const char* m_fromDll = nullptr;
-	const wchar_t* m_hookedDll = nullptr;
+	const NppChar* m_hookedDll = nullptr;
 
 	const char* m_fnName = nullptr;
 	fnFindThunkInModule m_findFn = nullptr;
@@ -466,7 +466,7 @@ struct HookData
 };
 
 template <typename T, typename... InitArgs>
-static auto HookFunction(HookData<T>& hookData, const wchar_t* hookedDll, T newFn, const char* fromDll, InitArgs&&... args) noexcept -> bool
+static auto HookFunction(HookData<T>& hookData, const NppChar* hookedDll, T newFn, const char* fromDll, InitArgs&&... args) noexcept -> bool
 {
 	hookData.m_hookedDll = hookedDll;
 	const ModuleHandle hookedMod(hookData.m_hookedDll);
@@ -632,7 +632,7 @@ bool HookThemeColor() noexcept
 
 	if (IsWindows11() && g_hDarkTheme == nullptr)
 	{
-		g_hDarkTheme = ::OpenThemeData(nullptr, L"DarkMode_Explorer::TaskDialog");
+		g_hDarkTheme = ::OpenThemeData(nullptr, "DarkMode_Explorer::TaskDialog");
 		if (g_hDarkTheme != nullptr)
 		{
 			if (FAILED(::GetThemeColor(g_hDarkTheme, TDLG_PRIMARYPANEL, 0, TMT_FILLCOLOR, &clrMain)))
@@ -670,14 +670,14 @@ bool HookThemeColor() noexcept
 	return
 		HookFunction<decltype(&::GetThemeColor)>(
 			g_hookDataGetThemeColor,
-			L"comctl32.dll",
+			"comctl32.dll",
 			MyGetThemeColor,
 			"uxtheme.dll",
 			static_cast<const char*>("GetThemeColor"),
 			static_cast<fnFindThunkInModule>(FindDelayLoadThunkInModule))
 		&& HookFunction<decltype(&::DrawThemeBackgroundEx)>(
 			g_hookDataDrawThemeBackgroundEx,
-			L"comctl32.dll",
+			"comctl32.dll",
 			MyDrawThemeBackgroundEx,
 			"uxtheme.dll",
 			kDrawThemeBackgroundExOrdinal);
@@ -724,7 +724,7 @@ void InitMB_GetString() noexcept
 		return;
 	}
 
-	if (HMODULE hUser32 = ::GetModuleHandleW(L"user32.dll");
+	if (HMODULE hUser32 = ::GetModuleHandleW("user32.dll");
 		hUser32 != nullptr)
 	{
 		if (auto proc = ::GetProcAddress(hUser32, "MB_GetString");
@@ -748,57 +748,57 @@ LPCWSTR MyMB_GetString(UINT wBtn) noexcept
 	{
 		case IDOK:
 		{
-			return L"OK";
+			return "OK";
 		}
 
 		case IDCANCEL:
 		{
-			return L"Cancel";
+			return "Cancel";
 		}
 
 		case IDABORT:
 		{
-			return L"&Abort";
+			return "&Abort";
 		}
 
 		case IDRETRY:
 		{
-			return L"&Retry";
+			return "&Retry";
 		}
 
 		case IDIGNORE:
 		{
-			return L"&Ignore";
+			return "&Ignore";
 		}
 
 		case IDYES:
 		{
-			return L"&Yes";
+			return "&Yes";
 		}
 
 		case IDNO:
 		{
-			return L"&No";
+			return "&No";
 		}
 
 		case IDCLOSE:
 		{
-			return L"&Close";
+			return "&Close";
 		}
 
 		case IDHELP:
 		{
-			return L"Help";
+			return "Help";
 		}
 
 		case IDTRYAGAIN:
 		{
-			return L"&Try Again";
+			return "&Try Again";
 		}
 
 		case IDCONTINUE:
 		{
-			return L"&Continue";
+			return "&Continue";
 		}
 
 		default:
@@ -830,7 +830,7 @@ bool HookClrGetSysColorBrush() noexcept
 	return
 		HookFunction<decltype(&::GetSysColorBrush)>(
 			g_hookDataClrGetSysColorBrush,
-			L"comdlg32.dll",
+			"comdlg32.dll",
 			MyClrGetSysColorBrush,
 			"user32.dll",
 			static_cast<const char*>("GetSysColorBrush"),

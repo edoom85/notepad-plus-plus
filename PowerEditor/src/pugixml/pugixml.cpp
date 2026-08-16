@@ -300,14 +300,14 @@ PUGI_IMPL_NS_BEGIN
 	}
 
 	// Get length of wide string, even if CRT lacks wide character support
-	PUGI_IMPL_FN size_t strlength_wide(const wchar_t* s)
+	PUGI_IMPL_FN size_t strlength_wide(const NppChar* s)
 	{
 		assert(s);
 
 	#ifdef PUGIXML_WCHAR_MODE
 		return wcslen(s);
 	#else
-		const wchar_t* end = s;
+		const NppChar* end = s;
 		while (*end) end++;
 		return static_cast<size_t>(end - s);
 	#endif
@@ -1892,26 +1892,26 @@ PUGI_IMPL_NS_BEGIN
 		typedef utf32_decoder<opt_false> decoder;
 	};
 
-	typedef wchar_selector<sizeof(wchar_t)>::counter wchar_counter;
-	typedef wchar_selector<sizeof(wchar_t)>::writer wchar_writer;
+	typedef wchar_selector<sizeof(NppChar)>::counter wchar_counter;
+	typedef wchar_selector<sizeof(NppChar)>::writer wchar_writer;
 
 	struct wchar_decoder
 	{
-		typedef wchar_t type;
+		typedef NppChar type;
 
-		template <typename Traits> static inline typename Traits::value_type process(const wchar_t* data, size_t size, typename Traits::value_type result, Traits traits)
+		template <typename Traits> static inline typename Traits::value_type process(const NppChar* data, size_t size, typename Traits::value_type result, Traits traits)
 		{
-			typedef wchar_selector<sizeof(wchar_t)>::decoder decoder;
+			typedef wchar_selector<sizeof(NppChar)>::decoder decoder;
 
 			return decoder::process(reinterpret_cast<const typename decoder::type*>(data), size, result, traits);
 		}
 	};
 
 #ifdef PUGIXML_WCHAR_MODE
-	PUGI_IMPL_FN void convert_wchar_endian_swap(wchar_t* result, const wchar_t* data, size_t length)
+	PUGI_IMPL_FN void convert_wchar_endian_swap(NppChar* result, const NppChar* data, size_t length)
 	{
 		for (size_t i = 0; i < length; ++i)
-			result[i] = static_cast<wchar_t>(endian_swap(static_cast<wchar_selector<sizeof(wchar_t)>::type>(data[i])));
+			result[i] = static_cast<NppChar>(endian_swap(static_cast<wchar_selector<sizeof(NppChar)>::type>(data[i])));
 	}
 #endif
 PUGI_IMPL_NS_END
@@ -1999,9 +1999,9 @@ PUGI_IMPL_NS_BEGIN
 
 	PUGI_IMPL_FN xml_encoding get_wchar_encoding()
 	{
-		PUGI_IMPL_STATIC_ASSERT(sizeof(wchar_t) == 2 || sizeof(wchar_t) == 4);
+		PUGI_IMPL_STATIC_ASSERT(sizeof(NppChar) == 2 || sizeof(NppChar) == 4);
 
-		if (sizeof(wchar_t) == 2)
+		if (sizeof(NppChar) == 2)
 			return is_little_endian() ? encoding_utf16_le : encoding_utf16_be;
 		else
 			return is_little_endian() ? encoding_utf32_le : encoding_utf32_be;
@@ -2197,7 +2197,7 @@ PUGI_IMPL_NS_BEGIN
 		const typename D::type* data = static_cast<const typename D::type*>(contents);
 		size_t data_length = size / sizeof(typename D::type);
 
-		// first pass: get length in wchar_t units
+		// first pass: get length in NppChar units
 		size_t length = D::process(data, data_length, 0, wchar_counter());
 		if (static_cast<size_t>(-1) / sizeof(char_t) <= length) return false;
 
@@ -2205,7 +2205,7 @@ PUGI_IMPL_NS_BEGIN
 		char_t* buffer = static_cast<char_t*>(xml_memory::allocate((length + 1) * sizeof(char_t)));
 		if (!buffer) return false;
 
-		// second pass: convert input to wchar_t
+		// second pass: convert input to NppChar
 		wchar_writer::value_type obegin = reinterpret_cast<wchar_writer::value_type>(buffer);
 		wchar_writer::value_type oend = D::process(data, data_length, obegin, wchar_writer());
 
@@ -2369,13 +2369,13 @@ PUGI_IMPL_NS_BEGIN
 	}
 #endif
 
-	PUGI_IMPL_FN size_t as_utf8_begin(const wchar_t* str, size_t length)
+	PUGI_IMPL_FN size_t as_utf8_begin(const NppChar* str, size_t length)
 	{
 		// get length in utf8 characters
 		return wchar_decoder::process(str, length, 0, utf8_counter());
 	}
 
-	PUGI_IMPL_FN void as_utf8_end(char* buffer, size_t size, const wchar_t* str, size_t length)
+	PUGI_IMPL_FN void as_utf8_end(char* buffer, size_t size, const NppChar* str, size_t length)
 	{
 		// convert to utf8
 		uint8_t* begin = reinterpret_cast<uint8_t*>(buffer);
@@ -2387,7 +2387,7 @@ PUGI_IMPL_NS_BEGIN
 	}
 
 #ifndef PUGIXML_NO_STL
-	PUGI_IMPL_FN std::string as_utf8_impl(const wchar_t* str, size_t length)
+	PUGI_IMPL_FN std::string as_utf8_impl(const NppChar* str, size_t length)
 	{
 		// first pass: get length in utf8 characters
 		size_t size = as_utf8_begin(str, length);
@@ -2402,18 +2402,18 @@ PUGI_IMPL_NS_BEGIN
 		return result;
 	}
 
-	PUGI_IMPL_FN std::basic_string<wchar_t> as_wide_impl(const char* str, size_t size)
+	PUGI_IMPL_FN std::basic_string<NppChar> as_wide_impl(const char* str, size_t size)
 	{
 		const uint8_t* data = reinterpret_cast<const uint8_t*>(str);
 
-		// first pass: get length in wchar_t units
+		// first pass: get length in NppChar units
 		size_t length = utf8_decoder::process(data, size, 0, wchar_counter());
 
 		// allocate resulting string
-		std::basic_string<wchar_t> result;
+		std::basic_string<NppChar> result;
 		result.resize(length);
 
-		// second pass: convert to wchar_t
+		// second pass: convert to NppChar
 		if (length > 0)
 		{
 			wchar_writer::value_type begin = reinterpret_cast<wchar_writer::value_type>(&result[0]);
@@ -3593,7 +3593,7 @@ PUGI_IMPL_NS_BEGIN
 		static char_t* parse_skip_bom(char_t* s)
 		{
 			unsigned int bom = 0xfeff;
-			return (s[0] == static_cast<wchar_t>(bom)) ? s + 1 : s;
+			return (s[0] == static_cast<NppChar>(bom)) ? s + 1 : s;
 		}
 	#else
 		static char_t* parse_skip_bom(char_t* s)
@@ -3720,7 +3720,7 @@ PUGI_IMPL_NS_BEGIN
 		if (length < 1) return 0;
 
 		// discard last character if it's the lead of a surrogate pair
-		return (sizeof(wchar_t) == 2 && static_cast<unsigned int>(static_cast<uint16_t>(data[length - 1]) - 0xD800) < 0x400) ? length - 1 : length;
+		return (sizeof(NppChar) == 2 && static_cast<unsigned int>(static_cast<uint16_t>(data[length - 1]) - 0xD800) < 0x400) ? length - 1 : length;
 	}
 
 	PUGI_IMPL_FN size_t convert_buffer_output(char_t* r_char, uint8_t* r_u8, uint16_t* r_u16, uint32_t* r_u32, const char_t* data, size_t length, xml_encoding encoding)
@@ -5163,7 +5163,7 @@ PUGI_IMPL_NS_BEGIN
 #endif
 
 #if defined(PUGI_IMPL_MSVC_CRT_VERSION) || defined(__BORLANDC__) || (defined(__MINGW32__) && (!defined(__STRICT_ANSI__) || defined(__MINGW64_VERSION_MAJOR)))
-	PUGI_IMPL_FN FILE* open_file_wide(const wchar_t* path, const wchar_t* mode)
+	PUGI_IMPL_FN FILE* open_file_wide(const NppChar* path, const NppChar* mode)
 	{
 #ifdef PUGIXML_NO_STL
 		// ensure these symbols are consistently referenced to avoid 'unreferenced function' warnings
@@ -5181,7 +5181,7 @@ PUGI_IMPL_NS_BEGIN
 #endif
 	}
 #else
-	PUGI_IMPL_FN char* convert_path_heap(const wchar_t* str)
+	PUGI_IMPL_FN char* convert_path_heap(const NppChar* str)
 	{
 		assert(str);
 
@@ -5202,7 +5202,7 @@ PUGI_IMPL_NS_BEGIN
 		return result;
 	}
 
-	PUGI_IMPL_FN FILE* open_file_wide(const wchar_t* path, const wchar_t* mode)
+	PUGI_IMPL_FN FILE* open_file_wide(const NppChar* path, const NppChar* mode)
 	{
 		// there is no standard function to open wide paths, so our best bet is to try utf8 path
 		char* path_utf8 = convert_path_heap(path);
@@ -5280,7 +5280,7 @@ namespace pugi
 	{
 	}
 
-	PUGI_IMPL_FN xml_writer_stream::xml_writer_stream(std::basic_ostream<wchar_t>& stream): narrow_stream(NULL), wide_stream(&stream)
+	PUGI_IMPL_FN xml_writer_stream::xml_writer_stream(std::basic_ostream<NppChar>& stream): narrow_stream(NULL), wide_stream(&stream)
 	{
 	}
 
@@ -5294,9 +5294,9 @@ namespace pugi
 		else
 		{
 			assert(wide_stream);
-			assert(size % sizeof(wchar_t) == 0);
+			assert(size % sizeof(NppChar) == 0);
 
-			wide_stream->write(reinterpret_cast<const wchar_t*>(data), static_cast<std::streamsize>(size / sizeof(wchar_t)));
+			wide_stream->write(reinterpret_cast<const NppChar*>(data), static_cast<std::streamsize>(size / sizeof(NppChar)));
 		}
 	}
 #endif
@@ -6986,7 +6986,7 @@ namespace pugi
 		print(writer, indent, flags, encoding, depth);
 	}
 
-	PUGI_IMPL_FN void xml_node::print(std::basic_ostream<wchar_t>& stream, const char_t* indent, unsigned int flags, unsigned int depth) const
+	PUGI_IMPL_FN void xml_node::print(std::basic_ostream<NppChar>& stream, const char_t* indent, unsigned int flags, unsigned int depth) const
 	{
 		xml_writer_stream writer(stream);
 
@@ -7837,7 +7837,7 @@ namespace pugi
 		return impl::load_stream_impl(static_cast<impl::xml_document_struct*>(_root), stream, options, encoding, &_buffer);
 	}
 
-	PUGI_IMPL_FN xml_parse_result xml_document::load(std::basic_istream<wchar_t>& stream, unsigned int options)
+	PUGI_IMPL_FN xml_parse_result xml_document::load(std::basic_istream<NppChar>& stream, unsigned int options)
 	{
 		reset();
 
@@ -7872,12 +7872,12 @@ namespace pugi
 		return impl::load_file_impl(static_cast<impl::xml_document_struct*>(_root), file.data, options, encoding, &_buffer);
 	}
 
-	PUGI_IMPL_FN xml_parse_result xml_document::load_file(const wchar_t* path_, unsigned int options, xml_encoding encoding)
+	PUGI_IMPL_FN xml_parse_result xml_document::load_file(const NppChar* path_, unsigned int options, xml_encoding encoding)
 	{
 		reset();
 
 		using impl::auto_deleter; // MSVC7 workaround
-		auto_deleter<FILE> file(impl::open_file_wide(path_, L"rb"), impl::close_file);
+		auto_deleter<FILE> file(impl::open_file_wide(path_, "rb"), impl::close_file);
 
 		return impl::load_file_impl(static_cast<impl::xml_document_struct*>(_root), file.data, options, encoding, &_buffer);
 	}
@@ -7912,7 +7912,7 @@ namespace pugi
 			// BOM always represents the codepoint U+FEFF, so just write it in native encoding
 		#ifdef PUGIXML_WCHAR_MODE
 			unsigned int bom = 0xfeff;
-			buffered_writer.write(static_cast<wchar_t>(bom));
+			buffered_writer.write(static_cast<NppChar>(bom));
 		#else
 			buffered_writer.write('\xef', '\xbb', '\xbf');
 		#endif
@@ -7939,7 +7939,7 @@ namespace pugi
 		save(writer, indent, flags, encoding);
 	}
 
-	PUGI_IMPL_FN void xml_document::save(std::basic_ostream<wchar_t>& stream, const char_t* indent, unsigned int flags) const
+	PUGI_IMPL_FN void xml_document::save(std::basic_ostream<NppChar>& stream, const char_t* indent, unsigned int flags) const
 	{
 		xml_writer_stream writer(stream);
 
@@ -7955,10 +7955,10 @@ namespace pugi
 		return impl::save_file_impl(*this, file.data, indent, flags, encoding) && fclose(file.release()) == 0;
 	}
 
-	PUGI_IMPL_FN bool xml_document::save_file(const wchar_t* path_, const char_t* indent, unsigned int flags, xml_encoding encoding) const
+	PUGI_IMPL_FN bool xml_document::save_file(const NppChar* path_, const char_t* indent, unsigned int flags, xml_encoding encoding) const
 	{
 		using impl::auto_deleter; // MSVC7 workaround
-		auto_deleter<FILE> file(impl::open_file_wide(path_, (flags & format_save_file_text) ? L"w" : L"wb"), impl::close_file);
+		auto_deleter<FILE> file(impl::open_file_wide(path_, (flags & format_save_file_text) ? "w" : "wb"), impl::close_file);
 
 		return impl::save_file_impl(*this, file.data, indent, flags, encoding) && fclose(file.release()) == 0;
 	}
@@ -7975,26 +7975,26 @@ namespace pugi
 	}
 
 #ifndef PUGIXML_NO_STL
-	PUGI_IMPL_FN std::string PUGIXML_FUNCTION as_utf8(const wchar_t* str)
+	PUGI_IMPL_FN std::string PUGIXML_FUNCTION as_utf8(const NppChar* str)
 	{
 		assert(str);
 
 		return impl::as_utf8_impl(str, impl::strlength_wide(str));
 	}
 
-	PUGI_IMPL_FN std::string PUGIXML_FUNCTION as_utf8(const std::basic_string<wchar_t>& str)
+	PUGI_IMPL_FN std::string PUGIXML_FUNCTION as_utf8(const std::basic_string<NppChar>& str)
 	{
 		return impl::as_utf8_impl(str.c_str(), str.size());
 	}
 
-	PUGI_IMPL_FN std::basic_string<wchar_t> PUGIXML_FUNCTION as_wide(const char* str)
+	PUGI_IMPL_FN std::basic_string<NppChar> PUGIXML_FUNCTION as_wide(const char* str)
 	{
 		assert(str);
 
 		return impl::as_wide_impl(str, strlen(str));
 	}
 
-	PUGI_IMPL_FN std::basic_string<wchar_t> PUGIXML_FUNCTION as_wide(const std::string& str)
+	PUGI_IMPL_FN std::basic_string<NppChar> PUGIXML_FUNCTION as_wide(const std::string& str)
 	{
 		return impl::as_wide_impl(str.c_str(), str.size());
 	}

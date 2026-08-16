@@ -24,7 +24,7 @@ BOOL CReadFileChanges::DetectChanges()
 	return rValue;
 }
 
-void CReadFileChanges::AddFile(LPCTSTR szFile, DWORD dwNotifyFilter)
+void CReadFileChanges::AddFile(const NppChar* szFile, DWORD dwNotifyFilter)
 {
 	_szFile = szFile;
 	_dwNotifyFilter = dwNotifyFilter;

@@ -18,12 +18,12 @@ public:
 		_lastFileInfo.dwFileAttributes = INVALID_FILE_ATTRIBUTES;
 	}
 	~CReadFileChanges() {}
-	void AddFile(LPCTSTR szDirectory, DWORD dwNotifyFilter);
+	void AddFile(const NppChar* szDirectory, DWORD dwNotifyFilter);
 	BOOL DetectChanges();
 	void Terminate();
 
 private:
-	LPCTSTR _szFile = nullptr;
+	const NppChar* _szFile = nullptr;
 	DWORD _dwNotifyFilter = 0;
 	WIN32_FILE_ATTRIBUTE_DATA _lastFileInfo = {};
 };
