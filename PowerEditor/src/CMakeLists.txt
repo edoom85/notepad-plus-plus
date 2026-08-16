@@ -66,6 +66,11 @@ set(NPP_LINUX_HEADERS
     WinControls/Qt/NppFunctionList.h
     WinControls/Qt/NppProjectPanel.h
     WinControls/Qt/NppPluginsAdmin.h
+    WinControls/Qt/NppColourPicker.h
+    WinControls/Qt/NppDocumentMap.h
+    WinControls/Qt/NppClipboardHistory.h
+    WinControls/Qt/NppVerticalFileSwitcher.h
+    WinControls/Qt/NppAboutDlg.h
 )
 
 
