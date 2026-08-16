@@ -157,6 +157,7 @@ if(WIN32)
         ./WinControls/ColourPicker/ColourPicker.cpp
         ./WinControls/ColourPicker/ColourPopup.cpp
         ./dpiManagerV2.cpp
+        ./NppDarkMode.cpp
         ./DarkMode/DarkMode.cpp
         ./WinControls/AnsiCharPanel/AsciiListView.cpp
         ./WinControls/ProjectPanel/ProjectPanel.cpp
@@ -166,12 +167,20 @@ if(WIN32)
         ./NppBigSwitch.cpp
         ./lesDlgs.cpp
         ./MISC/Common/FileInterface.cpp
+        ./MISC/Common/SortLocale.cpp
         ./MISC/Common/verifySignedfile.cpp
         ./WinControls/TabBar/ControlsTab.cpp
+        ./WinControls/WindowsDlg/WinRect.cpp
         ./ScintillaComponent/AutoCompletion.cpp
         ./ScintillaComponent/ScintillaCtrls.cpp
         ./WinControls/ReadDirectoryChanges/ReadDirectoryChanges.cpp
         ./WinControls/ReadDirectoryChanges/ReadDirectoryChangesPrivate.cpp
+        ./WinControls/ReadDirectoryChanges/ReadFileChanges.cpp
+        ./MISC/sha1/calc_sha1.cpp
+        ./MISC/sha2/calc_sha_256.cpp
+        ./MISC/sha512/calc_sha_512.cpp
+        ./MISC/md5/md5.cpp
+        ./MISC/md5/md5Dlgs.cpp
         ./uchardet/LangBulgarianModel.cpp
         ./uchardet/LangCyrillicModel.cpp
         ./uchardet/LangGreekModel.cpp
@@ -181,6 +190,7 @@ if(WIN32)
         ./uchardet/nsEscSM.cpp
         ./uchardet/nsMBCSSM.cpp
     )
+
 
 
 

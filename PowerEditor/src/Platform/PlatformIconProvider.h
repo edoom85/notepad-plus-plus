@@ -88,11 +88,12 @@ public:
                 return fetchThemeOrStandard("help-about", QStyle::SP_MessageBoxInformation, QColor(0x56, 0x9C, 0xD6), "ℹ");
             case IconType::AppLogo: {
                 QIcon icon(":/Platform/npp_icon.png");
-                if (icon.isNull()) icon = QIcon(":/icons/npp.ico");
-                if (icon.isNull()) icon = QIcon("PowerEditor/src/icons/npp.ico");
+                if (icon.isNull()) icon = QIcon(":/icons/npp_256.ico");
                 if (icon.isNull()) icon = fetchThemeOrStandard("notepad++", QStyle::SP_TitleBarMenuButton, QColor(0x90, 0xEE, 0x90), "🦎");
                 return icon;
             }
+
+
 
 
             case IconType::FileBrowser:
