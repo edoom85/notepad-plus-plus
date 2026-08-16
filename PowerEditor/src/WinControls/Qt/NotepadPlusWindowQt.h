@@ -198,6 +198,69 @@ private:
         return qobject_cast<QsciScintilla*>(w);
     }
 
+    void setupFindReplaceConnections(NppFindReplaceDlg* dlg) {
+        if (!dlg) return;
+        connect(dlg, &NppFindReplaceDlg::findNext, [this, dlg](const QString& target) {
+            auto* ed = activeEditor();
+            if (!ed || target.isEmpty()) return;
+            bool caseSens = dlg->isMatchCase();
+            bool wholeWord = dlg->isMatchWholeWord();
+            bool regex = (dlg->searchMode() == 2);
+            bool wrap = dlg->isWrapAround();
+            bool found = ed->findFirst(target, regex, caseSens, wholeWord, wrap, true);
+            if (!found) {
+                statusBar()->showMessage(QString("Búsqueda finalizada: no se encontró '%1'").arg(target), 3000);
+            }
+        });
+
+        connect(dlg, &NppFindReplaceDlg::findPrev, [this, dlg](const QString& target) {
+            auto* ed = activeEditor();
+            if (!ed || target.isEmpty()) return;
+            bool caseSens = dlg->isMatchCase();
+            bool wholeWord = dlg->isMatchWholeWord();
+            bool regex = (dlg->searchMode() == 2);
+            bool wrap = dlg->isWrapAround();
+            bool found = ed->findFirst(target, regex, caseSens, wholeWord, wrap, false);
+            if (!found) {
+                statusBar()->showMessage(QString("Búsqueda anterior finalizada: no se encontró '%1'").arg(target), 3000);
+            }
+        });
+
+        connect(dlg, &NppFindReplaceDlg::replaceOne, [this, dlg](const QString& target, const QString& replacement) {
+            auto* ed = activeEditor();
+            if (!ed || target.isEmpty()) return;
+            if (ed->hasSelectedText() && ed->selectedText() == target) {
+                ed->replace(replacement);
+            }
+            bool caseSens = dlg->isMatchCase();
+            bool wholeWord = dlg->isMatchWholeWord();
+            bool regex = (dlg->searchMode() == 2);
+            bool wrap = dlg->isWrapAround();
+            ed->findFirst(target, regex, caseSens, wholeWord, wrap, true);
+        });
+
+        connect(dlg, &NppFindReplaceDlg::replaceAll, [this, dlg](const QString& target, const QString& replacement) {
+            auto* ed = activeEditor();
+            if (!ed || target.isEmpty()) return;
+            ed->beginUndoAction();
+            int count = 0;
+            bool caseSens = dlg->isMatchCase();
+            bool wholeWord = dlg->isMatchWholeWord();
+            bool regex = (dlg->searchMode() == 2);
+            if (ed->findFirst(target, regex, caseSens, wholeWord, true, true, 0, 0)) {
+                ed->replace(replacement);
+                count++;
+                while (ed->findNext()) {
+                    ed->replace(replacement);
+                    count++;
+                }
+            }
+            ed->endUndoAction();
+            statusBar()->showMessage(QString("Reemplazar todo: %1 coincidencia(s) reemplazada(s)").arg(count), 4000);
+        });
+    }
+
+
 public:
     void newDocument() {
         static int newCount = 1;
@@ -535,19 +598,21 @@ private:
         QMenu* searchMenu = menuBar()->addMenu("&Buscar");
         searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Find),    "Buscar...",     QKeySequence::Find, [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
-            dlg->selectTab(0);
+            setupFindReplaceConnections(dlg);
+            dlg->selectTab(0, activeEditor() ? activeEditor()->selectedText() : "");
         });
         searchMenu->addAction("Buscar en archivos", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
+            setupFindReplaceConnections(dlg);
             dlg->selectTab(2);
         });
         searchMenu->addAction("Buscar siguiente", QKeySequence::FindNext, [this]() {
-            auto* dlg = new NppFindReplaceDlg(this);
-            dlg->show();
+            auto* ed = activeEditor();
+            if (ed) ed->findNext();
         });
         searchMenu->addAction("Buscar anterior", QKeySequence::FindPrevious, [this]() {
-            auto* dlg = new NppFindReplaceDlg(this);
-            dlg->show();
+            auto* ed = activeEditor();
+            if (ed) ed->findNext();
         });
         searchMenu->addAction("Seleccionar y buscar siguiente", QKeySequence(Qt::CTRL | Qt::Key_F3), [this]() {});
         searchMenu->addAction("Seleccionar y buscar anterior", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F3), [this]() {});
@@ -555,7 +620,8 @@ private:
         searchMenu->addAction("Búsqueda (volátil) anterior", QKeySequence(Qt::CTRL | Qt::ALT | Qt::SHIFT | Qt::Key_F3), [this]() {});
         searchMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Replace), "Sustituir...", QKeySequence::Replace, [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
-            dlg->selectTab(1);
+            setupFindReplaceConnections(dlg);
+            dlg->selectTab(1, activeEditor() ? activeEditor()->selectedText() : "");
         });
         searchMenu->addAction("Búsqueda incremental", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_I), [this]() {});
         searchMenu->addAction("Ventana de resultados de búsqueda", QKeySequence(Qt::Key_F7), [this]() {});
@@ -567,15 +633,21 @@ private:
             connect(dlg, &NppGoToLineDlg::goToLine, [this](int line) {
                 if (auto* ed = activeEditor()) ed->setCursorPosition(line - 1, 0);
             });
+            connect(dlg, &NppGoToLineDlg::goToOffset, [this](int offset) {
+                if (auto* ed = activeEditor()) ed->SendScintilla(QsciScintilla::SCI_GOTOPOS, offset);
+            });
             dlg->show();
         });
+
         searchMenu->addAction("Ir al corchete", QKeySequence(Qt::CTRL | Qt::Key_B), [this]() {});
         searchMenu->addAction("Seleccionar todo lo que haya entre {} [] o ()", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_B), [this]() {});
         searchMenu->addAction("Marcar...", QKeySequence(Qt::CTRL | Qt::Key_M), [this]() {
             auto* dlg = new NppFindReplaceDlg(this);
-            dlg->selectTab(4);
+            setupFindReplaceConnections(dlg);
+            dlg->selectTab(4, activeEditor() ? activeEditor()->selectedText() : "");
         });
         searchMenu->addSeparator();
+
 
         searchMenu->addMenu("Historial de cambios");
         searchMenu->addSeparator();
@@ -604,8 +676,29 @@ private:
         searchMenu->addSeparator();
 
         searchMenu->addAction("Buscar caracteres por tipo...", [this]() {
-            (new NppFindCharsInRangeDlg(this))->show();
+            auto* dlg = new NppFindCharsInRangeDlg(this);
+            connect(dlg, &NppFindCharsInRangeDlg::findInRangeRequested, [this](int minVal, int maxVal) {
+                auto* ed = activeEditor();
+                if (!ed) return;
+                QString text = ed->text();
+                int curLine = 0, curIndex = 0;
+                ed->getCursorPosition(&curLine, &curIndex);
+                int startPos = 0;
+                for (int i = startPos; i < text.length(); ++i) {
+                    char16_t code = text[i].unicode();
+                    if (code >= minVal && code <= maxVal) {
+                        ed->setSelection(0, i, 0, i + 1);
+                        statusBar()->showMessage(QString("Carácter encontrado en el rango [%1, %2]: '%3' (Código: %4)")
+                            .arg(minVal).arg(maxVal).arg(text[i]).arg(code), 4000);
+                        return;
+                    }
+                }
+                statusBar()->showMessage("No se encontraron más caracteres en el rango especificado", 3000);
+            });
+            dlg->show();
         });
+
+
 
 
         // ── 4. Vista ──
@@ -947,8 +1040,47 @@ private:
         QMenu* configMenu = menuBar()->addMenu("Con&figuración");
         configMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Settings), "&Preferencias...", [this]() {
             auto* dlg = new NppPreferenceDlg(this);
+            connect(dlg, &NppPreferenceDlg::toolbarVisibilityChanged, [this](bool visible) {
+                if (_toolbar) _toolbar->setVisible(visible);
+            });
+
+            connect(dlg, &NppPreferenceDlg::statusbarVisibilityChanged, [this](bool visible) {
+                if (statusBar()) statusBar()->setVisible(visible);
+            });
+            connect(dlg, &NppPreferenceDlg::menuBarVisibilityChanged, [this](bool visible) {
+                if (menuBar()) menuBar()->setVisible(visible);
+            });
+            connect(dlg, &NppPreferenceDlg::tabSizeChanged, [this](int size) {
+                if (auto* ed = activeEditor()) ed->setTabWidth(size);
+            });
+            connect(dlg, &NppPreferenceDlg::tabUseSpacesChanged, [this](bool useSpaces) {
+                if (auto* ed = activeEditor()) ed->setIndentationsUseTabs(!useSpaces);
+            });
+            connect(dlg, &NppPreferenceDlg::indentGuidesChanged, [this](bool show) {
+                if (auto* ed = activeEditor()) ed->setIndentationGuides(show);
+            });
+            connect(dlg, &NppPreferenceDlg::caretLineHighlightChanged, [this](bool show) {
+                if (auto* ed = activeEditor()) ed->setCaretLineVisible(show);
+            });
+            connect(dlg, &NppPreferenceDlg::wordWrapChanged, [this](bool wrap) {
+                if (auto* ed = activeEditor()) ed->setWrapMode(wrap ? QsciScintilla::WrapWord : QsciScintilla::WrapNone);
+            });
+            connect(dlg, &NppPreferenceDlg::lineNumbersVisibilityChanged, [this](bool show) {
+                if (auto* ed = activeEditor()) ed->setMarginLineNumbers(0, show);
+            });
+            connect(dlg, &NppPreferenceDlg::codeFoldingToggled, [this](bool fold) {
+                if (auto* ed = activeEditor()) ed->setFolding(fold ? QsciScintilla::PlainFoldStyle : QsciScintilla::NoFoldStyle);
+            });
+            connect(dlg, &NppPreferenceDlg::eolModeChanged, [this](int mode) {
+                if (auto* ed = activeEditor()) {
+                    if (mode == 0) ed->setEolMode(QsciScintilla::EolUnix);
+                    else if (mode == 1) ed->setEolMode(QsciScintilla::EolWindows);
+                    else if (mode == 2) ed->setEolMode(QsciScintilla::EolMac);
+                }
+            });
             dlg->show();
         });
+
         configMenu->addAction("Configurador de &estilos...", [this]() {
             auto* dlg = new NppStyleConfigDlg(this);
             connect(dlg, &NppStyleConfigDlg::styleApplied, [this](const QString& theme, const QColor& /*fg*/, const QColor& /*bg*/) {

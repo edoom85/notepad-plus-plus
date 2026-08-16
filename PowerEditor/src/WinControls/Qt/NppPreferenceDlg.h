@@ -2,7 +2,7 @@
 // Reemplaza WinControls/Preference/PreferenceDlg.cpp/.h en Linux
 //
 // En Windows: 21 categorías en el panel izquierdo (General, Barra de herramientas, Barra de estado, Edición 1/2, etc.)
-// En Linux:   NppDialog + QListWidget + QStackedWidget con las 21 categorías exactas
+// En Linux:   NppDialog + QListWidget + QStackedWidget con las 21 categorías exactas + señales en tiempo real
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -41,6 +41,20 @@ public:
         setMinimumSize(820, 560);
         buildUI();
     }
+
+signals:
+    void toolbarVisibilityChanged(bool visible);
+    void statusbarVisibilityChanged(bool visible);
+    void menuBarVisibilityChanged(bool visible);
+    void tabSizeChanged(int size);
+    void tabUseSpacesChanged(bool useSpaces);
+    void indentGuidesChanged(bool show);
+    void caretLineHighlightChanged(bool show);
+    void wordWrapChanged(bool wrap);
+    void darkModeToggled(bool dark);
+    void lineNumbersVisibilityChanged(bool show);
+    void codeFoldingToggled(bool fold);
+    void eolModeChanged(int mode);
 
 private:
     void buildUI() {
@@ -107,7 +121,13 @@ private:
         v->addWidget(new QCheckBox("Idioma de la interfaz: Español", grp));
         v->addWidget(new QCheckBox("Mostrar botón de cerrar en cada pestaña", grp));
         v->addWidget(new QCheckBox("Doble clic para cerrar pestaña", grp));
-        v->addWidget(new QCheckBox("Ocultar barra de menú (presione Alt para mostrar)", grp));
+        
+        auto* chkHideMenu = new QCheckBox("Ocultar barra de menú (presione Alt para mostrar)", grp);
+        connect(chkHideMenu, &QCheckBox::toggled, [this](bool checked) {
+            emit menuBarVisibilityChanged(!checked);
+        });
+        v->addWidget(chkHideMenu);
+
         layout->addWidget(grp);
         layout->addStretch();
         return page;
@@ -119,8 +139,13 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Opciones de la Barra de Herramientas", page);
         auto* v = new QVBoxLayout(grp);
-        v->addWidget(new QCheckBox("Ocultar barra de herramientas", grp));
         
+        auto* chkHide = new QCheckBox("Ocultar barra de herramientas", grp);
+        connect(chkHide, &QCheckBox::toggled, [this](bool checked) {
+            emit toolbarVisibilityChanged(!checked);
+        });
+        v->addWidget(chkHide);
+
         auto* r1 = new QRadioButton("Iconos pequeños sin relleno", grp);
         auto* r2 = new QRadioButton("Iconos grandes sin relleno", grp);
         auto* r3 = new QRadioButton("Iconos pequeños con relleno", grp);
@@ -140,9 +165,14 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Barra de Estado", page);
         auto* v = new QVBoxLayout(grp);
+        
         auto* chk = new QCheckBox("Mostrar barra de estado", grp);
         chk->setChecked(true);
+        connect(chk, &QCheckBox::toggled, [this](bool checked) {
+            emit statusbarVisibilityChanged(checked);
+        });
         v->addWidget(chk);
+
         layout->addWidget(grp);
         layout->addStretch();
         return page;
@@ -159,13 +189,27 @@ private:
         h->addWidget(new QLabel("Tamaño de tabulación (espacios):", grp));
         auto* spin = new QSpinBox(grp);
         spin->setRange(1, 16); spin->setValue(4);
+        connect(spin, &QSpinBox::valueChanged, [this](int val) {
+            emit tabSizeChanged(val);
+        });
         h->addWidget(spin);
-        h->addWidget(new QCheckBox("Reemplazar por espacios", grp));
+
+        auto* chkSpace = new QCheckBox("Reemplazar por espacios", grp);
+        connect(chkSpace, &QCheckBox::toggled, [this](bool checked) {
+            emit tabUseSpacesChanged(checked);
+        });
+        h->addWidget(chkSpace);
         h->addStretch();
         v->addLayout(h);
 
         v->addWidget(new QCheckBox("Habilitar sangría automática inteligente", grp));
-        v->addWidget(new QCheckBox("Mostrar guía de sangría vertical", grp));
+        
+        auto* chkGuide = new QCheckBox("Mostrar guía de sangría vertical", grp);
+        connect(chkGuide, &QCheckBox::toggled, [this](bool checked) {
+            emit indentGuidesChanged(checked);
+        });
+        v->addWidget(chkGuide);
+
         layout->addWidget(grp);
         layout->addStretch();
         return page;
@@ -177,8 +221,19 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Ajustes Avanzados de Edición", page);
         auto* v = new QVBoxLayout(grp);
-        v->addWidget(new QCheckBox("Resaltar línea actual del cursor", grp));
-        v->addWidget(new QCheckBox("Activar ajuste de línea automático (Word Wrap)", grp));
+        
+        auto* chkCaret = new QCheckBox("Resaltar línea actual del cursor", grp);
+        connect(chkCaret, &QCheckBox::toggled, [this](bool checked) {
+            emit caretLineHighlightChanged(checked);
+        });
+        v->addWidget(chkCaret);
+
+        auto* chkWrap = new QCheckBox("Activar ajuste de línea automático (Word Wrap)", grp);
+        connect(chkWrap, &QCheckBox::toggled, [this](bool checked) {
+            emit wordWrapChanged(checked);
+        });
+        v->addWidget(chkWrap);
+
         v->addWidget(new QCheckBox("Habilitar desplazamiento continuo más allá del final", grp));
         layout->addWidget(grp);
         layout->addStretch();
@@ -191,9 +246,14 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Configuración de Modo Oscuro", page);
         auto* v = new QVBoxLayout(grp);
+        
         auto* chkDark = new QCheckBox("Habilitar modo oscuro nativo", grp);
         chkDark->setChecked(true);
+        connect(chkDark, &QCheckBox::toggled, [this](bool checked) {
+            emit darkModeToggled(checked);
+        });
         v->addWidget(chkDark);
+
         v->addWidget(new QRadioButton("Tono oscuro estándar (Dark Charcoal)", grp));
         v->addWidget(new QRadioButton("Tono negro profundo (OLED Black)", grp));
         layout->addWidget(grp);
@@ -207,9 +267,23 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Márgenes y Estilos de Plegado", page);
         auto* v = new QVBoxLayout(grp);
-        v->addWidget(new QCheckBox("Mostrar margen de números de línea", grp));
+        
+        auto* chkLines = new QCheckBox("Mostrar margen de números de línea", grp);
+        chkLines->setChecked(true);
+        connect(chkLines, &QCheckBox::toggled, [this](bool checked) {
+            emit lineNumbersVisibilityChanged(checked);
+        });
+        v->addWidget(chkLines);
+
         v->addWidget(new QCheckBox("Mostrar margen de marcadores (Bookmarks)", grp));
-        v->addWidget(new QCheckBox("Habilitar árbol de plegado de código", grp));
+
+        auto* chkFold = new QCheckBox("Habilitar árbol de plegado de código", grp);
+        chkFold->setChecked(true);
+        connect(chkFold, &QCheckBox::toggled, [this](bool checked) {
+            emit codeFoldingToggled(checked);
+        });
+        v->addWidget(chkFold);
+
         layout->addWidget(grp);
         layout->addStretch();
         return page;
@@ -226,6 +300,9 @@ private:
         hEol->addWidget(new QLabel("Fin de línea (EOL):", grp));
         auto* cbEol = new QComboBox(grp);
         cbEol->addItems({"Unix (LF)", "Windows (CR LF)", "Macintosh (CR)"});
+        connect(cbEol, &QComboBox::currentIndexChanged, [this](int idx) {
+            emit eolModeChanged(idx);
+        });
         hEol->addWidget(cbEol);
         hEol->addStretch();
         v->addLayout(hEol);

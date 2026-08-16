@@ -156,6 +156,11 @@ if(WIN32)
         ./WinControls/PluginsAdmin/pluginsAdmin.cpp
         ./WinControls/ColourPicker/ColourPicker.cpp
         ./WinControls/ColourPicker/ColourPopup.cpp
+        ./dpiManagerV2.cpp
+        ./NppDarkMode.cpp
+        ./DarkMode/DarkMode.cpp
+        ./WinControls/AnsiCharPanel/AsciiListView.cpp
+        ./WinControls/ProjectPanel/ProjectPanel.cpp
     )
 
 
@@ -193,7 +198,8 @@ if(WIN32)
     set(CMAKE_CXX_STANDARD 20)
 
     if (MSVC)
-        SET(CMAKE_CXX_FLAGS "/EHa /MP /W4")
+        set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        SET(CMAKE_CXX_FLAGS "/EHa /MP /W4 /MT")
         SET(defs -DUNICODE -D_UNICODE -D_WIN32_WINNT=_WIN32_WINNT_WIN7 -DNTDDI_VERSION=NTDDI_WIN7 -D_USE_64BIT_TIME_T -DNOMINMAX -DOEMRESOURCE -D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -D_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
@@ -224,7 +230,11 @@ if(WIN32)
     )
 
     ADD_EXECUTABLE(notepad++ ${option} ${src_files} ${rcFiles})
+    if (MSVC)
+        set_property(TARGET notepad++ PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
     TARGET_LINK_LIBRARIES(notepad++ ${SCINTILLA_STATIC_LIBRARY} ${LEXILLA_STATIC_LIBRARY} ${win32_LIBRARIES})
+
 
 else()
     # ── Configuración CMake para Linux Nativo (Qt6) ───────────────────────────

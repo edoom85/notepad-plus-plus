@@ -72,9 +72,21 @@ public:
 
         mainLayout->addLayout(btnLayout);
 
-        connect(btnFind, &QPushButton::clicked, this, &QDialog::accept);
+        connect(btnFind, &QPushButton::clicked, [this]() {
+            int minVal = 128, maxVal = 255;
+            if (_rbAsciiOnly->isChecked()) { minVal = 0; maxVal = 127; }
+            else if (_rbCustom->isChecked()) {
+                minVal = _txtStart->text().toInt();
+                maxVal = _txtEnd->text().toInt();
+            }
+            emit findInRangeRequested(minVal, maxVal);
+            accept();
+        });
         connect(btnClose, &QPushButton::clicked, this, &QDialog::reject);
     }
+
+signals:
+    void findInRangeRequested(int minVal, int maxVal);
 
 private:
     QRadioButton* _rbNonAscii  = nullptr;
@@ -83,5 +95,6 @@ private:
     QLineEdit*    _txtStart    = nullptr;
     QLineEdit*    _txtEnd      = nullptr;
 };
+
 
 #endif // NPP_PLATFORM_LINUX
