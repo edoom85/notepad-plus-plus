@@ -62,7 +62,8 @@ static void applyGlobalDarkTheme(QApplication* app) {
 /// Llamada desde linuxmain.cpp después de crear QApplication.
 void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) {
     // 1. Icono global de la aplicación nativa (Dock / Alt+Tab / Wayland / X11)
-    app->setWindowIcon(QIcon(":/Platform/npp_icon.png"));
+    app->setWindowIcon(QIcon(":/icons/npp_256.ico"));
+
 
     // 2. Tema oscuro global
     applyGlobalDarkTheme(app);
