@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>Platform/npp_icon.png</file>
         <file>icons/npp.ico</file>
+        <file>icons/standard/tabbar/saved.ico</file>
+        <file>icons/standard/tabbar/unsaved.ico</file>
+        <file>icons/standard/tabbar/readonly.ico</file>
     </qresource>
 </RCC>

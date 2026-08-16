@@ -484,15 +484,46 @@ private:
 
         editMenu->addAction("Modo de columna...", [this]() {});
         editMenu->addAction("Editor de columna...", QKeySequence(Qt::ALT | Qt::Key_C), [this]() {
-            (new NppColumnEditor(this))->show();
+            auto* dlg = new NppColumnEditor(this);
+            connect(dlg, &NppColumnEditor::columnEditRequested, [this](bool isText, const QString& text, int start, int inc, int fmt) {
+                auto* ed = activeEditor();
+                if (!ed) return;
+                ed->beginUndoAction();
+                int lines = ed->lines();
+                int currentVal = start;
+                for (int i = 0; i < lines; ++i) {
+                    if (isText) {
+                        ed->insertAt(text, i, 0);
+                    } else {
+                        QString numStr;
+                        if (fmt == 1) numStr = QString::number(currentVal, 8);
+                        else if (fmt == 2) numStr = QString::number(currentVal, 16).toUpper();
+                        else if (fmt == 3) numStr = QString::number(currentVal, 2);
+                        else numStr = QString::number(currentVal);
+                        ed->insertAt(numStr, i, 0);
+                        currentVal += inc;
+                    }
+                }
+                ed->endUndoAction();
+            });
+            dlg->show();
         });
         editMenu->addAction("Panel de caracteres", [this]() {
-            (new NppAnsiCharPanel(this))->show();
+            auto* panel = new NppAnsiCharPanel(this);
+            connect(panel, &NppAnsiCharPanel::charSelected, [this](const QString& ch) {
+                if (auto* ed = activeEditor()) ed->insert(ch);
+            });
+            panel->show();
         });
         editMenu->addAction("Historial de portapapeles", [this]() {
-            (new NppClipboardHistory(this))->show();
+            auto* history = new NppClipboardHistory(this);
+            connect(history, &NppClipboardHistory::pasteRequested, [this](const QString& text) {
+                if (auto* ed = activeEditor()) ed->insert(text);
+            });
+            history->show();
         });
         editMenu->addSeparator();
+
 
         QMenu* readOnlyNpp = editMenu->addMenu("Atributo solo lectura en Notepad++");
         readOnlyNpp->addAction("Alternar solo lectura", [this]() {

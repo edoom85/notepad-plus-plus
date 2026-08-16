@@ -124,18 +124,22 @@ public:
 
     /// Añadir una pestaña con nombre y widget editor.
     int addTab(QWidget* editor, const NppString& name) {
-        return QTabWidget::addTab(editor, QString::fromStdString(name));
+        return QTabWidget::addTab(editor, QIcon(":/icons/standard/tabbar/saved.ico"), QString::fromStdString(name));
     }
 
-    /// Marcar pestaña como modificada (agrega * al nombre).
+    /// Marcar pestaña como modificada (cambia icono e indicador *).
     void setTabModified(int index, bool modified) {
+        if (index < 0 || index >= count()) return;
         QString name = tabText(index);
-        if (modified && !name.startsWith("*")) {
-            setTabText(index, "*" + name);
-        } else if (!modified && name.startsWith("*")) {
-            setTabText(index, name.mid(1));
+        if (modified) {
+            if (!name.startsWith("*")) setTabText(index, "*" + name);
+            setTabIcon(index, QIcon(":/icons/standard/tabbar/unsaved.ico"));
+        } else {
+            if (name.startsWith("*")) setTabText(index, name.mid(1));
+            setTabIcon(index, QIcon(":/icons/standard/tabbar/saved.ico"));
         }
     }
+
 
     /// Obtener ruta de archivo asociada a una pestaña (almacenada como data).
     NppString tabFilePath(int index) const {

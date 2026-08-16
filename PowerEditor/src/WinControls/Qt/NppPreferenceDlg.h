@@ -1,8 +1,8 @@
 // WinControls/Qt/NppPreferenceDlg.h — Diálogo de Preferencias portable Qt6
 // Reemplaza WinControls/Preference/PreferenceDlg.cpp/.h en Linux
 //
-// En Windows: Diálogo modal complejo con pestañas/categorías y decenas de controles
-// En Linux:   NppDialog + QListWidget (categorías) + QStackedWidget (páginas de opciones)
+// En Windows: 21 categorías en el panel izquierdo (General, Barra de herramientas, Barra de estado, Edición 1/2, etc.)
+// En Linux:   NppDialog + QListWidget + QStackedWidget con las 21 categorías exactas
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -30,7 +30,6 @@
 #include <QString>
 
 /// Diálogo de Preferencias portable Qt6 para Notepad++ Linux.
-/// Organizado con una lista de categorías a la izquierda y 12 páginas desplegables a la derecha.
 class NppPreferenceDlg : public NppDialog {
     Q_OBJECT
 
@@ -39,7 +38,7 @@ public:
         : NppDialog(parent)
     {
         setWindowTitle("Preferencias");
-        setMinimumSize(780, 520);
+        setMinimumSize(820, 560);
         buildUI();
     }
 
@@ -48,32 +47,41 @@ private:
         auto* mainLayout = new QVBoxLayout(this);
         auto* contentLayout = new QHBoxLayout();
 
-        // ── Lista de categorías a la izquierda ───────────────────────────────
+        // ── Lista de categorías a la izquierda (21 categorías exactas) ───────
         _categoryList = new QListWidget(this);
-        _categoryList->setFixedWidth(200);
+        _categoryList->setFixedWidth(210);
 
         // ── Páginas de configuración a la derecha ─────────────────────────────
         _stackedWidget = new QStackedWidget(this);
 
-        // Crear las 12 páginas de categorías completas
-        addCategory("General",             createGeneralPage());
-        addCategory("Editor / Edición",    createEditorPage());
-        addCategory("Márgenes y Plegado",  createMarginsPage());
-        addCategory("Lenguaje / Sintaxis", createLanguagePage());
-        addCategory("Tema y Colores",      createThemePage());
-        addCategory("Copias de seguridad", createBackupPage());
-        addCategory("Autocompletado",      createAutoCompletePage());
-        addCategory("Multi-Instancia",     createMultiInstancePage());
-        addCategory("Delimitadores",       createDelimitersPage());
-        addCategory("Rendimiento",         createPerformancePage());
-        addCategory("Búsqueda",            createSearchPrefPage());
-        addCategory("Varios (MISC)",       createMiscPage());
+        // Crear las 21 categorías exactas de Notepad++ Windows
+        addCategory("General",                   createGeneralPage());
+        addCategory("Barra de herramientas",     createToolbarPage());
+        addCategory("Barra de estado",           createStatusbarPage());
+        addCategory("Edición 1",                 createEditing1Page());
+        addCategory("Edición 2",                 createEditing2Page());
+        addCategory("Modo oscuro",               createDarkModePage());
+        addCategory("Margen, fuente y línea",    createMarginPage());
+        addCategory("Nuevo documento",           createNewDocPage());
+        addCategory("Carpeta predeterminada",    createDefaultDirPage());
+        addCategory("Archivos recientes",        createRecentFilesPage());
+        addCategory("Asociación de archivos",    createFileAssocPage());
+        addCategory("Lenguaje",                  createLanguagePage());
+        addCategory("Impresión",                 createPrintPage());
+        addCategory("Búsqueda",                  createSearchPage());
+        addCategory("Copias de seguridad",       createBackupPage());
+        addCategory("Autocompletado",            createAutoCompletePage());
+        addCategory("Multi-instancia & Fecha",   createMultiInstancePage());
+        addCategory("Delimitador",               createDelimiterPage());
+        addCategory("Rendimiento",               createPerformancePage());
+        addCategory("Lista de paneles",          createPanelListPage());
+        addCategory("Varios (MISC)",             createMiscPage());
 
         contentLayout->addWidget(_categoryList);
         contentLayout->addWidget(_stackedWidget, 1);
         mainLayout->addLayout(contentLayout);
 
-        // ── Botones Cerrar ───────────────────────────────────────────────────
+        // ── Botón Cerrar ─────────────────────────────────────────────────────
         auto* buttonBox = new QDialogButtonBox(QDialogButtonBox::Close, this);
         connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::accept);
         mainLayout->addWidget(buttonBox);
@@ -94,229 +102,356 @@ private:
     QWidget* createGeneralPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpUI = new QGroupBox("Interfaz de Usuario", page);
-        auto* uiLayout = new QVBoxLayout(grpUI);
-
-        uiLayout->addWidget(new QCheckBox("Idioma de la interfaz: Español", grpUI));
-        uiLayout->addWidget(new QCheckBox("Mostrar barra de herramientas", grpUI));
-        uiLayout->addWidget(new QCheckBox("Mostrar barra de estado", grpUI));
-        uiLayout->addWidget(new QCheckBox("Mostrar botón de cerrar en cada pestaña", grpUI));
-        uiLayout->addWidget(new QCheckBox("Ocultar barra de menú (presione Alt para mostrar)", grpUI));
-
-        layout->addWidget(grpUI);
+        auto* grp = new QGroupBox("Interfaz de Usuario", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Idioma de la interfaz: Español", grp));
+        v->addWidget(new QCheckBox("Mostrar botón de cerrar en cada pestaña", grp));
+        v->addWidget(new QCheckBox("Doble clic para cerrar pestaña", grp));
+        v->addWidget(new QCheckBox("Ocultar barra de menú (presione Alt para mostrar)", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 2. Editor
-    QWidget* createEditorPage() {
+    // 2. Barra de herramientas
+    QWidget* createToolbarPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Opciones de la Barra de Herramientas", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Ocultar barra de herramientas", grp));
+        
+        auto* r1 = new QRadioButton("Iconos pequeños sin relleno", grp);
+        auto* r2 = new QRadioButton("Iconos grandes sin relleno", grp);
+        auto* r3 = new QRadioButton("Iconos pequeños con relleno", grp);
+        auto* r4 = new QRadioButton("Iconos grandes con relleno", grp);
+        auto* r5 = new QRadioButton("Iconos pequeños predeterminados", grp);
+        r5->setChecked(true);
 
-        auto* grpCaret = new QGroupBox("Cursor e Indentación", page);
-        auto* caretLayout = new QVBoxLayout(grpCaret);
-
-        caretLayout->addWidget(new QCheckBox("Resaltar línea actual del cursor", grpCaret));
-        caretLayout->addWidget(new QCheckBox("Auto-indentación inteligente", grpCaret));
-        caretLayout->addWidget(new QCheckBox("Habilitar edición suave y scroll continuo", grpCaret));
-
-        auto* hlTabWidth = new QHBoxLayout();
-        hlTabWidth->addWidget(new QLabel("Tamaño de tabulación (espacios):", grpCaret));
-        auto* spinTab = new QSpinBox(grpCaret);
-        spinTab->setRange(1, 16);
-        spinTab->setValue(4);
-        hlTabWidth->addWidget(spinTab);
-        hlTabWidth->addWidget(new QCheckBox("Reemplazar por espacios", grpCaret));
-        hlTabWidth->addStretch();
-
-        caretLayout->addLayout(hlTabWidth);
-        layout->addWidget(grpCaret);
+        v->addWidget(r1); v->addWidget(r2); v->addWidget(r3); v->addWidget(r4); v->addWidget(r5);
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 3. Márgenes y Plegado
-    QWidget* createMarginsPage() {
+    // 3. Barra de estado
+    QWidget* createStatusbarPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpMargins = new QGroupBox("Margen y Código Plegable", page);
-        auto* mLayout = new QVBoxLayout(grpMargins);
-
-        mLayout->addWidget(new QCheckBox("Mostrar números de línea", grpMargins));
-        mLayout->addWidget(new QCheckBox("Habilitar plegado de código (code folding)", grpMargins));
-        mLayout->addWidget(new QCheckBox("Mostrar guías de indentación vertical", grpMargins));
-        mLayout->addWidget(new QCheckBox("Mostrar margen de marcadores (Bookmarks)", grpMargins));
-
-        layout->addWidget(grpMargins);
+        auto* grp = new QGroupBox("Barra de Estado", page);
+        auto* v = new QVBoxLayout(grp);
+        auto* chk = new QCheckBox("Mostrar barra de estado", grp);
+        chk->setChecked(true);
+        v->addWidget(chk);
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 4. Lenguaje / Sintaxis
+    // 4. Edición 1
+    QWidget* createEditing1Page() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Configuración de Tabulación y Cursor", page);
+        auto* v = new QVBoxLayout(grp);
+        
+        auto* h = new QHBoxLayout();
+        h->addWidget(new QLabel("Tamaño de tabulación (espacios):", grp));
+        auto* spin = new QSpinBox(grp);
+        spin->setRange(1, 16); spin->setValue(4);
+        h->addWidget(spin);
+        h->addWidget(new QCheckBox("Reemplazar por espacios", grp));
+        h->addStretch();
+        v->addLayout(h);
+
+        v->addWidget(new QCheckBox("Habilitar sangría automática inteligente", grp));
+        v->addWidget(new QCheckBox("Mostrar guía de sangría vertical", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 5. Edición 2
+    QWidget* createEditing2Page() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Ajustes Avanzados de Edición", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Resaltar línea actual del cursor", grp));
+        v->addWidget(new QCheckBox("Activar ajuste de línea automático (Word Wrap)", grp));
+        v->addWidget(new QCheckBox("Habilitar desplazamiento continuo más allá del final", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 6. Modo oscuro
+    QWidget* createDarkModePage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Configuración de Modo Oscuro", page);
+        auto* v = new QVBoxLayout(grp);
+        auto* chkDark = new QCheckBox("Habilitar modo oscuro nativo", grp);
+        chkDark->setChecked(true);
+        v->addWidget(chkDark);
+        v->addWidget(new QRadioButton("Tono oscuro estándar (Dark Charcoal)", grp));
+        v->addWidget(new QRadioButton("Tono negro profundo (OLED Black)", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 7. Margen, fuente y línea
+    QWidget* createMarginPage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Márgenes y Estilos de Plegado", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Mostrar margen de números de línea", grp));
+        v->addWidget(new QCheckBox("Mostrar margen de marcadores (Bookmarks)", grp));
+        v->addWidget(new QCheckBox("Habilitar árbol de plegado de código", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 8. Nuevo documento
+    QWidget* createNewDocPage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Formato de Nuevo Documento", page);
+        auto* v = new QVBoxLayout(grp);
+        
+        auto* hEol = new QHBoxLayout();
+        hEol->addWidget(new QLabel("Fin de línea (EOL):", grp));
+        auto* cbEol = new QComboBox(grp);
+        cbEol->addItems({"Unix (LF)", "Windows (CR LF)", "Macintosh (CR)"});
+        hEol->addWidget(cbEol);
+        hEol->addStretch();
+        v->addLayout(hEol);
+
+        auto* hEnc = new QHBoxLayout();
+        hEnc->addWidget(new QLabel("Codificación predeterminada:", grp));
+        auto* cbEnc = new QComboBox(grp);
+        cbEnc->addItems({"UTF-8 sin BOM", "UTF-8 con BOM", "ANSI"});
+        hEnc->addWidget(cbEnc);
+        hEnc->addStretch();
+        v->addLayout(hEnc);
+
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 9. Carpeta predeterminada
+    QWidget* createDefaultDirPage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Directorio de Apertura/Guardado", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QRadioButton("Seguir el directorio del archivo actual", grp));
+        v->addWidget(new QRadioButton("Recordar el último directorio utilizado", grp));
+        v->addWidget(new QRadioButton("Ruta de directorio personalizada:", grp));
+        v->addWidget(new QLineEdit("/home", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 10. Archivos recientes
+    QWidget* createRecentFilesPage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Historial de Archivos Recientes", page);
+        auto* v = new QVBoxLayout(grp);
+        
+        auto* h = new QHBoxLayout();
+        h->addWidget(new QLabel("Número máximo de entradas en el historial:", grp));
+        auto* spin = new QSpinBox(grp);
+        spin->setRange(1, 30); spin->setValue(15);
+        h->addWidget(spin);
+        h->addStretch();
+        v->addLayout(h);
+
+        v->addWidget(new QCheckBox("Mostrar solo nombre de archivo en submenú", grp));
+        v->addWidget(new QCheckBox("Mostrar ruta completa en submenú", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 11. Asociación de archivos
+    QWidget* createFileAssocPage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Asociaciones de Extensión en el Sistema", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QLabel("Extensiones registradas para Notepad++:", grp));
+        v->addWidget(new QCheckBox(".txt - Archivos de texto plano", grp));
+        v->addWidget(new QCheckBox(".cpp / .h - Código C / C++", grp));
+        v->addWidget(new QCheckBox(".py - Scripts en Python", grp));
+        v->addWidget(new QCheckBox(".json / .xml / .yaml - Documentos estructurados", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 12. Lenguaje
     QWidget* createLanguagePage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpLang = new QGroupBox("Configuración de Sintaxis", page);
-        auto* lLayout = new QVBoxLayout(grpLang);
-
-        lLayout->addWidget(new QLabel("Lenguaje por defecto para documentos nuevos:", grpLang));
-        auto* comboLang = new QComboBox(grpLang);
-        comboLang->addItems({"Texto plano (Normal Text)", "C++", "Python", "JavaScript", "HTML", "XML", "JSON", "Markdown", "Bash / Shell", "SQL", "YAML"});
-        lLayout->addWidget(comboLang);
-
-        layout->addWidget(grpLang);
+        auto* grp = new QGroupBox("Menú y Resaltado de Lenguaje", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Ignorar mayúsculas y minúsculas en palabras clave", grp));
+        v->addWidget(new QCheckBox("Habilitar resaltado de sintaxis global", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 5. Tema y Colores
-    QWidget* createThemePage() {
+    // 13. Impresión
+    QWidget* createPrintPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpTheme = new QGroupBox("Apariencia y Estilos", page);
-        auto* tLayout = new QVBoxLayout(grpTheme);
-
-        tLayout->addWidget(new QLabel("Seleccionar Tema:", grpTheme));
-        auto* comboTheme = new QComboBox(grpTheme);
-        comboTheme->addItems({"VS Code Dark (Default)", "zenburn", "Monokai", "Obsidian", "Solarized Dark", "Solarized Light", "Default (Light Mode)"});
-        tLayout->addWidget(comboTheme);
-
-        layout->addWidget(grpTheme);
+        auto* grp = new QGroupBox("Opciones de Impresión de Documentos", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Imprimir números de línea", grp));
+        v->addWidget(new QCheckBox("Imprimir en blanco y negro (ahorro de tinta)", grp));
+        v->addWidget(new QCheckBox("Incluir encabezado y pie de página", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 6. Copias de seguridad
+    // 14. Búsqueda
+    QWidget* createSearchPage() {
+        auto* page = new QWidget();
+        auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Opciones de Búsqueda y Reemplazo", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("No cerrar diálogo de búsqueda tras buscar", grp));
+        v->addWidget(new QCheckBox("Resaltar todas las coincidencias automáticamente", grp));
+        v->addWidget(new QCheckBox("Habilitar expresiones regulares de 16 bits por defecto", grp));
+        layout->addWidget(grp);
+        layout->addStretch();
+        return page;
+    }
+
+    // 15. Copias de seguridad
     QWidget* createBackupPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpBackup = new QGroupBox("Guardado Automático y Copias", page);
-        auto* bLayout = new QVBoxLayout(grpBackup);
-
-        bLayout->addWidget(new QCheckBox("Guardar automáticamente al perder el foco", grpBackup));
-        bLayout->addWidget(new QCheckBox("Recordar sesión actual al reiniciar Notepad++", grpBackup));
-        bLayout->addWidget(new QCheckBox("Habilitar copia de seguridad periódica cada 7 segundos", grpBackup));
-
-        layout->addWidget(grpBackup);
+        auto* grp = new QGroupBox("Respaldo y Auto-Guardado", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Activar guardado automático en segundo plano", grp));
+        v->addWidget(new QCheckBox("Crear copia de seguridad al guardar (Backup)", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 7. Autocompletado
+    // 16. Autocompletado
     QWidget* createAutoCompletePage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Auto-completado de Código", page);
+        auto* v = new QVBoxLayout(grp);
+        
+        v->addWidget(new QCheckBox("Habilitar autocompletado en cada entrada de texto", grp));
+        v->addWidget(new QCheckBox("Cierre automático de comillas \"\" y ''", grp));
+        v->addWidget(new QCheckBox("Cierre automático de paréntesis () y corchetes []", grp));
+        v->addWidget(new QCheckBox("Cierre automático de etiquetas HTML/XML </>", grp));
 
-        auto* grpAC = new QGroupBox("Autocompletado y Sugerencias", page);
-        auto* acLayout = new QVBoxLayout(grpAC);
+        auto* h = new QHBoxLayout();
+        h->addWidget(new QLabel("Escribir caracteres desde:", grp));
+        auto* spin = new QSpinBox(grp);
+        spin->setRange(1, 9); spin->setValue(2);
+        h->addWidget(spin);
+        h->addStretch();
+        v->addLayout(h);
 
-        acLayout->addWidget(new QCheckBox("Habilitar autocompletado en cada entrada", grpAC));
-        acLayout->addWidget(new QCheckBox("Completado de funciones", grpAC));
-        acLayout->addWidget(new QCheckBox("Completado de palabras clave", grpAC));
-        acLayout->addWidget(new QCheckBox("Mostrar sugerencia de parámetros de función", grpAC));
-
-        layout->addWidget(grpAC);
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 8. Multi-Instancia
+    // 17. Multi-instancia & Fecha
     QWidget* createMultiInstancePage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpInst = new QGroupBox("Modalidad de Instancias", page);
-        auto* iLayout = new QVBoxLayout(grpInst);
-
-        auto* rbDefault = new QRadioButton("Mono-instancia (Predeterminado: abrir todo en la misma ventana)", grpInst);
-        auto* rbMulti   = new QRadioButton("Permitir múltiples instancias independientes de Notepad++", grpInst);
-        rbDefault->setChecked(true);
-
-        iLayout->addWidget(rbDefault);
-        iLayout->addWidget(rbMulti);
-
-        layout->addWidget(grpInst);
+        auto* grp = new QGroupBox("Modo Multi-Instancia y Formato de Fecha", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QRadioButton("Modo instancia única (Predeterminado)", grp));
+        v->addWidget(new QRadioButton("Permitir múltiples instancias independientes", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 9. Delimitadores
-    QWidget* createDelimitersPage() {
+    // 18. Delimitador
+    QWidget* createDelimiterPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpDelim = new QGroupBox("Auto-Cierre de Delimitadores", page);
-        auto* dLayout = new QVBoxLayout(grpDelim);
-
-        dLayout->addWidget(new QCheckBox("Auto-cerrar comillas dobles \"\"", grpDelim));
-        dLayout->addWidget(new QCheckBox("Auto-cerrar comillas simples ''", grpDelim));
-        dLayout->addWidget(new QCheckBox("Auto-cerrar llaves {}", grpDelim));
-        dLayout->addWidget(new QCheckBox("Auto-cerrar paréntesis ()", grpDelim));
-        dLayout->addWidget(new QCheckBox("Auto-cerrar corchetes []", grpDelim));
-
-        layout->addWidget(grpDelim);
+        auto* grp = new QGroupBox("Selección por Delimitadores", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Selección en bloque mediante doble clic", grp));
+        v->addWidget(new QCheckBox("Incluir delimitadores personalizados en la selección", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 10. Rendimiento
+    // 19. Rendimiento
     QWidget* createPerformancePage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
+        auto* grp = new QGroupBox("Optimización de Archivos Grandes", page);
+        auto* v = new QVBoxLayout(grp);
+        
+        auto* h = new QHBoxLayout();
+        h->addWidget(new QLabel("Límite de tamaño para modo rendimiento (MB):", grp));
+        auto* spin = new QSpinBox(grp);
+        spin->setRange(1, 2000); spin->setValue(200);
+        h->addWidget(spin);
+        h->addStretch();
+        v->addLayout(h);
 
-        auto* grpPerf = new QGroupBox("Archivos Grandes y Rendimiento", page);
-        auto* pLayout = new QVBoxLayout(grpPerf);
-
-        pLayout->addWidget(new QCheckBox("Desactivar resaltado sintáctico en archivos mayores a 10MB", grpPerf));
-        pLayout->addWidget(new QCheckBox("Desactivar autocompletado en archivos grandes", grpPerf));
-
-        layout->addWidget(grpPerf);
+        v->addWidget(new QCheckBox("Desactivar resaltado sintáctico en archivos gigantes", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 11. Búsqueda
-    QWidget* createSearchPrefPage() {
+    // 20. Lista de paneles
+    QWidget* createPanelListPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpSearch = new QGroupBox("Preferencias de Búsqueda", page);
-        auto* sLayout = new QVBoxLayout(grpSearch);
-
-        sLayout->addWidget(new QCheckBox("No cerrar el diálogo al hacer clic en Buscar siguiente", grpSearch));
-        sLayout->addWidget(new QCheckBox("Rellenar campo de búsqueda con el texto seleccionado", grpSearch));
-        sLayout->addWidget(new QCheckBox("Recordar historial de búsquedas recientes", grpSearch));
-
-        layout->addWidget(grpSearch);
+        auto* grp = new QGroupBox("Paneles Laterales e Integración", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Mostrar icono en la barra de pestañas laterales", grp));
+        v->addWidget(new QCheckBox("Recordar estado de paneles acoplados al salir", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
-    // 12. Varios (MISC)
+    // 21. Varios (MISC)
     QWidget* createMiscPage() {
         auto* page = new QWidget();
         auto* layout = new QVBoxLayout(page);
-
-        auto* grpMisc = new QGroupBox("Opciones Varias (MISC)", page);
-        auto* mLayout = new QVBoxLayout(grpMisc);
-
-        mLayout->addWidget(new QCheckBox("Minimizar Notepad++ a la bandeja del sistema (System Tray)", grpMisc));
-        mLayout->addWidget(new QCheckBox("Recordar la última ruta utilizada al abrir/guardar", grpMisc));
-        mLayout->addWidget(new QCheckBox("Comprobar automáticamente actualizaciones al iniciar", grpMisc));
-
-        layout->addWidget(grpMisc);
+        auto* grp = new QGroupBox("Opciones Varias (MISC)", page);
+        auto* v = new QVBoxLayout(grp);
+        v->addWidget(new QCheckBox("Minimizar a la bandeja del sistema (System Tray)", grp));
+        v->addWidget(new QCheckBox("Comprobar actualizaciones automáticamente al iniciar", grp));
+        v->addWidget(new QCheckBox("Recordar sesión actual de archivos al reiniciar", grp));
+        layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
 
 private:
-    QListWidget*     _categoryList  = nullptr;
-    QStackedWidget*  _stackedWidget = nullptr;
+    QListWidget*    _categoryList  = nullptr;
+    QStackedWidget* _stackedWidget = nullptr;
 };
 
 #endif // NPP_PLATFORM_LINUX

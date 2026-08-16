@@ -61,12 +61,16 @@ static void applyGlobalDarkTheme(QApplication* app) {
 /// Inicializa la ventana principal de Notepad++.
 /// Llamada desde linuxmain.cpp después de crear QApplication.
 void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) {
-    // 1. Tema oscuro global
+    // 1. Icono global de la aplicación nativa (Dock / Alt+Tab / Wayland / X11)
+    app->setWindowIcon(QIcon(":/Platform/npp_icon.png"));
+
+    // 2. Tema oscuro global
     applyGlobalDarkTheme(app);
 
-    // 2. Crear ventana principal
+    // 3. Crear ventana principal
     g_mainWindow = new NotepadPlusWindowQt();
     g_mainWindow->show();
+
 
     // 3. Abrir archivos pasados por línea de comandos
     for (const auto& path : filesToOpen) {
