@@ -75,21 +75,40 @@ public:
     void clear() { _model->clear(); }
 
     /// Añade un item raíz. Retorna el QStandardItem creado.
-    QStandardItem* addRootItem(const NppString& text, const QIcon& icon = QIcon()) {
-        auto* item = new QStandardItem(icon, QString::fromStdString(text));
+    QStandardItem* addRootItem(const QString& text, const QIcon& icon = QIcon()) {
+        auto* item = new QStandardItem(icon, text);
         item->setEditable(false);
         _model->appendRow(item);
         return item;
     }
 
+    QStandardItem* addRootItem(const NppString& text, const QIcon& icon = QIcon()) {
+        return addRootItem(QString::fromStdString(text), icon);
+    }
+
+    QStandardItem* addRootItem(const char* text, const QIcon& icon = QIcon()) {
+        return addRootItem(QString::fromUtf8(text), icon);
+    }
+
     /// Añade un hijo a un item existente.
-    QStandardItem* addChildItem(QStandardItem* parent, const NppString& text,
+    QStandardItem* addChildItem(QStandardItem* parent, const QString& text,
                                  const QIcon& icon = QIcon()) {
-        auto* item = new QStandardItem(icon, QString::fromStdString(text));
+        auto* item = new QStandardItem(icon, text);
         item->setEditable(false);
         parent->appendRow(item);
         return item;
     }
+
+    QStandardItem* addChildItem(QStandardItem* parent, const NppString& text,
+                                 const QIcon& icon = QIcon()) {
+        return addChildItem(parent, QString::fromStdString(text), icon);
+    }
+
+    QStandardItem* addChildItem(QStandardItem* parent, const char* text,
+                                 const QIcon& icon = QIcon()) {
+        return addChildItem(parent, QString::fromUtf8(text), icon);
+    }
+
 
     /// Obtiene el texto del item actualmente seleccionado.
     NppString selectedItemText() const {

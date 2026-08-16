@@ -38,11 +38,11 @@
 #include <QShortcut>
 #include <QString>
 
-// Forward declaration de QScintilla
-class QsciScintilla;
-class QsciLexerCPP;
+#include <Qsci/qsciscintilla.h>
+#include <Qsci/qscilexercpp.h>
 
 /// Ventana principal de Notepad++ en Qt6.
+
 /// Equivale a Notepad_plus_Window + Notepad_plus en la versión Win32.
 class NotepadPlusWindowQt : public QMainWindow {
     Q_OBJECT
@@ -115,11 +115,13 @@ public:
 
         QFileInfo fi(QString::fromStdString(filePath));
 
-        // Crear editor (placeholder hasta QScintilla esté integrado)
-        auto* editor = createEditor();
-        // TODO: editor->setText(content); cuando QScintilla esté integrado
+        auto* widget = createEditor();
+        auto* editor = qobject_cast<QsciScintilla*>(widget);
+        if (editor) {
+            editor->setText(content);
+        }
 
-        int idx = _mainTabs->addTab(editor, fi.fileName().toStdString());
+        int idx = _mainTabs->addTab(widget, fi.fileName().toStdString());
         _mainTabs->setTabFilePath(idx, filePath);
         _mainTabs->setCurrentIndex(idx);
 
@@ -127,6 +129,7 @@ public:
         NppMsgBus::instance().post(NppMsg::BUFFER_SWITCH,
             static_cast<NppWparam>(idx), 0);
     }
+
 
     /// Crea un nuevo documento vacío.
     void newDocument() {
@@ -150,27 +153,25 @@ private:
     void createMenus() {
         // Archivo
         QMenu* fileMenu = menuBar()->addMenu("&Archivo");
-        fileMenu->addAction("&Nuevo",    this, &NotepadPlusWindowQt::newDocument,
-                           QKeySequence::New);
-        fileMenu->addAction("&Abrir...", this, &NotepadPlusWindowQt::onOpen,
-                           QKeySequence::Open);
+        fileMenu->addAction("&Nuevo",    QKeySequence::New,  this, &NotepadPlusWindowQt::newDocument);
+        fileMenu->addAction("&Abrir...", QKeySequence::Open, this, &NotepadPlusWindowQt::onOpen);
         fileMenu->addSeparator();
-        fileMenu->addAction("&Salir",    qApp, &QApplication::quit,
-                           QKeySequence::Quit);
+        fileMenu->addAction("&Salir",    QKeySequence::Quit, qApp, &QApplication::quit);
 
         // Editar
         QMenu* editMenu = menuBar()->addMenu("&Editar");
-        editMenu->addAction("&Deshacer", [](){}, QKeySequence::Undo);
-        editMenu->addAction("&Rehacer",  [](){}, QKeySequence::Redo);
+        editMenu->addAction("&Deshacer", QKeySequence::Undo,  [](){});
+        editMenu->addAction("&Rehacer",  QKeySequence::Redo,  [](){});
         editMenu->addSeparator();
-        editMenu->addAction("&Cortar",   [](){}, QKeySequence::Cut);
-        editMenu->addAction("Co&piar",   [](){}, QKeySequence::Copy);
-        editMenu->addAction("&Pegar",    [](){}, QKeySequence::Paste);
+        editMenu->addAction("&Cortar",   QKeySequence::Cut,   [](){});
+        editMenu->addAction("Co&piar",   QKeySequence::Copy,  [](){});
+        editMenu->addAction("&Pegar",    QKeySequence::Paste, [](){});
 
         // Buscar
         QMenu* searchMenu = menuBar()->addMenu("&Buscar");
-        searchMenu->addAction("&Buscar...", [](){}, QKeySequence::Find);
-        searchMenu->addAction("&Reemplazar...", [](){}, QKeySequence::Replace);
+        searchMenu->addAction("&Buscar...",     QKeySequence::Find,    [](){});
+        searchMenu->addAction("&Reemplazar...", QKeySequence::Replace, [](){});
+
 
         // Vista
         QMenu* viewMenu = menuBar()->addMenu("&Vista");
@@ -219,13 +220,66 @@ private:
         );
     }
 
-    // ── Crear editor (placeholder; reemplazar con QsciScintilla) ────────────
+    // ── Crear editor QsciScintilla real ─────────────────────────────────────
     QWidget* createEditor() {
-        // TODO: Reemplazar con QsciScintilla cuando esté integrado
-        auto* widget = new QWidget(this);
-        widget->setStyleSheet("background: #1E1E1E;");
-        return widget;
+        auto* editor = new QsciScintilla(this);
+
+        // Fuente monoespaciada
+        QFont font("JetBrains Mono", 11);
+        if (!font.exactMatch()) font = QFont("Monospace", 11);
+        editor->setFont(font);
+
+        // Márgenes — números de línea
+        editor->setMarginType(0, QsciScintilla::NumberMargin);
+        editor->setMarginWidth(0, "00000");
+        editor->setMarginsForegroundColor(QColor(0x85, 0x85, 0x85));
+        editor->setMarginsBackgroundColor(QColor(0x25, 0x25, 0x26));
+        editor->setMarginsFont(font);
+
+        // Colores del editor (VS Code Dark)
+        editor->setPaper(QColor(0x1E, 0x1E, 0x1E));
+        editor->setColor(QColor(0xD4, 0xD4, 0xD4));
+        editor->setCaretForegroundColor(QColor(0xFF, 0xFF, 0xFF));
+        editor->setSelectionBackgroundColor(QColor(0x26, 0x4F, 0x78));
+        editor->setSelectionForegroundColor(QColor(0xFF, 0xFF, 0xFF));
+        editor->setCaretLineVisible(true);
+        editor->setCaretLineBackgroundColor(QColor(0x28, 0x28, 0x28));
+
+        // Indentación
+        editor->setTabWidth(4);
+        editor->setIndentationsUseTabs(false);
+        editor->setAutoIndent(true);
+        editor->setIndentationGuides(true);
+        editor->setIndentationGuidesBackgroundColor(QColor(0x40, 0x40, 0x40));
+        editor->setIndentationGuidesForegroundColor(QColor(0x40, 0x40, 0x40));
+
+        // Brackets matching & folding
+        editor->setBraceMatching(QsciScintilla::SloppyBraceMatch);
+        editor->setMatchedBraceBackgroundColor(QColor(0x3A, 0x3A, 0x3A));
+        editor->setMatchedBraceForegroundColor(QColor(0xFF, 0xD7, 0x00));
+        editor->setFolding(QsciScintilla::BoxedTreeFoldStyle, 2);
+
+        // Lexer C++ por defecto
+        auto* lexer = new QsciLexerCPP(editor);
+        lexer->setFont(font);
+        lexer->setColor(QColor(0xD4, 0xD4, 0xD4), QsciLexerCPP::Default);
+        lexer->setColor(QColor(0x57, 0xA6, 0x4A), QsciLexerCPP::Comment);
+        lexer->setColor(QColor(0x57, 0xA6, 0x4A), QsciLexerCPP::CommentLine);
+        lexer->setColor(QColor(0x57, 0xA6, 0x4A), QsciLexerCPP::CommentDoc);
+        lexer->setColor(QColor(0xB5, 0xCE, 0xA8), QsciLexerCPP::Number);
+        lexer->setColor(QColor(0xD6, 0xD8, 0x85), QsciLexerCPP::DoubleQuotedString);
+        lexer->setColor(QColor(0xD6, 0x9D, 0x85), QsciLexerCPP::SingleQuotedString);
+        lexer->setColor(QColor(0x56, 0x9C, 0xD6), QsciLexerCPP::Keyword);
+        lexer->setColor(QColor(0x9B, 0x9B, 0x9B), QsciLexerCPP::PreProcessor);
+        lexer->setColor(QColor(0x4E, 0xC9, 0xB0), QsciLexerCPP::Identifier);
+
+        for (int i = 0; i <= QsciLexerCPP::TaskMarker; ++i)
+            lexer->setPaper(QColor(0x1E, 0x1E, 0x1E), i);
+
+        editor->setLexer(lexer);
+        return editor;
     }
+
 
     // ── Actualizar barra de estado ──────────────────────────────────────────
     void updateStatusBar() {

@@ -63,7 +63,13 @@ public:
         );
     }
 
-    /// Establece el texto de una parte (0-based, como Win32 SB_SETTEXT).
+    /// Establece el texto usando const char* directamente.
+    void setText(int partIndex, const char* text) {
+        if (partIndex < 0 || partIndex >= MAX_PARTS) return;
+        _parts[partIndex]->setText(QString::fromUtf8(text));
+    }
+
+    /// Establece el texto del índice indicado (0-based).
     void setText(int partIndex, const NppString& text) {
         if (partIndex < 0 || partIndex >= MAX_PARTS) return;
         _parts[partIndex]->setText(QString::fromStdString(text));
@@ -74,6 +80,7 @@ public:
         if (partIndex < 0 || partIndex >= MAX_PARTS) return;
         _parts[partIndex]->setText(text);
     }
+
 
     /// Obtiene el QStatusBar subyacente (para agregar widgets personalizados).
     QStatusBar* statusBar() const { return _statusBar; }
