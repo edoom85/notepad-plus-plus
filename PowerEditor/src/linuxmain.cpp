@@ -102,11 +102,18 @@ static QLocalServer* startLocalServer() {
 
 // ─── main() ───────────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
+    // Detectar entorno headless (CI / servidores sin pantalla X11/Wayland)
+    // y usar el plugin "offscreen" de Qt automáticamente para evitar aborts (SIGABRT/exit code 134).
+    if (qEnvironmentVariableIsEmpty("DISPLAY") && qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")) {
+        qputenv("QT_QPA_PLATFORM", "offscreen");
+    }
+
     // 1. Crear QApplication (debe ser primero para poder usar QCommandLineParser)
     QApplication app(argc, argv);
     app.setApplicationName(NPP_APP_NAME);
     app.setOrganizationName(NPP_ORG_NAME);
     app.setApplicationVersion("9.0-linux"); // versión del port
+
 
     // 2. Parsear argumentos
     QCommandLineParser parser;

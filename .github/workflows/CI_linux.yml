@@ -44,6 +44,7 @@ jobs:
           ls -lh build/notepadplusplus
           file build/notepadplusplus
           ldd build/notepadplusplus | head -15
+          export QT_QPA_PLATFORM=offscreen
           ./build/notepadplusplus --version
 
       - name: Upload artifact
@@ -79,7 +80,9 @@ jobs:
       - name: Verify executable
         run: |
           ls -lh build/notepadplusplus
+          export QT_QPA_PLATFORM=offscreen
           ./build/notepadplusplus --version
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
