@@ -78,7 +78,12 @@ set(NPP_LINUX_HEADERS
     WinControls/Qt/NppWindowsDlg.h
     WinControls/Qt/NppColumnEditor.h
     WinControls/Qt/NppSummaryDlg.h
+    WinControls/Qt/NppUserDefineDlg.h
+    WinControls/Qt/NppLocalization.h
+    WinControls/Qt/NppToolTip.h
+    WinControls/Qt/NppTrayIcon.h
 )
+
 
 
 
