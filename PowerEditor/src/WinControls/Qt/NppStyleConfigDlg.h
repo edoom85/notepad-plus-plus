@@ -44,12 +44,29 @@ public:
         themeLayout->addWidget(new QLabel("Seleccione tema:"));
         _cbTheme = new QComboBox(this);
         _cbTheme->addItems({
-            "VS Code Dark (Default)",
-            "zenburn",
-            "Monokai",
             "Obsidian",
+            "Bespin",
+            "Black board",
+            "Choco",
+            "DansLeRuSH-Dark",
+            "DarkModeDefault",
+            "Deep Black",
+            "Hello Kitty",
+            "HotFudgeSundae",
+            "Khaki",
+            "Mono Industrial",
+            "Monokai",
+            "MossyLawn",
+            "Navajo",
+            "Plastic Code Wrap",
+            "Ruby Blue",
             "Solarized Dark",
             "Solarized Light",
+            "Twilight",
+            "Vibrant Ink",
+            "Vim Dark Blue",
+            "VS Code Dark",
+            "Zenburn",
             "Default (Light Mode)"
         });
         themeLayout->addWidget(_cbTheme, 1);
@@ -88,19 +105,23 @@ public:
         _listStyle = new QListWidget(this);
         _listStyle->addItems({
             "Estilo por defecto",
+            "Margen de números de línea",
+            "Margen de marcadores",
+            "Guía de sangría",
+            "Resaltado inteligente",
+            "Coincidencias encontradas",
             "Comentario de línea",
             "Comentario de bloque",
             "Cadena de texto (String)",
             "Número",
             "Palabra clave (Keyword)",
             "Identificador / Variable",
-            "Operador",
-            "Etiqueta / Tag",
-            "Atributo"
+            "Operador"
         });
         _listStyle->setCurrentRow(0);
         layStyle->addWidget(_listStyle);
         centerLayout->addWidget(gbStyle, 1);
+
 
         // 3. Opciones de Color y Fuente
         auto* rightLayout = new QVBoxLayout();

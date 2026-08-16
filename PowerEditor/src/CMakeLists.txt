@@ -157,11 +157,31 @@ if(WIN32)
         ./WinControls/ColourPicker/ColourPicker.cpp
         ./WinControls/ColourPicker/ColourPopup.cpp
         ./dpiManagerV2.cpp
-        ./NppDarkMode.cpp
         ./DarkMode/DarkMode.cpp
         ./WinControls/AnsiCharPanel/AsciiListView.cpp
         ./WinControls/ProjectPanel/ProjectPanel.cpp
+        ./NppCommands.cpp
+        ./NppIO.cpp
+        ./NppNotification.cpp
+        ./NppBigSwitch.cpp
+        ./lesDlgs.cpp
+        ./MISC/Common/FileInterface.cpp
+        ./MISC/Common/verifySignedfile.cpp
+        ./WinControls/TabBar/ControlsTab.cpp
+        ./ScintillaComponent/AutoCompletion.cpp
+        ./ScintillaComponent/ScintillaCtrls.cpp
+        ./WinControls/ReadDirectoryChanges/ReadDirectoryChanges.cpp
+        ./WinControls/ReadDirectoryChanges/ReadDirectoryChangesPrivate.cpp
+        ./uchardet/LangBulgarianModel.cpp
+        ./uchardet/LangCyrillicModel.cpp
+        ./uchardet/LangGreekModel.cpp
+        ./uchardet/LangHebrewModel.cpp
+        ./uchardet/LangHungarianModel.cpp
+        ./uchardet/LangThaiModel.cpp
+        ./uchardet/nsEscSM.cpp
+        ./uchardet/nsMBCSSM.cpp
     )
+
 
 
     SET(rcFiles

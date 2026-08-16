@@ -77,11 +77,12 @@ public:
         while (!reader.atEnd() && !reader.hasError()) {
             QXmlStreamReader::TokenType token = reader.readNext();
             if (token == QXmlStreamReader::StartElement) {
-                if (reader.name() == QLatin1String("mainTab")) {
+                QString name = reader.name().toString();
+                if (name == "mainTab") {
                     outActiveIndex = reader.attributes().value("activeIndex").toInt();
-                } else if (reader.name() == QLatin1String("File")) {
+                } else if (name == "File") {
                     QString filename = reader.attributes().value("filename").toString();
-                    if (!filename.isEmpty() && QFile::exists(filename)) {
+                    if (!filename.isEmpty()) {
                         outPaths.append(filename);
                     }
                 }

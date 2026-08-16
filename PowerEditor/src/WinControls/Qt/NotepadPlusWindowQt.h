@@ -134,14 +134,25 @@ public:
         int activeIdx = 0;
         if (NppSessionManager::loadSession(sessionFiles, activeIdx)) {
             for (const QString& file : sessionFiles) {
-                openFile(file.toStdString());
+                if (QFile::exists(file)) {
+                    openFile(file.toStdString());
+                } else if (file.startsWith("new ") || file.startsWith("*new ")) {
+                    newDocument();
+                }
             }
-            if (activeIdx >= 0 && activeIdx < _mainTabs->count()) {
+            if (_mainTabs->count() == 0) {
+                newDocument();
+            } else if (activeIdx >= 0 && activeIdx < _mainTabs->count()) {
                 _mainTabs->setCurrentIndex(activeIdx);
             }
         } else {
             newDocument();
         }
+
+        connect(_mainTabs, &QTabWidget::currentChanged, [this](int) {
+            saveCurrentSession();
+        });
+
 
 
         // ── 6. Restaurar geometría ──────────────────────────────────────────
@@ -1325,22 +1336,28 @@ private:
         }
     }
 
-protected:
-    void closeEvent(QCloseEvent* event) override {
-        saveWindowState();
-
-        // Auto-guardar sesión XML en ~/.config/notepadplusplus/session.xml
+public:
+    void saveCurrentSession() {
+        if (!_mainTabs) return;
         QStringList sessionFiles;
         for (int i = 0; i < _mainTabs->count(); ++i) {
             NppString path = _mainTabs->tabFilePath(i);
             if (!path.empty()) {
                 sessionFiles.append(QString::fromStdString(path));
+            } else {
+                sessionFiles.append(_mainTabs->tabText(i));
             }
         }
         NppSessionManager::saveSession(sessionFiles, _mainTabs->currentIndex());
+    }
 
+protected:
+    void closeEvent(QCloseEvent* event) override {
+        saveWindowState();
+        saveCurrentSession();
         event->accept();
     }
+
 
 
 private slots:
