@@ -46,6 +46,11 @@ set(NPP_LINUX_HEADERS
     Platform/PlatformMsg.h
     Platform/PlatformWindow.h
     Platform/PlatformPlugin.h
+    Platform/PlatformFileMonitor.h
+    Platform/PlatformFileDialog.h
+    Platform/PlatformTheme.h
+    Platform/PlatformCrashHandler.h
+    Platform/PlatformDesktopIntegration.h
     WinControls/Qt/NotepadPlusWindowQt.h
     WinControls/Qt/NppStatusBar.h
     WinControls/Qt/NppTabBar.h
@@ -62,6 +67,7 @@ set(NPP_LINUX_HEADERS
     WinControls/Qt/NppProjectPanel.h
     WinControls/Qt/NppPluginsAdmin.h
 )
+
 
 # Qt MOC automático
 set(CMAKE_AUTOMOC ON)

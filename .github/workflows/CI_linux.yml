@@ -1,0 +1,88 @@
+# .github/workflows/CI_linux.yml — CI para Notepad++ Linux Port (Qt6)
+# Compila y verifica el ejecutable notepadplusplus en Ubuntu y Arch Linux
+#
+# Triggers: push/PR a linux-native-port
+#
+# Copyright (C) Notepad++ contributors. GPL v3+
+
+name: CI Linux Native Port
+
+on:
+  push:
+    branches: [ linux-native-port ]
+  pull_request:
+    branches: [ linux-native-port ]
+
+jobs:
+  build-ubuntu:
+    name: Build on Ubuntu 24.04 (Qt6)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential cmake \
+            qt6-base-dev qt6-base-dev-tools \
+            libqt6widgets6 libqt6network6 \
+            libqscintilla2-qt6-dev \
+            libgl1-mesa-dev \
+            pkg-config
+
+      - name: Configure CMake
+        run: cmake -B build -S PowerEditor/src -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Verify executable
+        run: |
+          ls -lh build/notepadplusplus
+          file build/notepadplusplus
+          ldd build/notepadplusplus | head -15
+          ./build/notepadplusplus --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: notepadplusplus-ubuntu-24.04
+          path: build/notepadplusplus
+
+  build-arch:
+    name: Build on Arch Linux (Qt6)
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Install base
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm \
+            base-devel cmake git \
+            qt6-base \
+            qscintilla-qt6
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -S PowerEditor/src -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel $(nproc)
+
+      - name: Verify executable
+        run: |
+          ls -lh build/notepadplusplus
+          ./build/notepadplusplus --version
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: notepadplusplus-archlinux
+          path: build/notepadplusplus
