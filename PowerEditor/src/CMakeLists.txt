@@ -71,7 +71,15 @@ set(NPP_LINUX_HEADERS
     WinControls/Qt/NppClipboardHistory.h
     WinControls/Qt/NppVerticalFileSwitcher.h
     WinControls/Qt/NppAboutDlg.h
+    WinControls/Qt/NppGoToLineDlg.h
+    WinControls/Qt/NppRunDlg.h
+    WinControls/Qt/NppMD5Dlg.h
+    WinControls/Qt/NppAnsiCharPanel.h
+    WinControls/Qt/NppWindowsDlg.h
+    WinControls/Qt/NppColumnEditor.h
+    WinControls/Qt/NppSummaryDlg.h
 )
+
 
 
 # Qt MOC automático
