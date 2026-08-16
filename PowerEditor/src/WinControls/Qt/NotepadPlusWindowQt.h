@@ -1095,12 +1095,22 @@ private:
         configMenu->addAction("Configurador de &estilos...", [this]() {
             auto* dlg = new NppStyleConfigDlg(this);
             connect(dlg, &NppStyleConfigDlg::styleApplied, [this](const QString& theme, const QColor& /*fg*/, const QColor& /*bg*/) {
-                if (auto* ed = activeEditor()) {
-                    NppLexerManager::applyTheme(ed, theme);
+                for (int i = 0; i < _mainTabs->count(); ++i) {
+                    if (auto* ed = qobject_cast<QsciScintilla*>(_mainTabs->widget(i))) {
+                        NppLexerManager::applyTheme(ed, theme);
+                    }
+                }
+                if (_subTabs) {
+                    for (int i = 0; i < _subTabs->count(); ++i) {
+                        if (auto* ed = qobject_cast<QsciScintilla*>(_subTabs->widget(i))) {
+                            NppLexerManager::applyTheme(ed, theme);
+                        }
+                    }
                 }
             });
             dlg->show();
         });
+
 
 
         configMenu->addAction("Configurador de &accesos directos...", [this]() {
@@ -1240,31 +1250,22 @@ private:
         if (!font.exactMatch()) font = QFont("Monospace", 11);
         editor->setFont(font);
 
-        // Colores de margen y papel adaptativos (Modo Oscuro / Modo Claro)
-        QColor marginBg = NppTheme::marginBackgroundColor();
-        QColor marginFg = NppTheme::marginForegroundColor();
-        QColor paperBg  = NppTheme::paperColor();
-        QColor textFg   = NppTheme::textColor();
+        // Aplicar inmediatamente el tema activo actual (ej. Obsidian por defecto o el tema seleccionado)
+        NppLexerManager::applyTheme(editor, NppLexerManager::currentThemeName());
 
         // Márgenes — números de línea y plegado de código (folding)
         editor->setMarginType(0, QsciScintilla::NumberMargin);
         editor->setMarginWidth(0, "00000");
-        editor->setMarginsForegroundColor(marginFg);
-        editor->setMarginsBackgroundColor(marginBg);
         editor->setMarginsFont(font);
 
-        // Ocultar margen de marcadores 1 y configurar color adaptativo para el margen 2 de plegado
+        // Ocultar margen de marcadores 1
         editor->setMarginWidth(1, 0);
-        editor->setFoldMarginColors(marginBg, marginBg);
-
-        // Colores del editor (dinámico según modo oscuro / claro)
-        editor->setPaper(paperBg);
-        editor->setColor(textFg);
 
         editor->setCaretForegroundColor(QColor(0xFF, 0xFF, 0xFF));
         editor->setSelectionBackgroundColor(QColor(0x26, 0x4F, 0x78));
         editor->setSelectionForegroundColor(QColor(0xFF, 0xFF, 0xFF));
         editor->setCaretLineVisible(true);
+
         editor->setCaretLineBackgroundColor(QColor(0x28, 0x28, 0x28));
 
         // Indentación

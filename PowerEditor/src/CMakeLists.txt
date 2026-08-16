@@ -177,10 +177,11 @@ if(WIN32)
         ./WinControls/ReadDirectoryChanges/ReadDirectoryChangesPrivate.cpp
         ./WinControls/ReadDirectoryChanges/ReadFileChanges.cpp
         ./MISC/sha1/calc_sha1.cpp
-        ./MISC/sha2/calc_sha_256.cpp
-        ./MISC/sha512/calc_sha_512.cpp
-        ./MISC/md5/md5.cpp
+        ./MISC/sha1/sha1.cpp
+        ./MISC/sha2/sha-256.cpp
+        ./MISC/sha512/sha512.cpp
         ./MISC/md5/md5Dlgs.cpp
+
         ./uchardet/LangBulgarianModel.cpp
         ./uchardet/LangCyrillicModel.cpp
         ./uchardet/LangGreekModel.cpp

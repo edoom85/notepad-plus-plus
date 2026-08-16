@@ -274,8 +274,14 @@ public:
         return Language::PlainText;
     }
 
+    /// Obtiene el nombre del tema activo actual (ej. "Obsidian").
+    static QString currentThemeName() {
+        return _currentThemeName;
+    }
+
 private:
     static inline QString _currentThemeName = "Obsidian";
 };
 
 #endif // NPP_PLATFORM_LINUX
+
