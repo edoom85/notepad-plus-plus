@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Platform/npp_icon.png</file>
+        <file>icons/npp.ico</file>
+    </qresource>
+</RCC>

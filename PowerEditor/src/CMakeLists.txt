@@ -297,7 +297,12 @@ else()
         WinControls/Qt/NppColumnEditor.h
         WinControls/Qt/NppSummaryDlg.h
         WinControls/Qt/NppUserDefineDlg.h
+        WinControls/Qt/NppStyleConfigDlg.h
+        WinControls/Qt/NppRunMacroDlg.h
+        WinControls/Qt/NppFindCharsInRange.h
         WinControls/Qt/NppLocalization.h
+
+
         WinControls/Qt/NppToolTip.h
         WinControls/Qt/NppTrayIcon.h
     )
@@ -309,7 +314,9 @@ else()
     add_executable(notepadplusplus
         ${NPP_LINUX_SOURCES}
         ${NPP_LINUX_HEADERS}
+        resources.qrc
     )
+
 
     target_link_libraries(notepadplusplus PRIVATE
         Qt6::Core

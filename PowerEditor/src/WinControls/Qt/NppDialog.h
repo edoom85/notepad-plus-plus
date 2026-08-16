@@ -27,6 +27,8 @@
 #include <QKeyEvent>
 #include <QString>
 
+#include "../../Platform/PlatformIconProvider.h"
+
 /// Diálogo base portable Qt6 para Notepad++ Linux.
 /// Equivalente a StaticDialog de Win32. Todos los diálogos específicos
 /// (FindReplaceDlg, PreferenceDlg, AboutDlg, etc.) heredan de esta clase.
@@ -37,7 +39,10 @@ public:
     explicit NppDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags())
         : QDialog(parent, flags)
     {
+        setWindowIcon(NppIconProvider::get(NppIconProvider::IconType::AppLogo));
+
         // Estilo adaptativo (Modo Oscuro / Modo Claro)
+
         if (NppTheme::isDarkMode()) {
             setStyleSheet(
                 "QDialog { background: #252526; color: #D4D4D4; }"

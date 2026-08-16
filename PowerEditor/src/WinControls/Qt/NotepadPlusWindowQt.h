@@ -64,6 +64,9 @@
 #include "NppSummaryDlg.h"
 #include "NppDocumentMap.h"
 #include "NppVerticalFileSwitcher.h"
+#include "NppStyleConfigDlg.h"
+#include "NppRunMacroDlg.h"
+#include "NppFindCharsInRange.h"
 
 
 /// Ventana principal de Notepad++ en Qt6.
@@ -666,9 +669,10 @@ private:
             dlg->show();
         });
         configMenu->addAction("Configurador de &estilos...", [this]() {
-            auto* dlg = new NppPreferenceDlg(this);
+            auto* dlg = new NppStyleConfigDlg(this);
             dlg->show();
         });
+
         configMenu->addAction("Configurador de &accesos directos...", [this]() {
             auto* dlg = new NppShortcutMapper(this);
             dlg->show();
@@ -696,10 +700,15 @@ private:
 
         // ── 9. Macro ──
         QMenu* macroMenu = menuBar()->addMenu("&Macro");
-        macroMenu->addAction("Iniciar grabación", [this]() {});
+        macroMenu->addAction("Iniciar grabación", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), [this]() {});
         macroMenu->addAction("Detener grabación", [this]() {});
-        macroMenu->addAction("Reproducción", [this]() {});
+        macroMenu->addAction("Reproducción", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_P), [this]() {});
         macroMenu->addAction("Guardar macro grabada...", [this]() {});
+        macroMenu->addAction("Ejecutar macro múltiples veces...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::SHIFT | Qt::Key_R), [this]() {
+            auto* dlg = new NppRunMacroDlg(this);
+            dlg->show();
+        });
+
 
         // ── 10. Ejecutar ──
         QMenu* runMenu = menuBar()->addMenu("&Ejecutar");
