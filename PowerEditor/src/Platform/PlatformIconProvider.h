@@ -43,8 +43,10 @@ public:
         ProjectPanel,
         ClipboardHistory,
         Run,
-        Plugins
+        Plugins,
+        AppLogo
     };
+
 
     /// Obtiene un QIcon garantizado para el tipo de acción solicitado.
     static QIcon get(IconType type) {
@@ -84,6 +86,13 @@ public:
                 return fetchThemeOrStandard("preferences-system", QStyle::SP_FileDialogInfoView, QColor(0x9B, 0x9B, 0x9B), "⚙");
             case IconType::About:
                 return fetchThemeOrStandard("help-about", QStyle::SP_MessageBoxInformation, QColor(0x56, 0x9C, 0xD6), "ℹ");
+            case IconType::AppLogo: {
+                QIcon icon("PowerEditor/src/icons/npp.ico");
+                if (icon.isNull()) icon = QIcon("PowerEditor/src/icons/standard/about/chameleon.ico");
+                if (icon.isNull()) icon = fetchThemeOrStandard("notepad++", QStyle::SP_TitleBarMenuButton, QColor(0x90, 0xEE, 0x90), "🦎");
+                return icon;
+            }
+
             case IconType::FileBrowser:
                 return fetchThemeOrStandard("folder", QStyle::SP_DirIcon, QColor(0xD6, 0x9D, 0x85), "📂");
             case IconType::FunctionList:
