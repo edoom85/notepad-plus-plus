@@ -64,6 +64,27 @@ public:
         return detectSystemTheme() == ColorScheme::Dark;
     }
 
+    /// Color de fondo para los márgenes de Scintilla (números de línea, folding)
+    static QColor marginBackgroundColor() {
+        return isDarkMode() ? QColor(0x25, 0x25, 0x26) : QColor(0xE4, 0xE4, 0xE4);
+    }
+
+    /// Color de papel del editor (fondo del documento)
+    static QColor paperColor() {
+        return isDarkMode() ? QColor(0x1E, 0x1E, 0x1E) : QColor(0xFF, 0xFF, 0xFF);
+    }
+
+    /// Color de texto principal
+    static QColor textColor() {
+        return isDarkMode() ? QColor(0xD4, 0xD4, 0xD4) : QColor(0x00, 0x00, 0x00);
+    }
+
+    /// Color de texto de los números de línea
+    static QColor marginForegroundColor() {
+        return isDarkMode() ? QColor(0x85, 0x85, 0x85) : QColor(0x6E, 0x6E, 0x6E);
+    }
+
+
     /// Aplica el tema oscuro VS Code a toda la aplicación Qt.
     static void applyDarkTheme(QApplication* app) {
         app->setStyle("Fusion");

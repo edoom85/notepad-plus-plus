@@ -14,6 +14,8 @@
 
 #include "../Platform/PlatformTypes.h"
 #include "../Platform/PlatformString.h"
+#include "../../Platform/PlatformTheme.h"
+
 
 #ifdef NPP_PLATFORM_LINUX
 
@@ -35,71 +37,30 @@ public:
     explicit NppDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags())
         : QDialog(parent, flags)
     {
-        // Estilo oscuro por defecto
-        setStyleSheet(
-            "QDialog {"
-            "  background: #252526;"
-            "  color: #D4D4D4;"
-            "}"
-            "QLabel {"
-            "  color: #D4D4D4;"
-            "}"
-            "QLineEdit, QTextEdit, QPlainTextEdit {"
-            "  background: #3C3C3C;"
-            "  color: #D4D4D4;"
-            "  border: 1px solid #555555;"
-            "  border-radius: 2px;"
-            "  padding: 4px;"
-            "  selection-background-color: #264F78;"
-            "}"
-            "QLineEdit:focus, QTextEdit:focus {"
-            "  border: 1px solid #007ACC;"
-            "}"
-            "QPushButton {"
-            "  background: #0E639C;"
-            "  color: #FFFFFF;"
-            "  border: none;"
-            "  border-radius: 2px;"
-            "  padding: 6px 14px;"
-            "  min-width: 80px;"
-            "}"
-            "QPushButton:hover {"
-            "  background: #1177BB;"
-            "}"
-            "QPushButton:pressed {"
-            "  background: #0D5689;"
-            "}"
-            "QPushButton:disabled {"
-            "  background: #3C3C3C;"
-            "  color: #6C6C6C;"
-            "}"
-            "QCheckBox, QRadioButton {"
-            "  color: #D4D4D4;"
-            "  spacing: 6px;"
-            "}"
-            "QComboBox {"
-            "  background: #3C3C3C;"
-            "  color: #D4D4D4;"
-            "  border: 1px solid #555555;"
-            "  border-radius: 2px;"
-            "  padding: 4px;"
-            "}"
-            "QGroupBox {"
-            "  color: #D4D4D4;"
-            "  border: 1px solid #555555;"
-            "  border-radius: 4px;"
-            "  margin-top: 8px;"
-            "  padding-top: 16px;"
-            "}"
-            "QGroupBox::title {"
-            "  subcontrol-origin: margin;"
-            "  left: 10px;"
-            "  padding: 0 4px;"
-            "}"
-        );
+        // Estilo adaptativo (Modo Oscuro / Modo Claro)
+        if (NppTheme::isDarkMode()) {
+            setStyleSheet(
+                "QDialog { background: #252526; color: #D4D4D4; }"
+                "QLabel, QCheckBox, QRadioButton { color: #D4D4D4; }"
+                "QLineEdit, QTextEdit, QPlainTextEdit, QComboBox { background: #3C3C3C; color: #D4D4D4; border: 1px solid #555555; border-radius: 2px; padding: 4px; selection-background-color: #264F78; }"
+                "QLineEdit:focus, QTextEdit:focus, QComboBox:focus { border: 1px solid #007ACC; }"
+                "QPushButton { background: #0E639C; color: #FFFFFF; border: none; padding: 6px 16px; border-radius: 2px; }"
+                "QPushButton:hover { background: #1177BB; }"
+            );
+        } else {
+            setStyleSheet(
+                "QDialog { background: #F0F0F0; color: #000000; }"
+                "QLabel, QCheckBox, QRadioButton { color: #000000; }"
+                "QLineEdit, QTextEdit, QPlainTextEdit, QComboBox { background: #FFFFFF; color: #000000; border: 1px solid #CCCCCC; border-radius: 2px; padding: 4px; selection-background-color: #007ACC; }"
+                "QLineEdit:focus, QTextEdit:focus, QComboBox:focus { border: 1px solid #007ACC; }"
+                "QPushButton { background: #007ACC; color: #FFFFFF; border: none; padding: 6px 16px; border-radius: 2px; }"
+                "QPushButton:hover { background: #0062A3; }"
+            );
+        }
     }
 
     /// Muestra el diálogo como modeless (no bloquea la ventana principal).
+
     /// Equivalente a CreateDialogParam + ShowWindow en Win32.
     virtual void create(QWidget* parent = nullptr) {
         if (parent) setParent(parent);

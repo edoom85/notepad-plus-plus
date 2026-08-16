@@ -42,7 +42,10 @@
 #include <Qsci/qscilexercpp.h>
 
 #include "../../Platform/PlatformIconProvider.h"
+#include "../../Platform/PlatformLexerManager.h"
+#include "../../Platform/PlatformTheme.h"
 #include "NppAboutDlg.h"
+
 #include "NppFindReplaceDlg.h"
 #include "NppPreferenceDlg.h"
 #include "NppShortcutMapper.h"
@@ -53,8 +56,10 @@
 #include "NppFunctionList.h"
 #include "NppProjectPanel.h"
 #include "NppClipboardHistory.h"
+#include "NppUserDefineDlg.h"
 
 /// Ventana principal de Notepad++ en Qt6.
+
 
 
 
@@ -134,7 +139,11 @@ public:
         auto* editor = qobject_cast<QsciScintilla*>(widget);
         if (editor) {
             editor->setText(content);
+            // Auto-detectar extensión (.json, .py, .cpp, .html, .xml, etc.) y aplicar lexer
+            NppLexerManager::Language detectedLang = NppLexerManager::detectFromExtension(QString::fromStdString(filePath));
+            NppLexerManager::applyLanguage(editor, detectedLang);
         }
+
 
         int idx = _mainTabs->addTab(widget, fi.fileName().toStdString());
         _mainTabs->setTabFilePath(idx, filePath);
@@ -269,12 +278,63 @@ private:
             if (_subTabs->isVisible()) _splitter->setRatio(0.5);
         });
 
+        // ── Lenguaje ──
+        QMenu* langMenu = menuBar()->addMenu("&Lenguaje");
+        langMenu->addAction("Texto plano (Normal Text)", [this]() {
+            if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::PlainText);
+        });
+        langMenu->addSeparator();
+
+        // Submenú C
+        QMenu* menuC = langMenu->addMenu("C");
+        menuC->addAction("C",   [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
+        menuC->addAction("C++", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CPP); });
+        menuC->addAction("CSS", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::CSS); });
+
+        // Submenú H
+        QMenu* menuH = langMenu->addMenu("H");
+        menuH->addAction("HTML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::HTML); });
+
+        // Submenú J
+        QMenu* menuJ = langMenu->addMenu("J");
+        menuJ->addAction("Java",       [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Java); });
+        menuJ->addAction("JavaScript", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::JavaScript); });
+        menuJ->addAction("JSON",       [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::JSON); });
+
+        // Submenú M
+        QMenu* menuM = langMenu->addMenu("M");
+        menuM->addAction("Markdown", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::PlainText); });
+
+        // Submenú P
+        QMenu* menuP = langMenu->addMenu("P");
+        menuP->addAction("Python", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Python); });
+
+        // Submenú S
+        QMenu* menuS = langMenu->addMenu("S");
+        menuS->addAction("Shell (Bash)", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::Bash); });
+        menuS->addAction("SQL",          [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::SQL); });
+
+        // Submenú X
+        QMenu* menuX = langMenu->addMenu("X");
+        menuX->addAction("XML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::XML); });
+
+        // Submenú Y
+        QMenu* menuY = langMenu->addMenu("Y");
+        menuY->addAction("YAML", [this]() { if (auto* ed = activeEditor()) NppLexerManager::applyLanguage(ed, NppLexerManager::Language::YAML); });
+
+        langMenu->addSeparator();
+        langMenu->addAction("Definir tu lenguaje (UDL)...", [this]() {
+            auto* dlg = new NppUserDefineDlg(this);
+            dlg->show();
+        });
+
         // ── Ejecutar / Herramientas ──
         QMenu* runMenu = menuBar()->addMenu("&Ejecutar");
         runMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Run), "&Ejecutar comando...", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_R), [this]() {
             auto* dlg = new NppRunDlg(this);
             dlg->show();
         });
+
 
         // ── Plugins ──
         QMenu* pluginsMenu = menuBar()->addMenu("&Plugins");
@@ -301,29 +361,26 @@ private:
             dlg->exec();
         });
 
-        // Estilo oscuro para menús
-        menuBar()->setStyleSheet(
-            "QMenuBar {"
-            "  background: #333333;"
-            "  color: #D4D4D4;"
-            "}"
-            "QMenuBar::item:selected {"
-            "  background: #505050;"
-            "}"
-            "QMenu {"
-            "  background: #252526;"
-            "  color: #D4D4D4;"
-            "  border: 1px solid #3C3C3C;"
-            "}"
-            "QMenu::item:selected {"
-            "  background: #094771;"
-            "}"
-            "QMenu::separator {"
-            "  height: 1px;"
-            "  background: #3C3C3C;"
-            "}"
-        );
+        // Estilo adaptativo para menús (Modo Oscuro / Modo Claro)
+        if (NppTheme::isDarkMode()) {
+            menuBar()->setStyleSheet(
+                "QMenuBar { background: #333333; color: #D4D4D4; }"
+                "QMenuBar::item:selected { background: #505050; }"
+                "QMenu { background: #252526; color: #D4D4D4; border: 1px solid #3C3C3C; }"
+                "QMenu::item:selected { background: #094771; }"
+                "QMenu::separator { height: 1px; background: #3C3C3C; }"
+            );
+        } else {
+            menuBar()->setStyleSheet(
+                "QMenuBar { background: #F0F0F0; color: #000000; }"
+                "QMenuBar::item:selected { background: #E0E0E0; }"
+                "QMenu { background: #FFFFFF; color: #000000; border: 1px solid #CCCCCC; }"
+                "QMenu::item:selected { background: #007ACC; color: #FFFFFF; }"
+                "QMenu::separator { height: 1px; background: #E0E0E0; }"
+            );
+        }
     }
+
 
 
     // ── Crear editor QsciScintilla real ─────────────────────────────────────
@@ -335,16 +392,27 @@ private:
         if (!font.exactMatch()) font = QFont("Monospace", 11);
         editor->setFont(font);
 
-        // Márgenes — números de línea
+        // Colores de margen y papel adaptativos (Modo Oscuro / Modo Claro)
+        QColor marginBg = NppTheme::marginBackgroundColor();
+        QColor marginFg = NppTheme::marginForegroundColor();
+        QColor paperBg  = NppTheme::paperColor();
+        QColor textFg   = NppTheme::textColor();
+
+        // Márgenes — números de línea y plegado de código (folding)
         editor->setMarginType(0, QsciScintilla::NumberMargin);
         editor->setMarginWidth(0, "00000");
-        editor->setMarginsForegroundColor(QColor(0x85, 0x85, 0x85));
-        editor->setMarginsBackgroundColor(QColor(0x25, 0x25, 0x26));
+        editor->setMarginsForegroundColor(marginFg);
+        editor->setMarginsBackgroundColor(marginBg);
         editor->setMarginsFont(font);
 
-        // Colores del editor (VS Code Dark)
-        editor->setPaper(QColor(0x1E, 0x1E, 0x1E));
-        editor->setColor(QColor(0xD4, 0xD4, 0xD4));
+        // Ocultar margen de marcadores 1 y configurar color adaptativo para el margen 2 de plegado
+        editor->setMarginWidth(1, 0);
+        editor->setFoldMarginColors(marginBg, marginBg);
+
+        // Colores del editor (dinámico según modo oscuro / claro)
+        editor->setPaper(paperBg);
+        editor->setColor(textFg);
+
         editor->setCaretForegroundColor(QColor(0xFF, 0xFF, 0xFF));
         editor->setSelectionBackgroundColor(QColor(0x26, 0x4F, 0x78));
         editor->setSelectionForegroundColor(QColor(0xFF, 0xFF, 0xFF));
