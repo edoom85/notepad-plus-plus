@@ -56,29 +56,29 @@ class SecurityGuard final
 public:
 	SecurityGuard();
 
-	bool checkModule(const NppString& filePath, NppModule module2check);
+	bool checkModule(const std::wstring& filePath, NppModule module2check);
 
-	NppString signer_display_name() const { return _signer_display_name; }
-	NppString signer_subject() const { return _signer_subject; }
-	NppString signer_key_id() const { return _signer_key_id; }
+	std::wstring signer_display_name() const { return _signer_display_name; }
+	std::wstring signer_subject() const { return _signer_subject; }
+	std::wstring signer_key_id() const { return _signer_key_id; }
 
 
 private:
 	// SHA256
 	static SecurityMode _securityMode;
-	std::vector<NppString> _gupSha256;
-	std::vector<NppString> _pluginListSha256;
+	std::vector<std::wstring> _gupSha256;
+	std::vector<std::wstring> _pluginListSha256;
 
-	bool checkSha256(const NppString& filePath, NppModule module2check) const;
+	bool checkSha256(const std::wstring& filePath, NppModule module2check) const;
 
 	// Code signing certificate
-	NppString _signer_display_name = "NOTEPAD++";
-	NppString _signer_subject = "C=FR, S=Île-de-France, L=Paris, O=\"NOTEPAD++\", CN=\"NOTEPAD++\", E=don.h@free.fr";
-	NppString _signer_key_id = "CC0D94922CDA3A18A7D286138525AF9C3942E9E7"; //=> Should be UPPERCASE
+	std::wstring _signer_display_name = L"NOTEPAD++";
+	std::wstring _signer_subject = L"C=FR, S=Île-de-France, L=Paris, O=\"NOTEPAD++\", CN=\"NOTEPAD++\", E=don.h@free.fr";
+	std::wstring _signer_key_id = L"CC0D94922CDA3A18A7D286138525AF9C3942E9E7"; //=> Should be UPPERCASE
 
 	bool _doCheckRevocation = false;
 	bool _doCheckChainOfTrust = true;
 
-	bool verifySignedBinary(const NppString& filepath) const;
+	bool verifySignedBinary(const std::wstring& filepath) const;
 };
 

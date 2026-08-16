@@ -29,7 +29,7 @@ constexpr int menuItemStrLenMax = 64 + 64;	// Add 64 "units" more for being comp
 class NppParameters;
 
 void getKeyStrFromVal(UCHAR keyVal, std::string & str);
-void getNameStrFromCmd(DWORD cmd, NppString & str);
+void getNameStrFromCmd(DWORD cmd, std::wstring & str);
 static size_t keyTranslate(size_t keyIn) {
 	switch (keyIn) {
 		case VK_DOWN:		return SCK_DOWN;
@@ -141,7 +141,7 @@ public:
 	}
 
 	virtual std::string toString() const;					//the hotkey part
-	std::string toMenuItemString() const {					//NppString suitable for menu
+	std::string toMenuItemString() const {					//std::wstring suitable for menu
 		std::string str = _menuName;
 		if (isEnabled())
 		{
@@ -193,13 +193,13 @@ public:
 	unsigned long getID() const { return _id; }
 	void setID(unsigned long id) { _id = id;}
 	int getNth() const { return _nth; }
-	const NppChar* getCategory() const { return _category.c_str(); }
-	const NppChar* getShortcutName() const { return _shortcutName.c_str(); }
+	const wchar_t* getCategory() const { return _category.c_str(); }
+	const wchar_t* getShortcutName() const { return _shortcutName.c_str(); }
 
 private :
 	unsigned long _id = 0;
-	NppString _category;
-	NppString _shortcutName;
+	std::wstring _category;
+	std::wstring _shortcutName;
 	int _nth = 0; // Allow several shortcuts for the same command (_id).
 	              // If there is the 2nd identical command in winKeyDefs array, the value of _nth will be 1.
 	              // This variable member allows the application to distinguish the different shortcuts assigned to the same command.

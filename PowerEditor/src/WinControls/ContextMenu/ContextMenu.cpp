@@ -20,7 +20,7 @@
 #include "Parameters.h"
 #include "localization.h"
 
-MenuItemUnit::MenuItemUnit(unsigned long cmdID, const NppChar* itemName, const NppChar* parentFolderName) : _cmdID(cmdID)
+MenuItemUnit::MenuItemUnit(unsigned long cmdID, const wchar_t* itemName, const wchar_t* parentFolderName) : _cmdID(cmdID)
 {
 	if (!itemName)
 		_itemName.clear();
@@ -39,7 +39,7 @@ void ContextMenu::create(HWND hParent, const std::vector<MenuItemUnit> & menuIte
 	_hMenu = ::CreatePopupMenu();
 	bool lastIsSep = false;
 	HMENU hParentFolder = NULL;
-	NppString currentParentFolderStr;
+	std::wstring currentParentFolderStr;
 	int j = 0;
 	MENUITEMINFO mii{};
 
@@ -115,14 +115,14 @@ void ContextMenu::create(HWND hParent, const std::vector<MenuItemUnit> & menuIte
 		if (copyLink && (item._cmdID == IDM_EDIT_COPY))
 		{
 			NativeLangSpeaker* nativeLangSpeaker = NppParameters::getInstance().getNativeLangSpeaker();
-			NppString localized = nativeLangSpeaker->getNativeLangMenuString(IDM_EDIT_COPY_LINK);
+			std::wstring localized = nativeLangSpeaker->getNativeLangMenuString(IDM_EDIT_COPY_LINK);
 			if (localized.length() == 0)
-				localized = "Copy link";
+				localized = L"Copy link";
 			memset(&mii, 0, sizeof(mii));
 			mii.cbSize = sizeof(MENUITEMINFO);
 			mii.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
 			mii.wID = IDM_EDIT_COPY_LINK;
-			mii.dwTypeData = (NppChar*) localized.c_str();
+			mii.dwTypeData = (wchar_t*) localized.c_str();
 			mii.fState = MFS_ENABLED;
 			int c = GetMenuItemCount(_hMenu);
 			SetMenuItemInfo(_hMenu, c - 1, TRUE, & mii);

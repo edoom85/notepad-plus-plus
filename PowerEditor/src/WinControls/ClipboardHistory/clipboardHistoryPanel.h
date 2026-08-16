@@ -21,7 +21,7 @@
 #include "clipboardHistoryPanel_rc.h"
 #include <vector>
 
-#define CH_PROJECTPANELTITLE		"Clipboard History"
+#define CH_PROJECTPANELTITLE		L"Clipboard History"
 
 class ScintillaEditView;
 

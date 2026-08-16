@@ -222,18 +222,18 @@ public:
 
 #ifdef SHA1_UTILITY_FUNCTIONS
 	// Hash in file contents
-	bool HashFile(const NppChar* tszFileName);
+	bool HashFile(const wchar_t* tszFileName);
 #endif
 
 	// Finalize hash; call it before using ReportHash(Stl)
 	void Final();
 /*
 #ifdef SHA1_UTILITY_FUNCTIONS
-	bool ReportHash(NppChar* tszReport, REPORT_TYPE rtReportType = REPORT_HEX) const;
+	bool ReportHash(wchar_t* tszReport, REPORT_TYPE rtReportType = REPORT_HEX) const;
 #endif
 
 #ifdef SHA1_STL_FUNCTIONS
-	bool ReportHashStl(std::basic_string<NppChar>& strOut, REPORT_TYPE rtReportType =
+	bool ReportHashStl(std::basic_string<wchar_t>& strOut, REPORT_TYPE rtReportType =
 		REPORT_HEX) const;
 #endif
 */

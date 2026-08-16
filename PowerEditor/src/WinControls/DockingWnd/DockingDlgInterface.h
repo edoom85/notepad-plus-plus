@@ -39,7 +39,7 @@ public:
 
 	void init(HINSTANCE hInst, HWND parent) override {
 		StaticDialog::init(hInst, parent);
-		NppChar temp[MAX_PATH];
+		wchar_t temp[MAX_PATH];
 		::GetModuleFileName(hInst, temp, MAX_PATH);
 		_moduleName = ::PathFindFileName(temp);
 	}
@@ -47,7 +47,7 @@ public:
 	virtual void create(DockedWidgetData* data, bool isRTL = false) {
 		assert(data != nullptr);
 		StaticDialog::create(_dlgID, isRTL);
-		NppChar temp[MAX_PATH];
+		wchar_t temp[MAX_PATH];
 		::GetWindowText(_hSelf, temp, MAX_PATH);
 		_pluginName = temp;
 
@@ -86,7 +86,7 @@ public:
 		_isClosed = toClose;
 	}
 
-	const NppChar * getPluginFileName() const {
+	const wchar_t * getPluginFileName() const {
 		return _moduleName.c_str();
 	}
 
@@ -97,8 +97,8 @@ public:
 protected :
 	int	_dlgID = -1;
 	int _iDockedPos = 0;
-	NppString _moduleName;
-	NppString _pluginName;
+	std::wstring _moduleName;
+	std::wstring _pluginName;
 	std::array<int, 3> _iconIDs{};
 	bool _isFloating = true;
 	bool _isClosed = false;

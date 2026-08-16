@@ -28,9 +28,9 @@ public:
 	{
 		UINT status = 0;       // Will be 0 (successful sort), MB_ICONWARNING or MB_ICONERROR
 		std::string tagName;   // The tag name for translation
-		NppString message;  // A message describing the status, if it isn't 0
+		std::wstring message;  // A message describing the status, if it isn't 0
 	};
-	NppString localeName;
+	std::wstring localeName;
 	bool caseSensitive = false;
 	bool digitsAsNumbers = true;
 	bool ignoreDiacritics = false;

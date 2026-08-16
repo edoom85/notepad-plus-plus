@@ -29,25 +29,25 @@ class CustomFileDialog
 public:
 	explicit CustomFileDialog(HWND hwnd);
 	~CustomFileDialog();
-	void setTitle(const NppChar* title);
-	void setExtFilter(const NppChar* text, const NppChar* ext);
-	void setExtFilter(const NppChar* text, std::initializer_list<const NppChar*> exts);
-	void setDefExt(const NppChar* ext);
-	void setDefFileName(const NppChar *fn);
-	void setFolder(const NppChar* folder);
-	void setCheckbox(const NppChar* text, bool isActive = true);
+	void setTitle(const wchar_t* title);
+	void setExtFilter(const wchar_t* text, const wchar_t* ext);
+	void setExtFilter(const wchar_t* text, std::initializer_list<const wchar_t*> exts);
+	void setDefExt(const wchar_t* ext);
+	void setDefFileName(const wchar_t *fn);
+	void setFolder(const wchar_t* folder);
+	void setCheckbox(const wchar_t* text, bool isActive = true);
 	void setExtIndex(int extTypeIndex);
 	void setSaveAsCopy(bool isSavingAsCopy);
 	bool getOpenTheCopyAfterSaveAsCopy();
 
-	void enableFileTypeCheckbox(const NppString& text, bool value);
+	void enableFileTypeCheckbox(const std::wstring& text, bool value);
 	bool getFileTypeCheckboxValue() const;
 
 	// Empty string is not a valid file name and may signal that the dialog was canceled.
-	NppString doSaveDlg();
-	NppString pickFolder();
-	NppString doOpenSingleFileDlg();
-	std::vector<NppString> doOpenMultiFilesDlg();
+	std::wstring doSaveDlg();
+	std::wstring pickFolder();
+	std::wstring doOpenSingleFileDlg();
+	std::vector<std::wstring> doOpenMultiFilesDlg();
 
 	bool getCheckboxState() const;
 	bool isReadOnly() const;

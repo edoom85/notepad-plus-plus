@@ -21,11 +21,11 @@
 
 using namespace std;
 
-Win32_IO_File::Win32_IO_File(const NppChar *fname)
+Win32_IO_File::Win32_IO_File(const wchar_t *fname)
 {
 	if (fname)
 	{
-		NppString fn = fname;
+		std::wstring fn = fname;
 		_path = wstring2string(fn, CP_UTF8);
 
 		WIN32_FILE_ATTRIBUTE_DATA attributes_original{};
@@ -97,16 +97,16 @@ void Win32_IO_File::close()
 			if (!::FlushFileBuffers(_hFile))
 			{
 				flushError = ::GetLastError();
-				NppString errNumberMsg = std::to_wstring(flushError) + " - " + GetLastErrorAsString(flushError);
+				std::wstring errNumberMsg = std::to_wstring(flushError) + L" - " + GetLastErrorAsString(flushError);
 
 				if (!nppParam.isEndSessionCritical())
 				{
 					// because of there is not an externally forced shutdown/restart of Windows in progress,
 					// we can at least alert the user that the file data could not actually be saved
 
-					NppString curFilePath;
+					std::wstring curFilePath;
 					const DWORD cchPathBuf = MAX_PATH + 128;
-					NppChar pathbuf[cchPathBuf]{};
+					wchar_t pathbuf[cchPathBuf]{};
 					// the dwFlags used below are the most error-proof and informative
 					DWORD dwRet = ::GetFinalPathNameByHandle(_hFile, pathbuf, cchPathBuf, FILE_NAME_OPENED | VOLUME_NAME_NT);
 					if ((dwRet == 0) || (dwRet >= cchPathBuf))
@@ -125,19 +125,19 @@ void Win32_IO_File::close()
 						curFilePath = pathbuf;
 					}
 
-					NppString errMsg = "Notepad++ has encountered a serious system problem while saving:\n\n";
+					std::wstring errMsg = L"Notepad++ has encountered a serious system problem while saving:\n\n";
 					errMsg += curFilePath;
 					errMsg += L"\n\nThat file, temporarily stored in the system cache, cannot be finally committed to the storage device selected! \
 This is probably a storage driver or hardware issue, beyond the control of the Notepad++. \
 Please try using another storage and also check if your saved data is not corrupted.\n\nError Code reported: ";
 					errMsg += errNumberMsg;
-					::MessageBoxW(NULL, errMsg.c_str(), "WARNING - filebuffer flushing fail!", MB_OK | MB_ICONWARNING | MB_SYSTEMMODAL);
+					::MessageBoxW(NULL, errMsg.c_str(), L"WARNING - filebuffer flushing fail!", MB_OK | MB_ICONWARNING | MB_SYSTEMMODAL);
 				}
 				else
 				{
 					// writing breif log here
-					NppString nppFlushFileBuffersFailsLog = "nppFlushFileBuffersFails.log";
-					NppString nppIssueLog = nppParam.getUserPath();
+					std::wstring nppFlushFileBuffersFailsLog = L"nppFlushFileBuffersFails.log";
+					std::wstring nppIssueLog = nppParam.getUserPath();
 					pathAppend(nppIssueLog, nppFlushFileBuffersFailsLog);
 
 					std::string errNumberMsgA = wstring2string(errNumberMsg, CP_UTF8);

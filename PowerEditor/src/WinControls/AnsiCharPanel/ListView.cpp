@@ -43,7 +43,7 @@ void ListView::init(HINSTANCE hInst, HWND parent)
 						| LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS;
 
 	_hSelf = ::CreateWindow(WC_LISTVIEW,
-                                "",
+                                L"",
 								WS_CHILD | WS_BORDER | listViewStyles,
                                 0,
                                 0,
@@ -83,7 +83,7 @@ void ListView::destroy()
 	_hSelf = NULL;
 }
 
-void ListView::addLine(const std::vector<NppString>& values2Add, LPARAM lParam, int pos2insert)
+void ListView::addLine(const std::vector<std::wstring>& values2Add, LPARAM lParam, int pos2insert)
 {
 	if (!values2Add.size())
 		return;
@@ -96,7 +96,7 @@ void ListView::addLine(const std::vector<NppString>& values2Add, LPARAM lParam, 
 	LVITEM item{};
 	item.mask = LVIF_TEXT | LVIF_PARAM;
 
-	item.pszText = const_cast<NppChar *>(it->c_str());
+	item.pszText = const_cast<wchar_t *>(it->c_str());
 	item.iItem = pos2insert;
 	item.iSubItem = 0;
 	item.lParam = lParam;
@@ -106,11 +106,11 @@ void ListView::addLine(const std::vector<NppString>& values2Add, LPARAM lParam, 
 	int j = 0;
 	for (; it != values2Add.end(); ++it)
 	{
-		ListView_SetItemText(_hSelf, pos2insert, ++j, const_cast<NppChar *>(it->c_str()));
+		ListView_SetItemText(_hSelf, pos2insert, ++j, const_cast<wchar_t *>(it->c_str()));
 	}
 }
 
-size_t ListView::findAlphabeticalOrderPos(const NppString& string2Cmp, SortDirection sortDir)
+size_t ListView::findAlphabeticalOrderPos(const std::wstring& string2Cmp, SortDirection sortDir)
 {
 	const size_t itemCount = nbItem();
 	if (!itemCount)
@@ -118,7 +118,7 @@ size_t ListView::findAlphabeticalOrderPos(const NppString& string2Cmp, SortDirec
 
 	for (size_t i = 0; i < itemCount; ++i)
 	{
-		NppChar str[MAX_PATH] = { '\0' };
+		wchar_t str[MAX_PATH] = { '\0' };
 		ListView_GetItemText(_hSelf, i, 0, str, sizeof(str));
 
 		const int res = string2Cmp.compare(str);

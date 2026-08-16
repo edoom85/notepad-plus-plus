@@ -17,10 +17,10 @@
 
 #include "SortLocale.h"
 
-static const SortLocale::Result sortSuccess { 0, "0", "0" };
-static const SortLocale::Result sortNothing { 0, "SortLocaleNothing", "Nothing to sort." };
-static const SortLocale::Result warnMultiple { MB_ICONWARNING, "SortLocaleMultiple", "Sorting multiple selections is not supported." };
-static const SortLocale::Result errorUnknown { MB_ICONERROR, "SortLocaleUnknown", "The reason the sort failed cannot be determined." };
+static const SortLocale::Result sortSuccess { 0, "0", L"0" };
+static const SortLocale::Result sortNothing { 0, "SortLocaleNothing", L"Nothing to sort." };
+static const SortLocale::Result warnMultiple { MB_ICONWARNING, "SortLocaleMultiple", L"Sorting multiple selections is not supported." };
+static const SortLocale::Result errorUnknown { MB_ICONERROR, "SortLocaleUnknown", L"The reason the sort failed cannot be determined." };
 
 // The error for exceptions, { MB_ICONERROR, "SortLocaleExcept", exception-message } is built dynamically;
 // translations should use "$STR_REPLACE$" as the message, since the message is also passed as the string replacement.
@@ -197,9 +197,9 @@ SortLocale::Result SortLocale::sort(ScintillaEditView* sci, bool descending) con
 				constexpr unsigned int safeSize = std::numeric_limits<int>::max() / 2;
 				size_t textLength = keyText.length();
 				int sortableLength = textLength > safeSize ? safeSize : static_cast<int>(textLength);
-				int wideLength = nppMBtoWC(codepage, 0, keyText.data(), sortableLength, 0, 0);
-				NppString wideText(wideLength, 0);
-				nppMBtoWC(codepage, 0, keyText.data(), sortableLength, wideText.data(), wideLength);
+				int wideLength = MultiByteToWideChar(codepage, 0, keyText.data(), sortableLength, 0, 0);
+				std::wstring wideText(wideLength, 0);
+				MultiByteToWideChar(codepage, 0, keyText.data(), sortableLength, wideText.data(), wideLength);
 				int m = LCMapStringEx(locale, options, wideText.data(), wideLength, 0, 0, 0, 0, 0);
 				sl.key.resize(m, 0);
 				LCMapStringEx(locale, options, wideText.data(), wideLength, reinterpret_cast<LPWSTR>(sl.key.data()), m, 0, 0, 0);
@@ -256,10 +256,10 @@ SortLocale::Result SortLocale::sort(ScintillaEditView* sci, bool descending) con
 	catch (const std::exception& e)
 	{
 		try {
-			int errlen = nppMBtoWC(CP_ACP, 0, e.what(), -1, 0, 0);
+			int errlen = MultiByteToWideChar(CP_ACP, 0, e.what(), -1, 0, 0);
 			if (errlen < 2) return errorUnknown;
-			NppString errmsg(errlen - 1, 0);
-			nppMBtoWC(CP_ACP, 0, e.what(), -1, errmsg.data(), errlen);
+			std::wstring errmsg(errlen - 1, 0);
+			MultiByteToWideChar(CP_ACP, 0, e.what(), -1, errmsg.data(), errlen);
 			return { MB_ICONERROR, "SortLocaleExcept", errmsg };
 		}
 		catch (...)

@@ -84,7 +84,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// return the number of opened files
 
 	#define NPPM_GETOPENFILENAMES_DEPRECATED  (NPPMSG + 8)
-	// BOOL NPPM_GETOPENFILENAMES_DEPRECATED(NppChar** fileNames, int nbFileNames) - DEPRECATED: It is kept for the compatibility. Use NPPM_GETBUFFERIDFROMPOS & NPPM_GETFULLPATHFROMBUFFERID instead.
+	// BOOL NPPM_GETOPENFILENAMES_DEPRECATED(wchar_t** fileNames, int nbFileNames) - DEPRECATED: It is kept for the compatibility. Use NPPM_GETBUFFERIDFROMPOS & NPPM_GETFULLPATHFROMBUFFERID instead.
 	// Get the open files full paths of both views. User is responsible to allocate a big enough fileNames array by using NPPM_GETNBOPENFILES.
 	// wParam[out]: fileNames - array of file path
 	// lParam[in]: nbFileNames is the number of file path.
@@ -103,14 +103,14 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// return hDlg (HWND) on success, NULL on failure
 
 	#define NPPM_GETNBSESSIONFILES (NPPMSG + 13)
-	// int NPPM_GETNBSESSIONFILES (BOOL* pbIsValidXML, NppChar* sessionFileName)
+	// int NPPM_GETNBSESSIONFILES (BOOL* pbIsValidXML, wchar_t* sessionFileName)
 	// Get the number of files to load in the session sessionFileName. sessionFileName should be a full path name of an xml file.
 	// wParam[out]: pbIsValidXML, if the lParam pointer is null, then this parameter will be ignored. TRUE if XML is valid, otherwise FALSE.
 	// lParam[in]: sessionFileName is XML session full path
 	// return value: The number of files in XML session file
 
 	#define NPPM_GETSESSIONFILES (NPPMSG + 14)
-	// BOOL NPPM_GETSESSIONFILES (NppChar** sessionFileArray, NppChar* sessionFileName)
+	// BOOL NPPM_GETSESSIONFILES (wchar_t** sessionFileArray, wchar_t* sessionFileName)
 	// the files' full path name from a session file.
 	// wParam[out]: sessionFileArray is the array in which the files' full path of the same group are written. To allocate the array with the proper size, send message NPPM_GETNBSESSIONFILES.
 	// lParam[in]: sessionFileName is XML session full path
@@ -118,9 +118,9 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 
 	#define NPPM_SAVESESSION (NPPMSG + 15)
 		struct sessionInfo {
-			NppChar* sessionFilePathName; // Full session file path name to be saved
+			wchar_t* sessionFilePathName; // Full session file path name to be saved
 			int nbFile;                 // Size of "files" array - number of files to be saved in session
-			NppChar** files;              // Array of file name (full path) to be saved in session
+			wchar_t** files;              // Array of file name (full path) to be saved in session
 		};
 	// NPPM_SAVESESSION(0, sessionInfo* si)
 	// Creates an session file for a defined set of files.
@@ -130,7 +130,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Returns sessionFileName on success, NULL otherwise
 
 	#define NPPM_SAVECURRENTSESSION (NPPMSG + 16)
-	// NppChar* NPPM_SAVECURRENTSESSION(0, NppChar* sessionFileName)
+	// wchar_t* NPPM_SAVECURRENTSESSION(0, wchar_t* sessionFileName)
 	// Saves the current opened files in Notepad++ as a group of files (session) as an xml file.
 	// wParam: 0 (not used)
 	// lParam[in]: sessionFileName is the xml full path name
@@ -138,14 +138,14 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 
 
 	#define NPPM_GETOPENFILENAMESPRIMARY_DEPRECATED (NPPMSG + 17)
-	// BOOL NPPM_GETOPENFILENAMESPRIMARY_DEPRECATED(NppChar** fileNames, int nbFileNames) - DEPRECATED: It is kept for the compatibility. Use NPPM_GETBUFFERIDFROMPOS & NPPM_GETFULLPATHFROMBUFFERID instead.
+	// BOOL NPPM_GETOPENFILENAMESPRIMARY_DEPRECATED(wchar_t** fileNames, int nbFileNames) - DEPRECATED: It is kept for the compatibility. Use NPPM_GETBUFFERIDFROMPOS & NPPM_GETFULLPATHFROMBUFFERID instead.
 	// Get the open files full paths of main view. User is responsible to allocate an big enough fileNames array by using NPPM_GETNBOPENFILES.
 	// wParam[out]: fileNames - array of file path
 	// lParam[in]: nbFileNames is the number of file path.
 	// return value: The number of files copied into fileNames array
 
 	#define NPPM_GETOPENFILENAMESSECOND_DEPRECATED (NPPMSG + 18)
-	// BOOL NPPM_GETOPENFILENAMESSECOND_DEPRECATED(NppChar** fileNames, int nbFileNames) - DEPRECATED: It is kept for the compatibility. Use NPPM_GETBUFFERIDFROMPOS & NPPM_GETFULLPATHFROMBUFFERID instead.
+	// BOOL NPPM_GETOPENFILENAMESSECOND_DEPRECATED(wchar_t** fileNames, int nbFileNames) - DEPRECATED: It is kept for the compatibility. Use NPPM_GETBUFFERIDFROMPOS & NPPM_GETFULLPATHFROMBUFFERID instead.
 	// Get the open files full paths of sub-view. User is responsible to allocate an big enough fileNames array by using NPPM_GETNBOPENFILES.
 	// wParam[out]: fileNames - array of file path
 	// lParam[in]: nbFileNames is the number of file path.
@@ -188,7 +188,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 		#define STATUSBAR_EOF_FORMAT   3
 		#define STATUSBAR_UNICODE_TYPE 4
 		#define STATUSBAR_TYPING_MODE  5
-	// BOOL NPPM_SETSTATUSBAR(int whichPart, NppChar *str2set)
+	// BOOL NPPM_SETSTATUSBAR(int whichPart, wchar_t *str2set)
 	// Set string in the specified field of a statusbar.
 	// wParam[in]: whichPart for indicating the statusbar part you want to set. It can be only the above value (0 - 5)
 	// lParam[in]: str2set is the string you want to write to the part of statusbar.
@@ -233,7 +233,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Return TRUE
 
 	#define NPPM_LAUNCHFINDINFILESDLG (NPPMSG + 29)
-	// BOOL NPPM_LAUNCHFINDINFILESDLG(NppChar * dir2Search, NppChar * filtre)
+	// BOOL NPPM_LAUNCHFINDINFILESDLG(wchar_t * dir2Search, wchar_t * filtre)
 	// Launch Find in Files dialog and set "Find in" directory and filters with the given arguments.
 	// wParam[in]: if dir2Search is not NULL, it will be set as working directory in which Notepad++ will search
 	// lParam[in]: if filtre is not NULL, filtre string will be set into filter field
@@ -270,28 +270,28 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Return TRUE
 
 	#define NPPM_LOADSESSION (NPPMSG + 34)
-	// BOOL NPPM_LOADSESSION(0, NppChar* sessionFileName)
+	// BOOL NPPM_LOADSESSION(0, wchar_t* sessionFileName)
 	// Open all files of same session in Notepad++ via a xml format session file sessionFileName.
 	// wParam: 0 (not used)
 	// lParam[in]: sessionFileName is the full file path of session file to reload
 	// Return TRUE
 
 	#define NPPM_DMMVIEWOTHERTAB (NPPMSG + 35)
-	// BOOL WM_DMM_VIEWOTHERTAB(0, NppChar* name)
+	// BOOL WM_DMM_VIEWOTHERTAB(0, wchar_t* name)
 	// Show the plugin dialog (switch to plugin tab) with the given name.
 	// wParam: 0 (not used)
 	// lParam[in]: name should be the same value as previously used to register the dialog (pszName of DockedWidgetData)
 	// Return TRUE
 
 	#define NPPM_RELOADFILE (NPPMSG + 36)
-	// BOOL NPPM_RELOADFILE(BOOL withAlert, NppChar *filePathName2Reload)
+	// BOOL NPPM_RELOADFILE(BOOL withAlert, wchar_t *filePathName2Reload)
 	// Reload the document which matches with the given filePathName2Reload.
 	// wParam: 0 (not used)
 	// lParam[in]: filePathName2Reload is the full file path of document to reload
 	// Return TRUE if reloading file succeeds, otherwise FALSE
 
 	#define NPPM_SWITCHTOFILE (NPPMSG + 37)
-	// BOOL NPPM_SWITCHTOFILE(0, NppChar* filePathName2switch)
+	// BOOL NPPM_SWITCHTOFILE(0, wchar_t* filePathName2switch)
 	// Switch to the document which matches with the given filePathName2switch.
 	// wParam: 0 (not used)
 	// lParam[in]: filePathName2switch is the full file path of document to switch
@@ -339,7 +339,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Return enum winVer, which is defined at the beginning of this file
 
 	#define NPPM_DMMGETPLUGINHWNDBYNAME (NPPMSG + 43)
-	// HWND NPPM_DMMGETPLUGINHWNDBYNAME(const NppChar *windowName, const NppChar *moduleName)
+	// HWND NPPM_DMMGETPLUGINHWNDBYNAME(const wchar_t *windowName, const wchar_t *moduleName)
 	// Retrieve the dialog handle corresponds to the windowName and moduleName. You may need this message if you want to communicate with another plugin "dockable" dialog.
 	// wParam[in]: windowName - if windowName is NULL, then the first found window handle which matches with the moduleName will be returned
 	// lParam[in] : moduleName - if moduleName is NULL, then return value is NULL
@@ -360,22 +360,22 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Return a proc address or NULL
 
 	#define NPPM_GETPLUGINSCONFIGDIR (NPPMSG + 46)
-	// int NPPM_GETPLUGINSCONFIGDIR(int strLen, NppChar *str)
+	// int NPPM_GETPLUGINSCONFIGDIR(int strLen, wchar_t *str)
 	// Get user's plugin config directory path. It's useful if plugins want to save/load parameters for the current user
 	// wParam[in]: strLen is length of  allocated buffer in which directory path is copied
 	// lParam[out] : str is the allocated buffere. User should call this message twice -
-	//               The 1st call with "str" be NULL to get the required number of NppChar (not including the terminating nul character)
+	//               The 1st call with "str" be NULL to get the required number of wchar_t (not including the terminating nul character)
 	//               The 2nd call to allocate "str" buffer with the 1st call's return value + 1, then call it again to get the path
-	// Return value: The 1st call - the number of NppChar to copy.
+	// Return value: The 1st call - the number of wchar_t to copy.
 	//               The 2nd call - FALSE on failure, TRUE on success
 
 	#define NPPM_MSGTOPLUGIN (NPPMSG + 47)
 		struct CommunicationInfo {
 			long internalMsg;               // an integer defined by plugin Y, known by plugin X, identifying the message being sent.
-			const NppChar * srcModuleName;  // the complete module name (with the extension .dll) of caller (plugin X).
+			const wchar_t * srcModuleName;  // the complete module name (with the extension .dll) of caller (plugin X).
 			void* info;                     // defined by plugin, the information to be exchanged between X and Y. It's a void pointer so it should be defined by plugin Y and known by plugin X.
 		};
-	// BOOL NPPM_MSGTOPLUGIN(NppChar *destModuleName, CommunicationInfo *info)
+	// BOOL NPPM_MSGTOPLUGIN(wchar_t *destModuleName, CommunicationInfo *info)
 	// Send a private information to a plugin with given plugin name. This message allows the communication between 2 plugins.
 	// For example, plugin X can execute a command of plugin Y if plugin X knows the command ID and the file name of plugin Y.
 	// wParam[in]: destModuleName is the destination complete module file name (with the file extension ".dll")
@@ -456,12 +456,12 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// if priorityView set to SUB_VIEW, then SUB_VIEW will be search firstly
 
 	#define NPPM_GETFULLPATHFROMBUFFERID (NPPMSG + 58)
-	// int NPPM_GETFULLPATHFROMBUFFERID(UINT_PTR bufferID, NppChar* fullFilePath)
+	// int NPPM_GETFULLPATHFROMBUFFERID(UINT_PTR bufferID, wchar_t* fullFilePath)
 	// Get full path file name from a bufferID (the pointer of buffer).
 	// wParam[in]: bufferID
-	// lParam[out]: fullFilePath - User should call it with fullFilePath be NULL to get the number of NppChar (not including the nul character),
+	// lParam[out]: fullFilePath - User should call it with fullFilePath be NULL to get the number of wchar_t (not including the nul character),
 	//         allocate fullFilePath with the return values + 1, then call it again to get full path file name
-	// Return -1 if the bufferID non existing, otherwise the number of NppChar copied/to copy
+	// Return -1 if the bufferID non existing, otherwise the number of wchar_t copied/to copy
 
 	#define NPPM_GETBUFFERIDFROMPOS (NPPMSG + 59)
 	// UINT_PTR NPPM_GETBUFFERIDFROMPOS(int index, int iView)
@@ -590,7 +590,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// return value: TRUE if this function call is successful and shortcut is enable, otherwise FALSE
 
 	#define NPPM_DOOPEN (NPPMSG + 77)
-	// BOOL NPPM_DOOPEN(0, const NppChar* fullPathName2Open)
+	// BOOL NPPM_DOOPEN(0, const wchar_t* fullPathName2Open)
 	// Open a file with given fullPathName2Open.
 	// If fullPathName2Open has been already opened in Notepad++, the it will be activated and becomes the current document.
 	// wParam: 0 (not used)
@@ -598,7 +598,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// The return value is TRUE if the operation is successful, otherwise FALSE
 
 	#define NPPM_SAVECURRENTFILEAS (NPPMSG + 78)
-	// BOOL NPPM_SAVECURRENTFILEAS (BOOL saveAsCopy, const NppChar* filename)
+	// BOOL NPPM_SAVECURRENTFILEAS (BOOL saveAsCopy, const wchar_t* filename)
 	// Save the current activated document.
 	// wParam[in]: saveAsCopy must be either FALSE to save, or TRUE to save a copy of the current filename ("Save a Copy As..." action)
 	// lParam[in]: filename indicates the full file path name to be saved
@@ -652,7 +652,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// then marker ID 16, 17 and 18 are preserved by Notepad++, and they are safe to be used by the plugin.
 
 	#define NPPM_GETLANGUAGENAME  (NPPMSG + 83)
-	// int NPPM_GETLANGUAGENAME(LangType langType, NppChar* langName)
+	// int NPPM_GETLANGUAGENAME(LangType langType, wchar_t* langName)
 	// Get programming language name from the given language type (enum LangType).
 	// wParam[in]: langType is the number of LangType
 	// lParam[out]: langName is the buffer to receive the language name string
@@ -663,7 +663,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// by passing allocated buffer as argument langName
 
 	#define NPPM_GETLANGUAGEDESC  (NPPMSG + 84)
-	// INT NPPM_GETLANGUAGEDESC(int langType, NppChar *langDesc)
+	// INT NPPM_GETLANGUAGEDESC(int langType, wchar_t *langDesc)
 	// Get programming language short description from the given language type (enum LangType)
 	// wParam[in]: langType is the number of LangType
 	// lParam[out]: langDesc is the buffer to receive the language description string
@@ -744,7 +744,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Return TRUE
 
 	#define NPPM_SAVEFILE (NPPMSG + 94)
-	// BOOL NPPM_SAVEFILE(0, const NppChar *fileNameToSave)
+	// BOOL NPPM_SAVEFILE(0, const wchar_t *fileNameToSave)
 	// Save the file (opened in Notepad++) with the given full file name path.
 	// wParam: 0 (not used)
 	// lParam[in]: fileNameToSave must be the full file path for the file to be saved.
@@ -765,20 +765,20 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// return value: TRUE if function call is successful, otherwise FALSE
 
 	#define NPPM_GETPLUGINHOMEPATH (NPPMSG + 97)
-	// int NPPM_GETPLUGINHOMEPATH(size_t strLen, NppChar* pluginRootPath)
+	// int NPPM_GETPLUGINHOMEPATH(size_t strLen, wchar_t* pluginRootPath)
 	// Get plugin home root path. It's useful if plugins want to get its own path by appending <pluginFolderName> which is the name of plugin without extension part.
 	// wParam[in]: strLen - size of allocated buffer "pluginRootPath"
-	// lParam[out]: pluginRootPath - Users should call it with pluginRootPath be NULL to get the required number of NppChar (not including the terminating nul character),
+	// lParam[out]: pluginRootPath - Users should call it with pluginRootPath be NULL to get the required number of wchar_t (not including the terminating nul character),
 	//              allocate pluginRootPath buffer with the return value + 1, then call it again to get the path.
-	// Return the number of NppChar copied/to copy, 0 on copy failed
+	// Return the number of wchar_t copied/to copy, 0 on copy failed
 
 	#define NPPM_GETSETTINGSONCLOUDPATH (NPPMSG + 98)
-	// int NPPM_GETSETTINGSCLOUDPATH(size_t strLen, NppChar *settingsOnCloudPath)
+	// int NPPM_GETSETTINGSCLOUDPATH(size_t strLen, wchar_t *settingsOnCloudPath)
 	// Get settings on cloud path. It's useful if plugins want to store its settings on Cloud, if this path is set.
 	// wParam[in]: strLen - size of allocated buffer "settingsOnCloudPath"
-	// lParam[out]: settingsOnCloudPath - Users should call it with settingsOnCloudPath be NULL to get the required number of NppChar (not including the terminating nul character),
+	// lParam[out]: settingsOnCloudPath - Users should call it with settingsOnCloudPath be NULL to get the required number of wchar_t (not including the terminating nul character),
 	//              allocate settingsOnCloudPath buffer with the return value + 1, then call it again to get the path.
-	// Returns the number of NppChar copied/to copy. If the return value is 0, then this path is not set, or the "strLen" is not enough to copy the path.
+	// Returns the number of wchar_t copied/to copy. If the return value is 0, then this path is not set, or the "strLen" is not enough to copy the path.
 
 	#define NPPM_SETLINENUMBERWIDTHMODE    (NPPMSG + 99)
 		#define LINENUMWIDTH_DYNAMIC     0
@@ -811,7 +811,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Return TRUE
 
 	#define NPPM_GETEXTERNALLEXERAUTOINDENTMODE  (NPPMSG + 103)
-	// BOOL NPPM_GETEXTERNALLEXERAUTOINDENTMODE(const NppChar* languageName, ExternalLexerAutoIndentMode* autoIndentMode)
+	// BOOL NPPM_GETEXTERNALLEXERAUTOINDENTMODE(const wchar_t* languageName, ExternalLexerAutoIndentMode* autoIndentMode)
 	// Get ExternalLexerAutoIndentMode for an installed external programming language.
 	// wParam[in]: languageName is external language name to search
 	// lParam[out]: autoIndentMode could receive one of three following values
@@ -821,7 +821,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// returned values: TRUE for successful searches, otherwise FALSE.
 
 	#define NPPM_SETEXTERNALLEXERAUTOINDENTMODE  (NPPMSG + 104)
-	// BOOL NPPM_SETEXTERNALLEXERAUTOINDENTMODE(const NppChar* languageName, ExternalLexerAutoIndentMode autoIndentMode)
+	// BOOL NPPM_SETEXTERNALLEXERAUTOINDENTMODE(const wchar_t* languageName, ExternalLexerAutoIndentMode autoIndentMode)
 	// Set ExternalLexerAutoIndentMode for an installed external programming language.
 	// wParam[in]: languageName is external language name to set
 	// lParam[in]: autoIndentMode could receive one of three following values
@@ -886,17 +886,17 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// https://github.com/notepad-plus-plus/notepad-plus-plus/blob/master/PowerEditor/src/NppDarkMode.h#L32
 
 	#define NPPM_GETCURRENTCMDLINE (NPPMSG + 109)
-	// int NPPM_GETCURRENTCMDLINE(size_t strLen, NppChar *commandLineStr)
+	// int NPPM_GETCURRENTCMDLINE(size_t strLen, wchar_t *commandLineStr)
 	// Get the Current Command Line string.
-	// Users should call it with commandLineStr as NULL to get the required number of NppChar (not including the terminating nul character),
+	// Users should call it with commandLineStr as NULL to get the required number of wchar_t (not including the terminating nul character),
 	// allocate commandLineStr buffer with the return value + 1, then call it again to get the current command line string.
 	// wParam[in]: strLen is "commandLineStr" buffer length
 	// lParam[out]: commandLineStr receives all copied command line string
-	// Return the number of NppChar copied/to copy
+	// Return the number of wchar_t copied/to copy
 
 
 	#define NPPM_CREATELEXER (NPPMSG + 110)
-	// void* NPPM_CREATELEXER(0, const NppChar* lexer_name)
+	// void* NPPM_CREATELEXER(0, const wchar_t* lexer_name)
 	// Get the ILexer pointer created by Lexilla. Call the lexilla "CreateLexer()" function to allow plugins to set the lexer for a Scintilla instance created by NPPM_CREATESCINTILLAHANDLE.
 	// wParam: 0 (not used)
 	// lParam[in]: lexer_name is the name of the lexer
@@ -973,7 +973,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// Note: there's no symmetric command NPPM_SETTABCOLORID. Plugins can use NPPM_MENUCOMMAND to set current tab color with the desired tab color ID.
 
 	#define NPPM_SETUNTITLEDNAME (NPPMSG + 115)
-	// BOOL NPPM_SETUNTITLEDNAME(BufferID id, const NppChar* newName)
+	// BOOL NPPM_SETUNTITLEDNAME(BufferID id, const wchar_t* newName)
 	// Rename the tab name for an untitled tab.
 	// wParam[in]: id - BufferID of the tab. -1 for currently active tab
 	// lParam[in]: newName - the desired new name of the tab
@@ -1026,14 +1026,14 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	// 0 (Fluent UI: small), 1 (Fluent UI: large), 2 (Filled Fluent UI: small), 3 (Filled Fluent UI: large) and 4 (Standard icons: small).
 
 	#define NPPM_GETNPPSETTINGSDIRPATH (NPPMSG + 119)
-	// int NPPM_GETNPPSETTINGSDIRPATH(size_t strLen, NppChar *settingsDirPath)
+	// int NPPM_GETNPPSETTINGSDIRPATH(size_t strLen, wchar_t *settingsDirPath)
 	// Get path for the active Notepad++ settings: it will use -settingsDir path if that's defined; if not, it will use Cloud directory if that's defined;
 	// if not, it will use the AppData settings directory, or finally the installation path. This allows plugins to have one interface to find out
 	// where the active Notepad++ settings are stored, whichever location they are currently set to.
 	// wParam[in]: strLen - size of allocated buffer "settingsDirPath"
-	// lParam[out]: settingsDirPath - Users should call it with settingsDirPath be NULL to get the required number of NppChar (not including the terminating nul character),
+	// lParam[out]: settingsDirPath - Users should call it with settingsDirPath be NULL to get the required number of wchar_t (not including the terminating nul character),
 	//              allocate settingsDirPath buffer with the return value + 1, then call it again to get the path.
-	// Returns the number of NppChar copied/to copy. If the return value is 0, then the "strLen" is not enough to copy the path, or the settings path could not be determined.
+	// Returns the number of wchar_t copied/to copy. If the return value is 0, then the "strLen" is not enough to copy the path, or the settings path could not be determined.
 	// 
 	// Note: This message is for the active Notepad++ configuration location.  If you are looking for the settings directory for plugins (...\Plugins\Config\),
 	// use NPPM_GETPLUGINSCONFIGDIR instead.
@@ -1065,11 +1065,11 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	#define NPPM_GETNPPFULLFILEPATH		(RUNCOMMAND_USER + NPP_FULL_FILE_PATH)
 	#define NPPM_GETFILENAMEATCURSOR	(RUNCOMMAND_USER + GETFILENAMEATCURSOR)
 	#define NPPM_GETCURRENTLINESTR      (RUNCOMMAND_USER + CURRENT_LINESTR)
-	// BOOL NPPM_GETXXXXXXXXXXXXXXXX(size_t strLen, NppChar *str)
+	// BOOL NPPM_GETXXXXXXXXXXXXXXXX(size_t strLen, wchar_t *str)
 	// Get XXX string operations.
 	// wParam[in]: strLen is the allocated array size
-	// lParam[out]: str is the allocated NppChar array
-	// The return value is TRUE when get NppString operation success, otherwise FALSE (allocated array size is too small)
+	// lParam[out]: str is the allocated wchar_t array
+	// The return value is TRUE when get std::wstring operation success, otherwise FALSE (allocated array size is too small)
 
 
 	#define NPPM_GETCURRENTLINE			(RUNCOMMAND_USER + CURRENT_LINE)
@@ -1237,15 +1237,15 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	//scnNotification->nmhdr.hwndFrom = hwndNpp;
 	//scnNotification->nmhdr.idFrom = 0;
 
-	#define NPPN_CMDLINEPLUGINMSG (NPPN_FIRST + 28)  // To notify plugins that there are plugin arguments pluginMessage (NppChar*) is available
+	#define NPPN_CMDLINEPLUGINMSG (NPPN_FIRST + 28)  // To notify plugins that there are plugin arguments pluginMessage (wchar_t*) is available
 	//scnNotification->nmhdr.code = NPPN_CMDLINEPLUGINMSG;
 	//scnNotification->nmhdr.hwndFrom = hwndNpp;
-	//scnNotification->nmhdr.idFrom = pluginMessage; //where pluginMessage is pointer of type NppChar
+	//scnNotification->nmhdr.idFrom = pluginMessage; //where pluginMessage is pointer of type wchar_t
 	// 
 	// User can pass arguments to plugins via command line argument using:
 	// -pluginMessage="PLUGIN1_ARG1=V1;PLUGIN1_ARG2=V2;PLUGIN2_ARG=V;..."
 	// 
-	// The full string (NppChar*) will be delivered to all plugins via the NPPN_CMDLINEPLUGINMSG notification. Each plugins can parse and extract the arguments relevant to itself.
+	// The full string (wchar_t*) will be delivered to all plugins via the NPPN_CMDLINEPLUGINMSG notification. Each plugins can parse and extract the arguments relevant to itself.
 	// 
 	// To avoid the collisions among plugins, the following protocol should be followed:
 	// 1. Each plugin must use its unique namespace (its folder name in plugins directory) as a prefix for its argument names.
@@ -1263,7 +1263,7 @@ enum Platform { PF_UNKNOWN, PF_X86, PF_X64, PF_IA64, PF_ARM64 };
 	#define NPPN_EXTERNALLEXERBUFFER (NPPN_FIRST + 29)  // To notify lexer plugins that the buffer (in idFrom) is just applied to a external lexer
 	//scnNotification->nmhdr.code = NPPN_EXTERNALLEXERBUFFER;
 	//scnNotification->nmhdr.hwndFrom = hwndNpp;
-	//scnNotification->nmhdr.idFrom = BufferID; //where pluginMessage is pointer of type NppChar
+	//scnNotification->nmhdr.idFrom = BufferID; //where pluginMessage is pointer of type wchar_t
 
 	#define NPPN_GLOBALMODIFIED (NPPN_FIRST + 30)  // To notify plugins that the current document is just modified by Replace All action.
                                                    // For solving the performance issue (from v8.6.4), Notepad++ doesn't trigger SCN_MODIFIED during Replace All action anymore.

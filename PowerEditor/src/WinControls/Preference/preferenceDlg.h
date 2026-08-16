@@ -190,8 +190,8 @@ private :
 struct LangID_Name
 {
 	LangType _id = L_TEXT;
-	NppString _name;
-	LangID_Name(LangType id, const NppString& name) : _id(id), _name(name) {}
+	std::wstring _name;
+	LangID_Name(LangType id, const std::wstring& name) : _id(id), _name(name) {}
 };
 
 class NewDocumentSubDlg : public StaticDialog
@@ -294,7 +294,7 @@ public :
 
 private :
 	intptr_t CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
-	std::vector<NppString> varList;
+	std::vector<std::wstring> varList;
 	int _focusedEditCtrl = 0;
 };
 
@@ -346,7 +346,7 @@ private :
 
 	intptr_t CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 	void detectSpace(const char *text2Check, int & nbSp, int & nbTab) const;
-	NppString getWarningText(size_t nbSp, size_t nbTab) const;
+	std::wstring getWarningText(size_t nbSp, size_t nbTab) const;
 	void setWarningIfNeed() const;
 	void calcCtrlsPos();
 	void setCtrlsPos(bool isMultiline);
@@ -404,13 +404,13 @@ public :
 		display();
 	}
 
-	bool renameDialogTitle(const NppChar *internalName, const NppChar *newName);
+	bool renameDialogTitle(const wchar_t *internalName, const wchar_t *newName);
 	
 	int getListSelectedIndex() const {
 		return static_cast<int>(::SendDlgItemMessage(_hSelf, IDC_LIST_DLGTITLE, LB_GETCURSEL, 0, 0));
 	}
 
-	void showDialogByName(const NppChar *name) const;
+	void showDialogByName(const wchar_t *name) const;
 	bool setListSelection(size_t currentSel) const;
 
 	bool goToSection(size_t iPage, intptr_t ctrlID = -1);
@@ -420,7 +420,7 @@ public :
 private :
 	intptr_t CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 	void makeCategoryList();
-	int getIndexFromName(const NppChar* name) const;
+	int getIndexFromName(const wchar_t* name) const;
 	void showDialogByIndex(size_t index) const;
 	WindowVector _wVector;
 	GeneralSubDlg _generalSubDlg;

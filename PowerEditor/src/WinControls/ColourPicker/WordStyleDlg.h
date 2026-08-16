@@ -50,9 +50,9 @@ public :
 	void redraw(bool forceUpdate = false) const override;
 	void restoreGlobalOverrideValues() const;
 	void addLastThemeEntry() const;
-	bool selectThemeByName(const NppChar* themeName);
+	bool selectThemeByName(const wchar_t* themeName);
 	void syncWithSelFgSingleColorCtrl();
-	bool goToSection(const NppChar* sectionNames); // sectionNames is formed as following: "Language name:Style name"
+	bool goToSection(const wchar_t* sectionNames); // sectionNames is formed as following: "Language name:Style name"
 	                                               // ex: "Global Styles:EOL custom color" will set Language on "Global Styles", then set Style on "EOL custom color" if both are found.
 
 private :
@@ -81,7 +81,7 @@ private :
 
 	LexerStylerArray _lsArray;
     StyleArray _globalStyles;
-	NppString _themeName;
+	std::wstring _themeName;
 
 	LexerStylerArray _styles2restored;
 	StyleArray _gstyles2restored;
@@ -99,7 +99,7 @@ private :
 
 	Style& getCurrentStyler();
 
-	bool getStyleName(NppString& styleName, const size_t styleNameLenLimit = 128) const;
+	bool getStyleName(std::wstring& styleName, const size_t styleNameLenLimit = 128) const;
 
 	int whichTabColourIndex() const;
 	int whichIndividualTabColourId();
@@ -115,7 +115,7 @@ private :
 	void updateFontSize();
 	void updateUserKeywords();
 	void switchToTheme();
-	static void updateThemeName(const NppString& themeName);
+	static void updateThemeName(const std::wstring& themeName);
 	void loadLangListFromNppParam();
 	void enableFontStyle(bool isEnable) const;
 	long notifyDataModified();

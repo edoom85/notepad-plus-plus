@@ -49,7 +49,7 @@ void ControlsTab::reSizeTo(RECT & rc)
 
 }
 
-bool ControlsTab::renameTab(const NppChar *internalName, const NppChar *newName)
+bool ControlsTab::renameTab(const wchar_t *internalName, const wchar_t *newName)
 {
 	bool foundIt = false;
 	size_t i = 0;
@@ -69,10 +69,10 @@ bool ControlsTab::renameTab(const NppChar *internalName, const NppChar *newName)
 	return true;
 }
 
-void ControlsTab::renameTab(size_t index, const NppChar *newName)
+void ControlsTab::renameTab(size_t index, const wchar_t *newName)
 {
 	TCITEM tie{};
 	tie.mask = TCIF_TEXT;
-	tie.pszText = const_cast<NppChar*>(newName);
+	tie.pszText = const_cast<wchar_t*>(newName);
 	TabCtrl_SetItem(_hSelf, index, &tie);
 }

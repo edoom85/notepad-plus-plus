@@ -141,7 +141,7 @@ public:
 
 	void setEncoding(UniMode eType);
 
-	bool openFile(const NppChar *name);
+	bool openFile(const wchar_t *name);
 	bool writeFile(const void* p, size_t _size);
 	void closeFile();
 

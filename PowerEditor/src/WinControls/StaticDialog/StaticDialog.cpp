@@ -368,9 +368,9 @@ void StaticDialog::create(int dialogID, bool isRTL, bool msgDestParent, WORD fon
 
 	if (!_hSelf)
 	{
-		NppString errMsg = "CreateDialogParam() return NULL.\rGetLastError(): ";
+		std::wstring errMsg = L"CreateDialogParam() return NULL.\rGetLastError(): ";
 		errMsg += GetLastErrorAsString();
-		NppDarkMode::darkMessageBoxW(nullptr, errMsg.c_str(), "In StaticDialog::create()", MB_OK);
+		NppDarkMode::darkMessageBoxW(nullptr, errMsg.c_str(), L"In StaticDialog::create()", MB_OK);
 		return;
 	}
 

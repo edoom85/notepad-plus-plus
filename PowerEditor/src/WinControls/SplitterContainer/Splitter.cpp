@@ -117,9 +117,9 @@ void Splitter::init( HINSTANCE hInst, HWND hPere, int splitterSize, double iSpli
 		wcex.hCursor		= ::LoadCursor(NULL, IDC_ARROW);
 		// if fixed spliter then choose default cursor type.
 		if (_dwFlags & SV_HORIZONTAL)
-			wcex.lpszClassName	= "fxdnsspliter";
+			wcex.lpszClassName	= L"fxdnsspliter";
 		else
-			wcex.lpszClassName	= "fxdwespliter";
+			wcex.lpszClassName	= L"fxdwespliter";
 	}
 	else
 	{
@@ -127,13 +127,13 @@ void Splitter::init( HINSTANCE hInst, HWND hPere, int splitterSize, double iSpli
 		{
 			//double sided arrow pointing north-south as cursor
 			wcex.hCursor		= ::LoadCursor(NULL,IDC_SIZENS);
-			wcex.lpszClassName	= "nsspliter";
+			wcex.lpszClassName	= L"nsspliter";
 		}
 		else
 		{
 			// double sided arrow pointing east-west as cursor
 			wcex.hCursor		= ::LoadCursor(NULL,IDC_SIZEWE);
-			wcex.lpszClassName	= "wespliter";
+			wcex.lpszClassName	= L"wespliter";
 		}
 	}
 
@@ -163,7 +163,7 @@ void Splitter::init( HINSTANCE hInst, HWND hPere, int splitterSize, double iSpli
 	}
 
 	_hSelf = CreateWindowEx(dwExStyle, wcex.lpszClassName,
-		"",
+		L"",
 		dwStyle,
 		_rect.left, _rect.top, _rect.right, _rect.bottom,
 		_hParent, NULL, _hInst, this);

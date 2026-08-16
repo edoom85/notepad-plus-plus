@@ -51,7 +51,7 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 		{
 			NppDarkMode::autoSubclassAndThemeChildControls(_hSelf);
 
-			_hFont = createFont("Courier New", 9, false, _hSelf);
+			_hFont = createFont(L"Courier New", 9, false, _hSelf);
 
 			const HWND hHashPathEdit = ::GetDlgItem(_hSelf, IDC_HASH_PATH_EDIT);
 			const HWND hHashResult = ::GetDlgItem(_hSelf, IDC_HASH_RESULT_EDIT);
@@ -100,7 +100,7 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 			_dpiManager.setDpiWP(wParam);
 
 			destroy();
-			_hFont = createFont("Courier New", 9, false, _hSelf);
+			_hFont = createFont(L"Courier New", 9, false, _hSelf);
 
 			::SendDlgItemMessageW(_hSelf, IDC_HASH_PATH_EDIT, WM_SETFONT, reinterpret_cast<WPARAM>(_hFont), TRUE);
 			::SendDlgItemMessageW(_hSelf, IDC_HASH_RESULT_EDIT, WM_SETFONT, reinterpret_cast<WPARAM>(_hFont), TRUE);
@@ -128,12 +128,12 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 				case IDC_HASH_FILEBROWSER_BUTTON:
 				{
 					CustomFileDialog fDlg(_hSelf);
-					fDlg.setExtFilter("All types", ".*");
+					fDlg.setExtFilter(L"All types", L".*");
 
 					const auto& fns = fDlg.doOpenMultiFilesDlg();
 					if (!fns.empty())
 					{
-						NppString files2check, hashResultStr;
+						std::wstring files2check, hashResultStr;
 						for (const auto& it : fns)
 						{
 							if (_ht == hashType::hash_md5)
@@ -147,13 +147,13 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 								if (md5Result)
 								{
 									files2check += it;
-									files2check += "\r\n";
+									files2check += L"\r\n";
 
-									NppChar* fileName = ::PathFindFileName(it.c_str());
+									wchar_t* fileName = ::PathFindFileName(it.c_str());
 									hashResultStr += wmc.char2wchar(md5Result, CP_ACP);
-									hashResultStr += "  ";
+									hashResultStr += L"  ";
 									hashResultStr += fileName;
-									hashResultStr += "\r\n";
+									hashResultStr += L"\r\n";
 								}
 							}
 							else
@@ -164,7 +164,7 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 									return FALSE;
 
 								uint8_t hash[HASH_MAX_LENGTH]{};
-								NppChar hashStr[HASH_STR_MAX_LENGTH]{};
+								wchar_t hashStr[HASH_STR_MAX_LENGTH]{};
 
 								switch (_ht)
 								{
@@ -192,16 +192,16 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 								}
 
 								for (int i = 0; i < _ht; i++)
-									sprintf(hashStr + i * 2, "%02x", hash[i]);
+									wsprintf(hashStr + i * 2, L"%02x", hash[i]);
 
 								files2check += it;
-								files2check += "\r\n";
+								files2check += L"\r\n";
 
-								NppChar* fileName = ::PathFindFileName(it.c_str());
+								wchar_t* fileName = ::PathFindFileName(it.c_str());
 								hashResultStr += hashStr;
-								hashResultStr += "  ";
+								hashResultStr += L"  ";
 								hashResultStr += fileName;
-								hashResultStr += "\r\n";
+								hashResultStr += L"\r\n";
 							}
 						}
 
@@ -219,7 +219,7 @@ intptr_t CALLBACK HashFromFilesDlg::run_dlgProc(UINT message, WPARAM wParam, LPA
 					int len = static_cast<int>(::SendMessage(::GetDlgItem(_hSelf, IDC_HASH_RESULT_EDIT), WM_GETTEXTLENGTH, 0, 0));
 					if (len)
 					{
-						NppChar* rStr = new NppChar[len+1];
+						wchar_t* rStr = new wchar_t[len+1];
 						::GetDlgItemText(_hSelf, IDC_HASH_RESULT_EDIT, rStr, len + 1);
 						str2Clipboard(rStr, _hSelf);
 						delete[] rStr;
@@ -290,36 +290,36 @@ void HashFromFilesDlg::doDialog(bool isRTL)
 	if (!isCreated())
 	{
 		create(IDD_HASHFROMFILES_DLG, isRTL);
-		NppString title;
-		NppString buttonText;
+		std::wstring title;
+		std::wstring buttonText;
 
 		switch (_ht)
 		{
 			case hash_md5:
 			{
-				title = "Generate MD5 digest from files";
-				buttonText = "Choose files to &generate MD5...";
+				title = L"Generate MD5 digest from files";
+				buttonText = L"Choose files to &generate MD5...";
 			}
 			break;
 
 			case hash_sha1:
 			{
-				title = "Generate SHA-1 digest from files";
-				buttonText = "Choose files to &generate SHA-1...";
+				title = L"Generate SHA-1 digest from files";
+				buttonText = L"Choose files to &generate SHA-1...";
 			}
 			break;
 
 			case hash_sha256:
 			{
-				title = "Generate SHA-256 digest from files";
-				buttonText = "Choose files to &generate SHA-256...";
+				title = L"Generate SHA-256 digest from files";
+				buttonText = L"Choose files to &generate SHA-256...";
 			}
 			break;
 
 			case hash_sha512:
 			{
-				title = "Generate SHA-1 digest from files";
-				buttonText = "Choose files to &generate SHA-512...";
+				title = L"Generate SHA-1 digest from files";
+				buttonText = L"Choose files to &generate SHA-512...";
 			}
 			break;
 
@@ -354,7 +354,7 @@ void HashFromTextDlg::generateHash()
 	{
 		// it's important to get text from UNICODE then convert it to UTF8
 		// So we get the result of UTF8 text (tested with Chinese).
-		NppChar* text = new NppChar[len + 1];
+		wchar_t* text = new wchar_t[len + 1];
 		::GetDlgItemText(_hSelf, IDC_HASH_TEXT_EDIT, text, len + 1);
 		WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
 		const char *newText = wmc.wchar2char(text, SC_CP_UTF8);
@@ -367,7 +367,7 @@ void HashFromTextDlg::generateHash()
 		else
 		{
 			uint8_t hash[HASH_MAX_LENGTH]{};
-			NppChar hashStr[HASH_STR_MAX_LENGTH]{};
+			wchar_t hashStr[HASH_STR_MAX_LENGTH]{};
 
 			switch (_ht)
 			{
@@ -395,7 +395,7 @@ void HashFromTextDlg::generateHash()
 			}
 
 			for (int i = 0; i < _ht; i++)
-				sprintf(hashStr + i * 2, "%02x", hash[i]);
+				wsprintf(hashStr + i * 2, L"%02x", hash[i]);
 
 			::SetDlgItemText(_hSelf, IDC_HASH_RESULT_FOMTEXT_EDIT, hashStr);
 		}
@@ -412,11 +412,11 @@ void HashFromTextDlg::generateHashPerLine()
 	int len = static_cast<int>(::SendMessage(::GetDlgItem(_hSelf, IDC_HASH_TEXT_EDIT), WM_GETTEXTLENGTH, 0, 0));
 	if (len)
 	{
-		NppChar* text = new NppChar[len + 1];
+		wchar_t* text = new wchar_t[len + 1];
 		::GetDlgItemText(_hSelf, IDC_HASH_TEXT_EDIT, text, len + 1);
 
 		std::wstringstream ss(text);
-		NppString aLine;
+		std::wstring aLine;
 		std::string result;
 
 		WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
@@ -507,7 +507,7 @@ intptr_t CALLBACK HashFromTextDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 		{
 			NppDarkMode::autoSubclassAndThemeChildControls(_hSelf);
 
-			_hFont = createFont("Courier New", 9, false, _hSelf);
+			_hFont = createFont(L"Courier New", 9, false, _hSelf);
 
 			const HWND hHashTextEdit = ::GetDlgItem(_hSelf, IDC_HASH_TEXT_EDIT);
 			const HWND hHashResult = ::GetDlgItem(_hSelf, IDC_HASH_RESULT_FOMTEXT_EDIT);
@@ -561,7 +561,7 @@ intptr_t CALLBACK HashFromTextDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 			_dpiManager.setDpiWP(wParam);
 
 			destroy();
-			_hFont = createFont("Courier New", 9, false, _hSelf);
+			_hFont = createFont(L"Courier New", 9, false, _hSelf);
 
 			::SendDlgItemMessageW(_hSelf, IDC_HASH_TEXT_EDIT, WM_SETFONT, reinterpret_cast<WPARAM>(_hFont), TRUE);
 			::SendDlgItemMessageW(_hSelf, IDC_HASH_RESULT_FOMTEXT_EDIT, WM_SETFONT, reinterpret_cast<WPARAM>(_hFont), TRUE);
@@ -616,7 +616,7 @@ intptr_t CALLBACK HashFromTextDlg::run_dlgProc(UINT message, WPARAM wParam, LPAR
 					int len = static_cast<int>(::SendMessage(::GetDlgItem(_hSelf, IDC_HASH_RESULT_FOMTEXT_EDIT), WM_GETTEXTLENGTH, 0, 0));
 					if (len)
 					{
-						NppChar* rStr = new NppChar[len+1];
+						wchar_t* rStr = new wchar_t[len+1];
 						::GetDlgItemText(_hSelf, IDC_HASH_RESULT_FOMTEXT_EDIT, rStr, len + 1);
 						str2Clipboard(rStr, _hSelf);
 						delete[] rStr;
@@ -649,30 +649,30 @@ void HashFromTextDlg::doDialog(bool isRTL)
 	if (!isCreated())
 	{
 		create(IDD_HASHFROMTEXT_DLG, isRTL);
-		NppString title;
+		std::wstring title;
 		switch (_ht)
 		{
 			case hash_md5:
 			{
-				title = "Generate MD5 digest";
+				title = L"Generate MD5 digest";
 			}
 			break;
 			
 			case hash_sha1:
 			{
-				title = "Generate SHA-1 digest";
+				title = L"Generate SHA-1 digest";
 			}
 			break;
 
 			case hash_sha256:
 			{
-				title = "Generate SHA-256 digest";
+				title = L"Generate SHA-256 digest";
 			}
 			break;
 
 			case hash_sha512:
 			{
-				title = "Generate SHA-512 digest";
+				title = L"Generate SHA-512 digest";
 			}
 			break;
 

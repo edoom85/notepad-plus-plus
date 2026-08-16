@@ -28,9 +28,9 @@
 
 struct columnInfo {
 	size_t _width;
-	NppString _label;
+	std::wstring _label;
 
-	columnInfo(const NppString& label, size_t width) : _width(width), _label(label) {}
+	columnInfo(const std::wstring& label, size_t width) : _width(width), _label(label) {}
 };
 
 class ListView : public Window
@@ -48,7 +48,7 @@ public:
 		_columnInfos.push_back(column2Add);
 	}
 
-	void setColumnText(size_t i, NppString txt2Set) {
+	void setColumnText(size_t i, std::wstring txt2Set) {
 		LVCOLUMN lvColumn{};
 		lvColumn.mask = LVCF_TEXT;
 		lvColumn.pszText = txt2Set.data();
@@ -60,9 +60,9 @@ public:
 		_extraStyle = extraStyle;
 	}
 
-	size_t findAlphabeticalOrderPos(const NppString& string2Cmp, SortDirection sortDir);
+	size_t findAlphabeticalOrderPos(const std::wstring& string2Cmp, SortDirection sortDir);
 
-	void addLine(const std::vector<NppString> & values2Add, LPARAM lParam = 0, int pos2insert = -1);
+	void addLine(const std::vector<std::wstring> & values2Add, LPARAM lParam = 0, int pos2insert = -1);
 	
 	size_t nbItem() const {
 		return ListView_GetItemCount(_hSelf);

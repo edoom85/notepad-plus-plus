@@ -22,8 +22,8 @@
 
 struct RecentItem {
 	int _id = 0;
-	NppString _name;
-	explicit RecentItem(const NppChar* name) : _name(name) {}
+	std::wstring _name;
+	explicit RecentItem(const wchar_t* name) : _name(name) {}
 };
 
 typedef std::deque<RecentItem> recentList;
@@ -39,8 +39,8 @@ public:
 	void switchMode();
 	void updateMenu();
 
-	void add(const NppChar *fn);
-	void remove(const NppChar *fn);
+	void add(const wchar_t *fn);
+	void remove(const wchar_t *fn);
 	void remove(size_t index);
 	void clear();
 
@@ -56,12 +56,12 @@ public:
 		return _userMax;
 	}
 
-	NppString & getItem(int id);	//use menu id
-	NppString & getIndex(int index);	//use menu id
+	std::wstring & getItem(int id);	//use menu id
+	std::wstring & getIndex(int index);	//use menu id
 
-	NppString getFirstItem() const {
+	std::wstring getFirstItem() const {
 		if (_lrfl.size() == 0)
-			return "";
+			return L"";
 		return _lrfl.front()._name;
 	}
 
@@ -97,7 +97,7 @@ private:
 	bool _hasSeparators = false;
 	bool _locked = false;
 
-	int find(const NppChar *fn);
+	int find(const wchar_t *fn);
 	int popFirstAvailableID();
 	void setAvailable(int id);
 };

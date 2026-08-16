@@ -55,14 +55,14 @@ public:
 	void init(NppXml::Document nativeLangDocRoot, bool loadIfEnglish = false);
 	void changeConfigLang(HWND hDlg) const;
 	void changeLangTabContextMenu(HMENU hCM) const;
-	void getAlternativeNameFromTabContextMenu(NppString& output, int cmdID, bool isAlternative, const NppString& defaultValue) const;
+	void getAlternativeNameFromTabContextMenu(std::wstring& output, int cmdID, bool isAlternative, const std::wstring& defaultValue) const;
 	static NppXml::Element searchDlgNode(NppXml::Element node, const char* dlgTagName);
 	bool changeDlgLang(HWND hDlg, const char* dlgTagName, char* titleOut = nullptr, size_t titleOutMaxSize = 0, const char* titleOutTag = nullptr) const;
 	void changeLangTabDropContextMenu(HMENU hCM) const;
 	void changeLangTrayIconContexMenu(HMENU hCM) const;
-	NppString getSubMenuEntryName(const char* nodeName) const;
-	NppString getNativeLangMenuString(int itemID, const NppString& inCaseOfFailureStr = "", bool removeMarkAnd = false) const;
-	NppString getShortcutNameString(int itemID) const;
+	std::wstring getSubMenuEntryName(const char* nodeName) const;
+	std::wstring getNativeLangMenuString(int itemID, const std::wstring& inCaseOfFailureStr = L"", bool removeMarkAnd = false) const;
+	std::wstring getShortcutNameString(int itemID) const;
 
 	void changeMenuLang(HMENU menuHandle) const;
 	static void changeStyleCtrlsLang(HWND hDlg, int* idArray, const char** translatedText);
@@ -72,7 +72,7 @@ public:
 	void changePreferenceDlgLang(PreferenceDlg& preference) const;
 	void changePluginsAdminDlgLang(PluginsAdminDlg& pluginsAdminDlg);
 
-	bool getDoSaveOrNotStrings(NppString& title, NppString& msg) const;
+	bool getDoSaveOrNotStrings(std::wstring& title, std::wstring& msg) const;
 
 	bool isRTL() const {
 		return _isRTL;
@@ -94,29 +94,29 @@ public:
 		return _nativeLangEncoding;
 	}
 
-	bool getMsgBoxLang(const char* msgBoxTagName, NppString& title, NppString& message) const;
-	NppString getShortcutMapperLangStr(const char *nodeName, const NppChar* defaultStr) const;
-	NppString getProjectPanelLangMenuStr(const char* nodeName, int cmdID, const NppChar* defaultStr) const;
-	NppString getDlgLangMenuStr(const char* firstLevelNodeName, const char* secondLevelNodeName, int cmdID, const NppChar *defaultStr) const;
-	NppString getCmdLangStr(const std::vector<const char*>& nodeNames, int cmdID, const NppChar* defaultStr) const;
-	NppString getAttrNameStr(const NppChar* defaultStr, const char* nodeL1Name, const char* nodeL2Name, const char* nodeL3Name = "name") const;
-	static NppString getAttrNameByIdStr(const NppChar* defaultStr, NppXml::Element targetNode, const char* nodeL1Value, const char* nodeL1Name = "id", const char* nodeL2Name = "name");
+	bool getMsgBoxLang(const char* msgBoxTagName, std::wstring& title, std::wstring& message) const;
+	std::wstring getShortcutMapperLangStr(const char *nodeName, const wchar_t* defaultStr) const;
+	std::wstring getProjectPanelLangMenuStr(const char* nodeName, int cmdID, const wchar_t* defaultStr) const;
+	std::wstring getDlgLangMenuStr(const char* firstLevelNodeName, const char* secondLevelNodeName, int cmdID, const wchar_t *defaultStr) const;
+	std::wstring getCmdLangStr(const std::vector<const char*>& nodeNames, int cmdID, const wchar_t* defaultStr) const;
+	std::wstring getAttrNameStr(const wchar_t* defaultStr, const char* nodeL1Name, const char* nodeL2Name, const char* nodeL3Name = "name") const;
+	static std::wstring getAttrNameByIdStr(const wchar_t* defaultStr, NppXml::Element targetNode, const char* nodeL1Value, const char* nodeL1Name = "id", const char* nodeL2Name = "name");
 	std::string getLocalizedStrFromID(const char* strID, const std::string& defaultString) const;
-	NppString getLocalizedStrFromID(const char* strID, const NppString& defaultString) const;
-	void getMainMenuEntryName(NppString& dest, HMENU hMenu, const char* menuId, const NppChar* defaultDest);
+	std::wstring getLocalizedStrFromID(const char* strID, const std::wstring& defaultString) const;
+	void getMainMenuEntryName(std::wstring& dest, HMENU hMenu, const char* menuId, const wchar_t* defaultDest);
 
 	void resetShortcutMenuNameMap() {
 		_shortcutMenuEntryNameMap.clear();
 	}
 
-	int messageBox(const char* msgBoxTagName, HWND hWnd, const NppChar* defaultMessage, const NppChar* defaultTitle, int msgBoxType, int intInfo = 0, const NppChar* strInfo = nullptr) const;
+	int messageBox(const char* msgBoxTagName, HWND hWnd, const wchar_t* defaultMessage, const wchar_t* defaultTitle, int msgBoxType, int intInfo = 0, const wchar_t* strInfo = nullptr) const;
 private:
 	NppXml::Element _nativeLang{};
 	static constexpr int _nativeLangEncoding = CP_UTF8; // all Notepad++ xml files should be UTF8
 	bool _isRTL = false; // for Notepad++ GUI
 	bool _isEditZoneRTL = false; // for Scintilla
 	const char* _fileName = nullptr;
-	std::map<std::string, NppString> _shortcutMenuEntryNameMap;
+	std::map<std::string, std::wstring> _shortcutMenuEntryNameMap;
 
 	static void resizeCheckboxRadioBtn(HWND hWnd);
 };

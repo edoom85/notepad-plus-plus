@@ -40,7 +40,7 @@ namespace ReadDirectoryChangesPrivate
 ///////////////////////////////////////////////////////////////////////////
 // CReadChangesRequest
 
-CReadChangesRequest::CReadChangesRequest(CReadChangesServer* pServer, const NppChar* sz, BOOL b, DWORD dw, DWORD size)
+CReadChangesRequest::CReadChangesRequest(CReadChangesServer* pServer, LPCTSTR sz, BOOL b, DWORD dw, DWORD size)
 : m_pServer(pServer), m_wstrDirectory(sz), m_bIncludeChildren(b), m_dwFilterFlags(dw)
 {
 	::ZeroMemory(&m_Overlapped, sizeof(OVERLAPPED));
@@ -121,7 +121,7 @@ VOID CALLBACK CReadChangesRequest::NotificationCompletion(
 	// Can't use sizeof(FILE_NOTIFY_INFORMATION) because
 	// the structure is padded to 16 bytes.
 	assert((dwNumberOfBytesTransfered == 0) ||
-		(dwNumberOfBytesTransfered >= offsetof(FILE_NOTIFY_INFORMATION, FileName) + sizeof(NppChar)));
+		(dwNumberOfBytesTransfered >= offsetof(FILE_NOTIFY_INFORMATION, FileName) + sizeof(wchar_t)));
 
 	pBlock->BackupBuffer(dwNumberOfBytesTransfered);
 
@@ -141,10 +141,10 @@ void CReadChangesRequest::ProcessNotification()
 	{
 		FILE_NOTIFY_INFORMATION& fni = (FILE_NOTIFY_INFORMATION&)*pBase;
 
-		NppString wstrFilename(fni.FileName, fni.FileNameLength/sizeof(NppChar));
+		std::wstring wstrFilename(fni.FileName, fni.FileNameLength/sizeof(wchar_t));
 		// Handle a trailing backslash, such as for a root directory.
 		if (!wstrFilename.empty() && wstrFilename.back() != L'\\')
-			wstrFilename = m_wstrDirectory + "\\" + wstrFilename;
+			wstrFilename = m_wstrDirectory + L"\\" + wstrFilename;
 		else
 			wstrFilename = m_wstrDirectory + wstrFilename;
 
@@ -156,7 +156,7 @@ void CReadChangesRequest::ProcessNotification()
 		{
 			// Convert to the long filename form. Unfortunately, this
 			// does not work for deletions, so it's an imperfect fix.
-			NppChar wbuf[MAX_PATH];
+			wchar_t wbuf[MAX_PATH];
 			if (::GetLongPathNameW(wstrFilename.c_str(), wbuf, _countof(wbuf)) > 0)
 				wstrFilename = wbuf;
 		}

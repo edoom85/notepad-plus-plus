@@ -115,10 +115,10 @@ struct AssociationInfo final
 {
 	int _id;
 	int _langID;
-	NppString _ext;
-	NppString _userDefinedLangName;
+	std::wstring _ext;
+	std::wstring _userDefinedLangName;
 
-	AssociationInfo(int id, int langID, const NppChar* ext, const NppChar* userDefinedLangName) noexcept
+	AssociationInfo(int id, int langID, const wchar_t* ext, const wchar_t* userDefinedLangName) noexcept
 		: _id(id), _langID(langID)
 	{
 		if (ext)
@@ -137,32 +137,32 @@ inline constexpr int nbMaxUserDefined = 25;
 
 struct ParserInfo
 {
-	NppString _id; // xml parser rule file name - if empty, then we use default name. Mandatory if _userDefinedLangName is not empty
+	std::wstring _id; // xml parser rule file name - if empty, then we use default name. Mandatory if _userDefinedLangName is not empty
 	std::unique_ptr<FunctionParser> _parser = nullptr;
-	NppString _userDefinedLangName;
+	std::wstring _userDefinedLangName;
 
 	ParserInfo() {}
-	explicit ParserInfo(const NppString& id) noexcept : _id(id) {}
-	explicit ParserInfo(const NppString& id, const NppString& userDefinedLangName) noexcept : _id(id), _userDefinedLangName(userDefinedLangName) {}
+	explicit ParserInfo(const std::wstring& id) noexcept : _id(id) {}
+	explicit ParserInfo(const std::wstring& id, const std::wstring& userDefinedLangName) noexcept : _id(id), _userDefinedLangName(userDefinedLangName) {}
 };
 
 class FunctionParsersManager final
 {
 public:
-	bool init(const NppString& xmlDirPath, const NppString& xmlInstalledPath, ScintillaEditView** ppEditView);
+	bool init(const std::wstring& xmlDirPath, const std::wstring& xmlInstalledPath, ScintillaEditView** ppEditView);
 	bool parse(std::vector<foundInfo>& foundInfos, const AssociationInfo& assoInfo);
 	
 
 private:
 	ScintillaEditView** _ppEditView = nullptr;
-	NppString _xmlDirPath; // The 1st place to load function list files. Usually it's "%APPDATA%\Notepad++\functionList\"
-	NppString _xmlDirInstalledPath; // Where Notepad++ is installed. The 2nd place to load function list files. Usually it's "%PROGRAMFILES%\Notepad++\functionList\" 
+	std::wstring _xmlDirPath; // The 1st place to load function list files. Usually it's "%APPDATA%\Notepad++\functionList\"
+	std::wstring _xmlDirInstalledPath; // Where Notepad++ is installed. The 2nd place to load function list files. Usually it's "%PROGRAMFILES%\Notepad++\functionList\" 
 
 	std::unique_ptr<ParserInfo> _parsers[L_EXTERNAL + nbMaxUserDefined] = { nullptr };
 	int _currentUDIndex = L_EXTERNAL;
 
-	bool getOverrideMapFromXmlTree(const NppString& xmlDirPath);
-	bool loadFuncListFromXmlTree(const NppString& xmlDirPath, LangType lType, const NppString& overrideId, int udlIndex = -1);
+	bool getOverrideMapFromXmlTree(const std::wstring& xmlDirPath);
+	bool loadFuncListFromXmlTree(const std::wstring& xmlDirPath, LangType lType, const std::wstring& overrideId, int udlIndex = -1);
 	static bool getZonePaserParameters(const NppXml::Element& classRangeParser, std::string& mainExprStr, std::string& openSymboleStr, std::string& closeSymboleStr, std::vector<std::string>& classNameExprArray, std::string& functionExprStr, std::vector<std::string>& functionNameExprArray);
 	static bool getUnitPaserParameters(const NppXml::Element& functionParser, std::string& mainExprStr, std::vector<std::string>& functionNameExprArray, std::vector<std::string>& classNameExprArray);
 	FunctionParser* getParser(const AssociationInfo& assoInfo);

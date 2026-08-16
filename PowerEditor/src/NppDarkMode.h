@@ -49,7 +49,7 @@ namespace NppDarkMode
 
 	struct NppDarkModeParams
 	{
-		const NppChar* _themeClassName = nullptr;
+		const wchar_t* _themeClassName = nullptr;
 		bool _subclass = false;
 		bool _theme = false;
 	};
@@ -95,8 +95,8 @@ namespace NppDarkMode
 
 	bool isWindowsModeEnabled();
 	void setWindowsMode(bool enable);
-	NppString getThemeName();
-	void setThemeName(const NppString& newThemeName);
+	std::wstring getThemeName();
+	void setThemeName(const std::wstring& newThemeName);
 	TbIconInfo getToolbarIconInfo(bool useDark);
 	TbIconInfo getToolbarIconInfo();
 	void setToolbarIconSet(int state2Set, bool useDark);

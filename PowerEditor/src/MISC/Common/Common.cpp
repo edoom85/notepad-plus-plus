@@ -56,15 +56,15 @@ using namespace std;
 
 void printInt(int int2print)
 {
-	NppChar str[32];
-	sprintf(str, "%d", int2print);
-	::MessageBox(NULL, str, "", MB_OK);
+	wchar_t str[32];
+	wsprintf(str, L"%d", int2print);
+	::MessageBox(NULL, str, L"", MB_OK);
 }
 
 
-void printStr(const NppChar *str2print)
+void printStr(const wchar_t *str2print)
 {
-	::MessageBox(NULL, str2print, "", MB_OK);
+	::MessageBox(NULL, str2print, L"", MB_OK);
 }
 
 wstring commafyInt(size_t n)
@@ -75,7 +75,7 @@ wstring commafyInt(size_t n)
 	return ss.str();
 }
 
-std::string getFileContent(const NppChar* file2read, bool* pbFailed)
+std::string getFileContent(const wchar_t* file2read, bool* pbFailed)
 {
 	if (pbFailed)
 		*pbFailed = false; // reset
@@ -87,7 +87,7 @@ std::string getFileContent(const NppChar* file2read, bool* pbFailed)
 		return "";
 	}
 
-	FILE* fp = _wfopen(file2read, "rb");
+	FILE* fp = _wfopen(file2read, L"rb");
 	if (!fp)
 	{
 		if (pbFailed)
@@ -112,8 +112,8 @@ std::string getFileContent(const NppChar* file2read, bool* pbFailed)
 		if (pbFailed)
 			*pbFailed = true;
 		std::string().swap(wholeFileContent); // to immediately release all the allocated memory
-		::MessageBoxW(NULL, "std::bad_alloc exception caught!\n\nProbably not enough contiguous memory to complete the operation.",
-			"Notepad++ - getFileContent", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
+		::MessageBoxW(NULL, L"std::bad_alloc exception caught!\n\nProbably not enough contiguous memory to complete the operation.",
+			L"Notepad++ - getFileContent", MB_OK | MB_ICONWARNING | MB_APPLMODAL);
 	}
 	catch (...)
 	{
@@ -129,7 +129,7 @@ std::string getFileContent(const NppChar* file2read, bool* pbFailed)
 static char getDriveLetter()
 {
 	char drive = '\0';
-	NppChar current[MAX_PATH];
+	wchar_t current[MAX_PATH];
 
 	::GetCurrentDirectory(MAX_PATH, current);
 	int driveNbr = ::PathGetDriveNumber(current);
@@ -140,14 +140,14 @@ static char getDriveLetter()
 }
 
 
-wstring relativeFilePathToFullFilePath(const NppChar *relativeFilePath)
+wstring relativeFilePathToFullFilePath(const wchar_t *relativeFilePath)
 {
 	wstring fullFilePathName;
 	BOOL isRelative = ::PathIsRelative(relativeFilePath);
 
 	if (isRelative)
 	{
-		NppChar fullFileName[MAX_PATH];
+		wchar_t fullFileName[MAX_PATH];
 		::GetFullPathName(relativeFilePath, MAX_PATH, fullFileName, NULL);
 		fullFilePathName += fullFileName;
 	}
@@ -166,7 +166,7 @@ wstring relativeFilePathToFullFilePath(const NppChar *relativeFilePath)
 }
 
 
-void writeFileContent(const NppChar *file2write, const char *content2write)
+void writeFileContent(const wchar_t *file2write, const char *content2write)
 {
 	Win32_IO_File file(file2write);
 
@@ -175,7 +175,7 @@ void writeFileContent(const NppChar *file2write, const char *content2write)
 }
 
 
-void writeLog(const NppChar* logFileName, const char* log2write)
+void writeLog(const wchar_t* logFileName, const char* log2write)
 {
 	const DWORD accessParam{ GENERIC_READ | GENERIC_WRITE };
 	const DWORD shareParam{ FILE_SHARE_READ | FILE_SHARE_WRITE };
@@ -191,7 +191,7 @@ void writeLog(const NppChar* logFileName, const char* log2write)
 
 		SYSTEMTIME currentTime = {};
 		::GetLocalTime(&currentTime);
-		wstring dateTimeStrW = getDateTimeStrFrom("yyyy-MM-dd HH:mm:ss", currentTime);
+		wstring dateTimeStrW = getDateTimeStrFrom(L"yyyy-MM-dd HH:mm:ss", currentTime);
 		string log2writeStr = wstring2string(dateTimeStrW, CP_UTF8);
 		log2writeStr += "  ";
 		log2writeStr += log2write;
@@ -205,20 +205,20 @@ void writeLog(const NppChar* logFileName, const char* log2write)
 	}
 }
 
-void writeLog(const NppChar* logFileName, const NppChar* log2write)
+void writeLog(const wchar_t* logFileName, const wchar_t* log2write)
 {
 	string log2WriteA = wstring2string(log2write, CP_ACP);
 	return writeLog(logFileName, log2WriteA.c_str());
 }
 
-wstring folderBrowser(HWND parent, const wstring & title, int outputCtrlID, const NppChar *defaultStr)
+wstring folderBrowser(HWND parent, const wstring & title, int outputCtrlID, const wchar_t *defaultStr)
 {
 	wstring folderName;
 	CustomFileDialog dlg(parent);
 	dlg.setTitle(title.c_str());
 
 	// Get an initial directory from the edit control or from argument provided
-	NppChar directory[MAX_PATH] = {};
+	wchar_t directory[MAX_PATH] = {};
 	if (outputCtrlID != 0)
 		::GetDlgItemText(parent, outputCtrlID, directory, _countof(directory));
 	directory[_countof(directory) - 1] = '\0';
@@ -238,9 +238,9 @@ wstring folderBrowser(HWND parent, const wstring & title, int outputCtrlID, cons
 }
 
 
-wstring getFolderName(HWND parent, const NppChar *defaultDir)
+wstring getFolderName(HWND parent, const wchar_t *defaultDir)
 {
-	return folderBrowser(parent, "Select a folder", 0, defaultDir);
+	return folderBrowser(parent, L"Select a folder", 0, defaultDir);
 }
 
 
@@ -311,7 +311,7 @@ int filter(unsigned int code, struct _EXCEPTION_POINTERS *)
 }
 
 
-bool isInList(const NppChar* token, const NppChar* list)
+bool isInList(const wchar_t* token, const wchar_t* list)
 {
 	if ((!token) || (!list))
 		return false;
@@ -319,7 +319,7 @@ bool isInList(const NppChar* token, const NppChar* list)
 	static constexpr size_t wordLen = 64;
 	const size_t listLen = std::wcslen(list);
 
-	NppChar word[wordLen] = { L'\0' };
+	wchar_t word[wordLen] = { L'\0' };
 	size_t i = 0;
 	size_t j = 0;
 
@@ -349,12 +349,12 @@ bool isInList(const NppChar* token, const NppChar* list)
 }
 
 
-wstring purgeMenuItemString(const NppChar * menuItemStr, bool keepAmpersand)
+wstring purgeMenuItemString(const wchar_t * menuItemStr, bool keepAmpersand)
 {
 	static constexpr size_t cleanedNameLen = 64;
-	NppChar cleanedName[cleanedNameLen] = "";
+	wchar_t cleanedName[cleanedNameLen] = L"";
 	size_t j = 0;
-	size_t menuNameLen = strlen(menuItemStr);
+	size_t menuNameLen = lstrlen(menuItemStr);
 	if (menuNameLen >= cleanedNameLen)
 		menuNameLen = cleanedNameLen - 1;
 
@@ -383,7 +383,7 @@ wstring purgeMenuItemString(const NppChar * menuItemStr, bool keepAmpersand)
 }
 
 
-const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t codepage, int lenMbcs, int* pLenWc, int* pBytesNotProcessed)
+const wchar_t* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t codepage, int lenMbcs, int* pLenWc, int* pBytesNotProcessed)
 {
 	// Do not process NULL pointer
 	if (!mbcs2Convert)
@@ -403,7 +403,7 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 	// If length not specified, simply convert without checking
 	if (lenMbcs == -1)
 	{
-		lenWc = nppMBtoWC(cp, 0, mbcs2Convert, lenMbcs, NULL, 0);
+		lenWc = MultiByteToWideChar(cp, 0, mbcs2Convert, lenMbcs, NULL, 0);
 	}
 	// Otherwise, test if we are cutting a multi-byte character at end of buffer
 	else if (cp == CP_UTF8) // For UTF-8, we know how to test it
@@ -413,20 +413,20 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 		{
 			bytesNotProcessed = lenMbcs - indexOfLastChar;
 		}
-		lenWc = nppMBtoWC(cp, 0, mbcs2Convert, lenMbcs - bytesNotProcessed, NULL, 0);
+		lenWc = MultiByteToWideChar(cp, 0, mbcs2Convert, lenMbcs - bytesNotProcessed, NULL, 0);
 	}
 	else // For other encodings, ask system if there are any invalid characters; note that it will not correctly know if last character is cut when there are invalid characters inside the text
 	{
-		lenWc = nppMBtoWC(cp, MB_ERR_INVALID_CHARS, mbcs2Convert, lenMbcs, NULL, 0);
+		lenWc = MultiByteToWideChar(cp, MB_ERR_INVALID_CHARS, mbcs2Convert, lenMbcs, NULL, 0);
 		if (lenWc == 0 && GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
 		{
 			// Test without last byte
-			if (lenMbcs > 1) lenWc = nppMBtoWC(cp, MB_ERR_INVALID_CHARS, mbcs2Convert, lenMbcs - 1, NULL, 0);
+			if (lenMbcs > 1) lenWc = MultiByteToWideChar(cp, MB_ERR_INVALID_CHARS, mbcs2Convert, lenMbcs - 1, NULL, 0);
 			if (lenWc == 0) // don't have to check that the error is still ERROR_NO_UNICODE_TRANSLATION, since only the length parameter changed
 			{
 				// TODO: should warn user about incorrect loading due to invalid characters
 				// We still load the file, but the system will either strip or replace invalid characters (including the last character, if cut in half)
-				lenWc = nppMBtoWC(cp, 0, mbcs2Convert, lenMbcs, NULL, 0);
+				lenWc = MultiByteToWideChar(cp, 0, mbcs2Convert, lenMbcs, NULL, 0);
 			}
 			else
 			{
@@ -436,14 +436,14 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 		}
 		else if (lenWc == 0)
 		{
-			lenWc = nppMBtoWC(cp, 0, mbcs2Convert, lenMbcs, NULL, 0);
+			lenWc = MultiByteToWideChar(cp, 0, mbcs2Convert, lenMbcs, NULL, 0);
 		}
 	}
 
 	if (lenWc > 0)
 	{
 		_wideCharStr.sizeTo(lenWc);
-		nppMBtoWC(cp, 0, mbcs2Convert, lenMbcs - bytesNotProcessed, _wideCharStr, lenWc);
+		MultiByteToWideChar(cp, 0, mbcs2Convert, lenMbcs - bytesNotProcessed, _wideCharStr, lenWc);
 		if (lenMbcs == -1)
 			_wideCharStr[lenWc - 1] = '\0';
 		else
@@ -462,8 +462,8 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 
 
 // "mstart" and "mend" are pointers to indexes in mbcs2Convert,
-// which are converted to the corresponding indexes in the returned NppChar string.
-const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int mbcsLen)
+// which are converted to the corresponding indexes in the returned wchar_t string.
+const wchar_t* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int mbcsLen)
 {
 	// Do not process NULL pointer
 	if (!mbcs2Convert) return NULL;
@@ -477,12 +477,12 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 	}
 
 	UINT cp = static_cast<UINT>(codepage);
-	int len = nppMBtoWC(cp, 0, mbcs2Convert, mbcsLen ? mbcsLen : -1, NULL, 0);
+	int len = MultiByteToWideChar(cp, 0, mbcs2Convert, mbcsLen ? mbcsLen : -1, NULL, 0);
 
 	if (len > 0)
 	{
 		_wideCharStr.sizeTo(len);
-		len = nppMBtoWC(cp, 0, mbcs2Convert, mbcsLen ? mbcsLen : -1, _wideCharStr, len);
+		len = MultiByteToWideChar(cp, 0, mbcs2Convert, mbcsLen ? mbcsLen : -1, _wideCharStr, len);
 		if (mbcsLen == -1) // added
 			_wideCharStr[len - 1] = '\0';
 		else
@@ -491,8 +491,8 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 		const intptr_t mbcsLen2 = mbcsLen ? mbcsLen : static_cast<intptr_t>(std::strlen(mbcs2Convert));
 		if (*mstart < mbcsLen2 && *mend <= mbcsLen2)
 		{
-			*mstart = nppMBtoWC(cp, 0, mbcs2Convert, static_cast<int>(*mstart), _wideCharStr, 0);
-			*mend = nppMBtoWC(cp, 0, mbcs2Convert, static_cast<int>(*mend), _wideCharStr, 0);
+			*mstart = MultiByteToWideChar(cp, 0, mbcs2Convert, static_cast<int>(*mstart), _wideCharStr, 0);
+			*mend = MultiByteToWideChar(cp, 0, mbcs2Convert, static_cast<int>(*mend), _wideCharStr, 0);
 			if (*mstart >= len || *mend > len)
 			{
 				*mstart = 0;
@@ -510,7 +510,7 @@ const NppChar* WcharMbcsConvertor::char2wchar(const char* mbcs2Convert, size_t c
 }
 
 
-const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size_t codepage, int lenWc, int* pLenMbcs)
+const char* WcharMbcsConvertor::wchar2char(const wchar_t* wcharStr2Convert, size_t codepage, int lenWc, int* pLenMbcs)
 {
 	if (!wcharStr2Convert)
 		return nullptr;
@@ -522,11 +522,11 @@ const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size
 	}
 
 	UINT cp = static_cast<UINT>(codepage);
-	int lenMbcs = nppWCtoMB(cp, 0, wcharStr2Convert, lenWc, NULL, 0, NULL, NULL);
+	int lenMbcs = WideCharToMultiByte(cp, 0, wcharStr2Convert, lenWc, NULL, 0, NULL, NULL);
 	if (lenMbcs > 0)
 	{
 		_multiByteStr.sizeTo(lenMbcs);
-		nppWCtoMB(cp, 0, wcharStr2Convert, lenWc, _multiByteStr, lenMbcs, NULL, NULL);
+		WideCharToMultiByte(cp, 0, wcharStr2Convert, lenWc, _multiByteStr, lenMbcs, NULL, NULL);
 		if (lenWc == -1)
 			_multiByteStr[lenMbcs - 1] = '\0';
 		else
@@ -541,7 +541,7 @@ const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size
 }
 
 
-const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int wcharLenIn, int* lenOut)
+const char* WcharMbcsConvertor::wchar2char(const wchar_t* wcharStr2Convert, size_t codepage, intptr_t* mstart, intptr_t* mend, int wcharLenIn, int* lenOut)
 {
 	if (!wcharStr2Convert)
 		return nullptr;
@@ -556,12 +556,12 @@ const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size
 
 	UINT cp = static_cast<UINT>(codepage);
 
-	int len = nppWCtoMB(cp, 0, wcharStr2Convert, wcharLenIn ? wcharLenIn : -1, NULL, 0, NULL, NULL);
+	int len = WideCharToMultiByte(cp, 0, wcharStr2Convert, wcharLenIn ? wcharLenIn : -1, NULL, 0, NULL, NULL);
 
 	if (len > 0)
 	{
 		_multiByteStr.sizeTo(len);
-		len = nppWCtoMB(cp, 0, wcharStr2Convert, wcharLenIn ? wcharLenIn : -1, _multiByteStr, len, NULL, NULL);
+		len = WideCharToMultiByte(cp, 0, wcharStr2Convert, wcharLenIn ? wcharLenIn : -1, _multiByteStr, len, NULL, NULL);
 		if (wcharLenIn == -1)
 			_multiByteStr[len - 1] = '\0';
 		else
@@ -570,8 +570,8 @@ const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size
 		const intptr_t wcharLenIn2 = wcharLenIn ? wcharLenIn : static_cast<intptr_t>(std::wcslen(wcharStr2Convert));
 		if (*mstart < wcharLenIn2 && *mend < wcharLenIn2)
 		{
-			*mstart = ::nppWCtoMB(cp, 0, wcharStr2Convert, static_cast<int>(*mstart), nullptr, 0, nullptr, nullptr);
-			*mend = ::nppWCtoMB(cp, 0, wcharStr2Convert, static_cast<int>(*mend), nullptr, 0, nullptr, nullptr);
+			*mstart = ::WideCharToMultiByte(cp, 0, wcharStr2Convert, static_cast<int>(*mstart), nullptr, 0, nullptr, nullptr);
+			*mend = ::WideCharToMultiByte(cp, 0, wcharStr2Convert, static_cast<int>(*mend), nullptr, 0, nullptr, nullptr);
 			if (*mstart >= len || *mend > len)
 			{
 				*mstart = 0;
@@ -592,28 +592,28 @@ const char* WcharMbcsConvertor::wchar2char(const NppChar* wcharStr2Convert, size
 }
 
 
-NppString string2wstring(const std::string& rString, UINT codepage)
+std::wstring string2wstring(const std::string& rString, UINT codepage)
 {
 	// includes null terminator
-	const int len = ::nppMBtoWC(codepage, 0, rString.c_str(), -1, nullptr, 0);
+	const int len = ::MultiByteToWideChar(codepage, 0, rString.c_str(), -1, nullptr, 0);
 	if (len > 0)
 	{
-		auto str = NppString(len, L'\0');
-		::nppMBtoWC(codepage, 0, rString.c_str(), -1, str.data(), len);
+		auto str = std::wstring(len, L'\0');
+		::MultiByteToWideChar(codepage, 0, rString.c_str(), -1, str.data(), len);
 		str.resize(static_cast<size_t>(len) - 1); // remove extra null terminator
 		return str;
 	}
-	return "";
+	return L"";
 }
 
-std::string wstring2string(const NppString& rwString, UINT codepage)
+std::string wstring2string(const std::wstring& rwString, UINT codepage)
 {
 	// includes null terminator
-	const int len = ::nppWCtoMB(codepage, 0, rwString.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	const int len = ::WideCharToMultiByte(codepage, 0, rwString.c_str(), -1, nullptr, 0, nullptr, nullptr);
 	if (len > 0)
 	{
 		auto str = std::string(len, '\0');
-		::nppWCtoMB(codepage, 0, rwString.c_str(), -1, str.data(), len, nullptr, nullptr);
+		::WideCharToMultiByte(codepage, 0, rwString.c_str(), -1, str.data(), len, nullptr, nullptr);
 		str.resize(static_cast<size_t>(len) - 1); // remove extra null terminator
 		return str;
 	}
@@ -639,16 +639,16 @@ wstring convertFileName(T beg, T end)
 
 wstring intToString(int val)
 {
-	std::vector<NppChar> vt;
+	std::vector<wchar_t> vt;
 	bool isNegative = val < 0;
 	// can't use abs here because std::numeric_limits<int>::min() has no positive representation
 	//val = std::abs(val);
 
-	vt.push_back('0' + static_cast<NppChar>(std::abs(val % 10)));
+	vt.push_back('0' + static_cast<wchar_t>(std::abs(val % 10)));
 	val /= 10;
 	while (val != 0)
 	{
-		vt.push_back('0' + static_cast<NppChar>(std::abs(val % 10)));
+		vt.push_back('0' + static_cast<wchar_t>(std::abs(val % 10)));
 		val /= 10;
 	}
 
@@ -660,13 +660,13 @@ wstring intToString(int val)
 
 wstring uintToString(unsigned int val)
 {
-	std::vector<NppChar> vt;
+	std::vector<wchar_t> vt;
 
-	vt.push_back('0' + static_cast<NppChar>(val % 10));
+	vt.push_back('0' + static_cast<wchar_t>(val % 10));
 	val /= 10;
 	while (val != 0)
 	{
-		vt.push_back('0' + static_cast<NppChar>(val % 10));
+		vt.push_back('0' + static_cast<wchar_t>(val % 10));
 		val /= 10;
 	}
 
@@ -683,11 +683,11 @@ wstring BuildMenuFileName(int filenameLen, unsigned int pos, const wstring &file
 		if (pos < 9)
 		{
 			strTemp.push_back('&');
-			strTemp.push_back('1' + static_cast<NppChar>(pos));
+			strTemp.push_back('1' + static_cast<wchar_t>(pos));
 		}
 		else if (pos == 9)
 		{
-			strTemp.append("1&0");
+			strTemp.append(L"1&0");
 		}
 		else
 		{
@@ -696,7 +696,7 @@ wstring BuildMenuFileName(int filenameLen, unsigned int pos, const wstring &file
 			strTemp.push_back('&');
 			strTemp.append(uintToString(splitDigits.rem));
 		}
-		strTemp.append(": ");
+		strTemp.append(L": ");
 	}
 	else
 	{
@@ -705,10 +705,10 @@ wstring BuildMenuFileName(int filenameLen, unsigned int pos, const wstring &file
 
 	if (filenameLen > 0)
 	{
-		std::vector<NppChar> vt(filenameLen + 1);
+		std::vector<wchar_t> vt(filenameLen + 1);
 		// W removed from PathCompactPathExW due to compiler errors for ANSI version.
 		PathCompactPathEx(&vt[0], filename.c_str(), filenameLen + 1, 0);
-		strTemp.append(convertFileName(vt.begin(), vt.begin() + strlen(&vt[0])));
+		strTemp.append(convertFileName(vt.begin(), vt.begin() + lstrlen(&vt[0])));
 	}
 	else
 	{
@@ -726,7 +726,7 @@ wstring BuildMenuFileName(int filenameLen, unsigned int pos, const wstring &file
 		else
 		{
 			strTemp.append(convertFileName(it, it + MAX_PATH / 2 - 3));
-			strTemp.append("...");
+			strTemp.append(L"...");
 			strTemp.append(convertFileName(filename.end() - MAX_PATH / 2, filename.end()));
 		}
 	}
@@ -762,7 +762,7 @@ wstring pathAppend(wstring& strDest, const wstring& str2append)
 {
 	if (strDest.empty() && str2append.empty()) // "" + ""
 	{
-		strDest = "\\";
+		strDest = L"\\";
 		return strDest;
 	}
 
@@ -787,7 +787,7 @@ wstring pathAppend(wstring& strDest, const wstring& str2append)
 	}
 
 	// toto + titi
-	strDest += "\\";
+	strDest += L"\\";
 	strDest += str2append;
 
 	return strDest;
@@ -833,14 +833,14 @@ COLORREF getCtrlBgColor(HWND hWnd)
 }
 
 
-NppString stringToUpper(NppString strToConvert)
+std::wstring stringToUpper(std::wstring strToConvert)
 {
 	std::transform(strToConvert.begin(), strToConvert.end(), strToConvert.begin(),
 		[](auto ch) { return std::toupper(ch, getSysLocale()); });
 	return strToConvert;
 }
 
-NppString stringToLower(NppString strToConvert)
+std::wstring stringToLower(std::wstring strToConvert)
 {
 	std::transform(strToConvert.begin(), strToConvert.end(), strToConvert.begin(),
 		[](auto ch) { return std::tolower(ch, getSysLocale()); });
@@ -897,7 +897,7 @@ bool str2numberVector(wstring str2convert, std::vector<size_t>& numVect)
 	}
 
 	std::vector<wstring> v;
-	stringSplit(str2convert, " ", v);
+	stringSplit(str2convert, L" ", v);
 	for (const auto& i : v)
 	{
 		// Don't treat empty string and the number greater than 9999
@@ -941,9 +941,9 @@ wstring stringTakeWhileAdmissable(const wstring& input, const wstring& admissabl
 double stodLocale(const wstring& str, [[maybe_unused]] _locale_t loc, size_t* idx)
 {
 	// Copied from the std::stod implementation but uses _wcstod_l instead of wcstod.
-	const NppChar* ptr = str.c_str();
+	const wchar_t* ptr = str.c_str();
 	errno = 0;
-	NppChar* eptr;
+	wchar_t* eptr;
 #ifdef __MINGW32__
 	double ans = ::wcstod(ptr, &eptr);
 #else
@@ -975,7 +975,7 @@ const std::locale& getSysLocale()
 
 bool str2Clipboard(const wstring &str2cpy, HWND hwnd)
 {
-	size_t len2Allocate = (str2cpy.size() + 1) * sizeof(NppChar);
+	size_t len2Allocate = (str2cpy.size() + 1) * sizeof(wchar_t);
 	HGLOBAL hglbCopy = ::GlobalAlloc(GMEM_MOVEABLE, len2Allocate);
 	if (hglbCopy == NULL)
 	{
@@ -996,7 +996,7 @@ bool str2Clipboard(const wstring &str2cpy, HWND hwnd)
 	}
 
 	// Lock the handle and copy the text to the buffer.
-	auto* pStr = static_cast<NppChar*>(::GlobalLock(hglbCopy));
+	auto* pStr = static_cast<wchar_t*>(::GlobalLock(hglbCopy));
 	if (!pStr)
 	{
 		::GlobalFree(hglbCopy);
@@ -1004,7 +1004,7 @@ bool str2Clipboard(const wstring &str2cpy, HWND hwnd)
 		return false;
 	}
 
-	wcscpy_s(pStr, len2Allocate / sizeof(NppChar), str2cpy.c_str());
+	wcscpy_s(pStr, len2Allocate / sizeof(wchar_t), str2cpy.c_str());
 	::GlobalUnlock(hglbCopy);
 	// Place the handle on the clipboard.
 	unsigned int clipBoardFormat = CF_UNICODETEXT;
@@ -1022,9 +1022,9 @@ bool str2Clipboard(const wstring &str2cpy, HWND hwnd)
 	return true;
 }
 
-NppString strFromClipboard()
+std::wstring strFromClipboard()
 {
-	NppString clipboardText;
+	std::wstring clipboardText;
 	if (::OpenClipboard(NULL))
 	{
 		if (::IsClipboardFormatAvailable(CF_UNICODETEXT))
@@ -1032,7 +1032,7 @@ NppString strFromClipboard()
 			HANDLE hClipboardData = ::GetClipboardData(CF_UNICODETEXT);
 			if (hClipboardData)
 			{
-				NppChar* pWc = static_cast<NppChar*>(::GlobalLock(hClipboardData));
+				wchar_t* pWc = static_cast<wchar_t*>(::GlobalLock(hClipboardData));
 				if (pWc)
 				{
 					clipboardText = pWc;
@@ -1065,7 +1065,7 @@ NppString strFromClipboard()
 
 		if (clipboardText[0] != '\r' && clipboardText[0] != '\n') // X\n, X\r  => remove \n or \r
 		{
-			NppChar trimedResult[2]{};
+			wchar_t trimedResult[2]{};
 			trimedResult[0] = clipboardText[0];
 			trimedResult[1] = '\0';
 			return trimedResult;
@@ -1076,9 +1076,9 @@ NppString strFromClipboard()
 	else // length >= 3    => Remove the EOL at the end of string
 	{
 		size_t posEol = clipboardText.length() - 2;
-		if (clipboardText.substr(posEol) == "\r\n")
+		if (clipboardText.substr(posEol) == L"\r\n")
 			clipboardText.erase(posEol, 2);
-		else if (clipboardText.substr(posEol + 1) == "\r" || clipboardText.substr(posEol + 1) == "\n")
+		else if (clipboardText.substr(posEol + 1) == L"\r" || clipboardText.substr(posEol + 1) == L"\n")
 			clipboardText.erase(posEol + 1, 1);
 	}
 
@@ -1087,13 +1087,13 @@ NppString strFromClipboard()
 
 bool buf2Clipboard(const std::vector<Buffer*>& buffers, bool isFullPath, HWND hwnd)
 {
-	const wstring crlf = "\r\n";
+	const wstring crlf = L"\r\n";
 	wstring selection;
 	for (auto&& buf : buffers)
 	{
 		if (buf)
 		{
-			const NppChar* fileName = isFullPath ? buf->getFullPathName() : buf->getFileName();
+			const wchar_t* fileName = isFullPath ? buf->getFullPathName() : buf->getFileName();
 			if (fileName)
 				selection += fileName;
 		}
@@ -1107,7 +1107,7 @@ bool buf2Clipboard(const std::vector<Buffer*>& buffers, bool isFullPath, HWND hw
 	return false;
 }
 
-bool matchInList(const NppChar *fileName, const std::vector<wstring> & patterns)
+bool matchInList(const wchar_t *fileName, const std::vector<wstring> & patterns)
 {
 	bool is_matched = false;
 	for (size_t i = 0, len = patterns.size(); i < len; ++i)
@@ -1126,7 +1126,7 @@ bool matchInList(const NppChar *fileName, const std::vector<wstring> & patterns)
 	return is_matched;
 }
 
-bool matchInExcludeDirList(const NppChar* dirName, const std::vector<wstring>& patterns, size_t level)
+bool matchInExcludeDirList(const wchar_t* dirName, const std::vector<wstring>& patterns, size_t level)
 {
 	for (size_t i = 0, len = patterns.size(); i < len; ++i)
 	{
@@ -1163,7 +1163,7 @@ bool allPatternsAreExclusion(const std::vector<wstring>& patterns)
 
 wstring GetLastErrorAsString(DWORD errorCode)
 {
-	wstring errorMsg("");
+	wstring errorMsg(L"");
 	// Get the error message, if any.
 	// If both error codes (passed error n GetLastError) are 0, then return empty
 	if (errorCode == 0)
@@ -1182,9 +1182,9 @@ wstring GetLastErrorAsString(DWORD errorCode)
 	}
 	else
 	{
-		errorMsg += "(Error code: ";
+		errorMsg += L"(Error code: ";
 		errorMsg += std::to_wstring(errorCode);
-		errorMsg += ")\r\n";
+		errorMsg += L")\r\n";
 	}
 
 	return errorMsg;
@@ -1193,7 +1193,7 @@ wstring GetLastErrorAsString(DWORD errorCode)
 static bool isHelpTipStaticTextCtrl(HWND hWnd)
 {
 	static constexpr int strLen = 8; // 8 is enough, WC_STATIC length is 7
-	auto className = NppString(strLen, L'\0');
+	auto className = std::wstring(strLen, L'\0');
 	className.resize(static_cast<size_t>(::GetClassNameW(hWnd, className.data(), strLen)));
 	if (className != WC_STATIC)
 	{
@@ -1206,9 +1206,9 @@ static bool isHelpTipStaticTextCtrl(HWND hWnd)
 		return false;
 	}
 
-	auto ctrlText = NppString(ctrlStrLen + 1, L'\0');
+	auto ctrlText = std::wstring(ctrlStrLen + 1, L'\0');
 	ctrlText.resize(static_cast<size_t>(::GetWindowTextW(hWnd, ctrlText.data(), ctrlStrLen + 1)));
-	if (ctrlText != "(?)")
+	if (ctrlText != L"(?)")
 	{
 		return false;
 	}
@@ -1252,7 +1252,7 @@ static LRESULT CALLBACK helpTipStaticTextCtrlParentClickProc(
 	return ::DefSubclassProc(hwnd, Message, wParam, lParam);
 }
 
-HWND createToolTip(int toolID, HWND hDlg, HINSTANCE hInst, NppChar* pszText, bool isRTL)
+HWND createToolTip(int toolID, HWND hDlg, HINSTANCE hInst, wchar_t* pszText, bool isRTL)
 {
 	if (!toolID || !hDlg || !pszText)
 	{
@@ -1316,7 +1316,7 @@ HWND createToolTip(int toolID, HWND hDlg, HINSTANCE hInst, NppChar* pszText, boo
 	return hwndTip;
 }
 
-HWND createToolTipRect(int toolID, HWND hWnd, HINSTANCE hInst, NppChar* pszText, const RECT rc)
+HWND createToolTipRect(int toolID, HWND hWnd, HINSTANCE hInst, wchar_t* pszText, const RECT rc)
 {
 	if (!toolID || !hWnd || !pszText)
 	{
@@ -1390,7 +1390,7 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 
 		if (!result)
 		{
-			wstring errorMessage = "Check certificate of " + fullFilePath + " : ";
+			wstring errorMessage = L"Check certificate of " + fullFilePath + L" : ";
 			errorMessage += GetLastErrorAsString(GetLastError());
 			throw errorMessage;
 		}
@@ -1399,7 +1399,7 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 		result = CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, NULL, &dwSignerInfo);
 		if (!result)
 		{
-			wstring errorMessage = "CryptMsgGetParam first call: ";
+			wstring errorMessage = L"CryptMsgGetParam first call: ";
 			errorMessage += GetLastErrorAsString(GetLastError());
 			throw errorMessage;
 		}
@@ -1408,7 +1408,7 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 		pSignerInfo = static_cast<PCMSG_SIGNER_INFO>(::LocalAlloc(LPTR, dwSignerInfo));
 		if (!pSignerInfo)
 		{
-			wstring errorMessage = "CryptMsgGetParam memory allocation problem: ";
+			wstring errorMessage = L"CryptMsgGetParam memory allocation problem: ";
 			errorMessage += GetLastErrorAsString(GetLastError());
 			throw errorMessage;
 		}
@@ -1417,7 +1417,7 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 		result = ::CryptMsgGetParam(hMsg, CMSG_SIGNER_INFO_PARAM, 0, pSignerInfo, &dwSignerInfo);
 		if (!result)
 		{
-			wstring errorMessage = "CryptMsgGetParam: ";
+			wstring errorMessage = L"CryptMsgGetParam: ";
 			errorMessage += GetLastErrorAsString(GetLastError());
 			throw errorMessage;
 		}
@@ -1430,7 +1430,7 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 		pCertContext = ::CertFindCertificateInStore(hStore, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING, 0, CERT_FIND_SUBJECT_CERT, &CertInfo, nullptr);
 		if (!pCertContext)
 		{
-			wstring errorMessage = "Certificate context: ";
+			wstring errorMessage = L"Certificate context: ";
 			errorMessage += GetLastErrorAsString(GetLastError());
 			throw errorMessage;
 		}
@@ -1441,27 +1441,27 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 		dwData = CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, NULL, 0);
 		if (dwData <= 1)
 		{
-			throw wstring("Certificate checking error: getting data size problem.");
+			throw wstring(L"Certificate checking error: getting data size problem.");
 		}
 
 		// Allocate memory for subject name.
-		szName = static_cast<LPWSTR>(::LocalAlloc(LPTR, dwData * sizeof(NppChar)));
+		szName = static_cast<LPWSTR>(::LocalAlloc(LPTR, dwData * sizeof(wchar_t)));
 		if (!szName)
 		{
-			throw wstring("Certificate checking error: memory allocation problem.");
+			throw wstring(L"Certificate checking error: memory allocation problem.");
 		}
 
 		// Get subject name.
 		if (CertGetNameString(pCertContext, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, szName, dwData) <= 1)
 		{
-			throw wstring("Cannot get certificate info.");
+			throw wstring(L"Cannot get certificate info.");
 		}
 
 		// check Subject name.
 		wstring subjectName = szName;
 		if (subjectName != subjectName2check)
 		{
-			throw wstring("Certificate checking error: the certificate is not matched.");
+			throw wstring(L"Certificate checking error: the certificate is not matched.");
 		}
 
 		isOK = true;
@@ -1469,14 +1469,14 @@ bool isCertificateValidated(const wstring & fullFilePath, const wstring & subjec
 	catch (const wstring& s)
 	{
 		// display error message
-		MessageBox(NULL, s.c_str(), "Certificate checking", MB_OK);
+		MessageBox(NULL, s.c_str(), L"Certificate checking", MB_OK);
 	}
 	catch (...)
 	{
 		// Unknown error
-		wstring errorMessage = "Unknown exception occurred. ";
+		wstring errorMessage = L"Unknown exception occurred. ";
 		errorMessage += GetLastErrorAsString(GetLastError());
-		MessageBox(NULL, errorMessage.c_str(), "Certificate checking", MB_OK);
+		MessageBox(NULL, errorMessage.c_str(), L"Certificate checking", MB_OK);
 	}
 
 	// Clean up.
@@ -1500,14 +1500,14 @@ bool isAssoCommandExisting(LPCWSTR FullPathName)
 		PWSTR ext = PathFindExtension(FullPathName);
 
 		HRESULT hres;
-		NppChar buffer[MAX_PATH] = "";
+		wchar_t buffer[MAX_PATH] = L"";
 		DWORD bufferLen = MAX_PATH;
 
 		// check if association exist
 		hres = AssocQueryString(ASSOCF_VERIFY|ASSOCF_INIT_IGNOREUNKNOWN, ASSOCSTR_COMMAND, ext, NULL, buffer, &bufferLen);
 
 		isAssoCmdExist = (hres == S_OK)                  // check if association exist and no error
-			&& (wcsstr(buffer, "notepad++.exe")) == NULL;   // check association with notepad++
+			&& (wcsstr(buffer, L"notepad++.exe")) == NULL;   // check association with notepad++
 
 	}
 	return isAssoCmdExist;
@@ -1516,7 +1516,7 @@ bool isAssoCommandExisting(LPCWSTR FullPathName)
 bool deleteFileOrFolder(const wstring& f2delete)
 {
 	auto len = f2delete.length();
-	auto actionFolder = std::make_unique<NppChar[]>(len + 2);
+	auto actionFolder = std::make_unique<wchar_t[]>(len + 2);
 	::wcscpy_s(actionFolder.get(), len + 2, f2delete.c_str());
 	actionFolder[len] = 0;
 	actionFolder[len + 1] = 0;
@@ -1539,7 +1539,7 @@ bool deleteFileOrFolder(const wstring& f2delete)
 // Get a vector of full file paths in a given folder. File extension type filter should be *.*, *.xml, *.dll... according to the type of file you want to get.  
 void getFilesInFolder(std::vector<wstring>& files, const wstring& extTypeFilter, const wstring& inFolder)
 {
-	NppString filterPath = inFolder;
+	std::wstring filterPath = inFolder;
 	pathAppend(filterPath, extTypeFilter);
 
 	WIN32_FIND_DATA foundData;
@@ -1560,15 +1560,15 @@ void getFilesInFolder(std::vector<wstring>& files, const wstring& extTypeFilter,
 }
 
 // remove any leading or trailing spaces from str
-void trim(NppString& str)
+void trim(std::wstring& str)
 {
-	NppString::size_type pos = str.find_last_not_of(' ');
+	std::wstring::size_type pos = str.find_last_not_of(' ');
 
-	if (pos != NppString::npos)
+	if (pos != std::wstring::npos)
 	{
 		str.erase(pos + 1);
 		pos = str.find_first_not_of(' ');
-		if (pos != NppString::npos) str.erase(0, pos);
+		if (pos != std::wstring::npos) str.erase(0, pos);
 	}
 	else str.erase(str.begin(), str.end());
 }
@@ -1598,14 +1598,14 @@ int nbDigitsFromNbLines(size_t nbLines)
 
 namespace
 {
-	static constexpr NppChar timeFmtEscapeChar = 0x1;
-	static constexpr NppChar middayFormat[] = "tt";
+	static constexpr wchar_t timeFmtEscapeChar = 0x1;
+	static constexpr wchar_t middayFormat[] = L"tt";
 
 	// Returns AM/PM string defined by the system locale for the specified time.
 	// This string may be empty or customized.
-	wstring getMiddayString(const NppChar* localeName, const SYSTEMTIME& st)
+	wstring getMiddayString(const wchar_t* localeName, const SYSTEMTIME& st)
 	{
-		NppString midday(MAX_PATH, L'\0');
+		std::wstring midday(MAX_PATH, L'\0');
 		const int ret = ::GetTimeFormatEx(localeName, 0, &st, middayFormat, midday.data(), static_cast<int>(midday.size()));
 		if (ret > 0)
 			midday.resize(static_cast<size_t>(ret) - 1); // Remove the null-terminator.
@@ -1661,11 +1661,11 @@ namespace
 
 wstring getDateTimeStrFrom(const wstring& dateTimeFormat, const SYSTEMTIME& st)
 {
-	const NppChar* localeName = LOCALE_NAME_USER_DEFAULT;
+	const wchar_t* localeName = LOCALE_NAME_USER_DEFAULT;
 	const DWORD flags = 0;
 
 	static constexpr int bufferSize = MAX_PATH;
-	NppChar buffer[bufferSize] = {};
+	wchar_t buffer[bufferSize] = {};
 	int ret = 0;
 
 
@@ -1700,7 +1700,7 @@ wstring getDateTimeStrFrom(const wstring& dateTimeFormat, const SYSTEMTIME& st)
 }
 
 // Don't forget to use DeleteObject(createdFont) before leaving the program
-HFONT createFont(const NppChar* fontName, int fontSize, bool isBold, HWND hDestParent)
+HFONT createFont(const wchar_t* fontName, int fontSize, bool isBold, HWND hDestParent)
 {
 	LOGFONT logFont{};
 	const int fontSizeScaled = DPIManagerV2::scaleFontForFactor(fontSize);
@@ -1713,7 +1713,7 @@ HFONT createFont(const NppChar* fontName, int fontSize, bool isBold, HWND hDestP
 	return ::CreateFontIndirectW(&logFont);
 }
 
-bool removeReadOnlyFlagFromFileAttributes(const NppChar* fileFullPath)
+bool removeReadOnlyFlagFromFileAttributes(const wchar_t* fileFullPath)
 {
 	DWORD dwFileAttribs = ::GetFileAttributes(fileFullPath);
 
@@ -1726,7 +1726,7 @@ bool removeReadOnlyFlagFromFileAttributes(const NppChar* fileFullPath)
 
 // return false when failed, otherwise true and then the isChangedToReadOnly output will be set
 // accordingly to the changed file R/O-state
-bool toggleReadOnlyFlagFromFileAttributes(const NppChar* fileFullPath, bool& isChangedToReadOnly)
+bool toggleReadOnlyFlagFromFileAttributes(const wchar_t* fileFullPath, bool& isChangedToReadOnly)
 {
 	DWORD dwFileAttribs = ::GetFileAttributes(fileFullPath);
 	if (dwFileAttribs == INVALID_FILE_ATTRIBUTES || (dwFileAttribs & FILE_ATTRIBUTE_DIRECTORY))
@@ -1749,9 +1749,9 @@ bool toggleReadOnlyFlagFromFileAttributes(const NppChar* fileFullPath, bool& isC
 			// try to set elevated
 			// (notepad++.exe #UAC-SETFILEATTRIBUTES# attrib_flags_number_str dest_file_path)
 			wstring strCmdLineParams = NPP_UAC_SETFILEATTRIBUTES_SIGN;
-			strCmdLineParams += " \"" + to_wstring(dwFileAttribs) + "\" \"";
+			strCmdLineParams += L" \"" + to_wstring(dwFileAttribs) + L"\" \"";
 			strCmdLineParams += fileFullPath;
-			strCmdLineParams += "\"";
+			strCmdLineParams += L"\"";
 			DWORD dwNppUacOpError = invokeNppUacOp(strCmdLineParams);
 			if (dwNppUacOpError == NO_ERROR)
 			{
@@ -1778,10 +1778,10 @@ bool isWin32NamespacePrefixedFileName(const wstring& fileName)
 
 	// the following covers the \\?\... raw Win32-filenames or the \\?\UNC\... UNC equivalents
 	// and also its *nix like forward slash equivalents
-	return (fileName.starts_with("\\\\?\\") || fileName.starts_with("//?/"));
+	return (fileName.starts_with(L"\\\\?\\") || fileName.starts_with(L"//?/"));
 }
 
-bool isWin32NamespacePrefixedFileName(const NppChar* szFileName)
+bool isWin32NamespacePrefixedFileName(const wchar_t* szFileName)
 {
 	const wstring fileName = szFileName;
 	return isWin32NamespacePrefixedFileName(fileName);
@@ -1808,7 +1808,7 @@ bool isUnsupportedFileName(const wstring& fileName)
 
 			for (size_t pos = 0; pos < fileName.size(); ++pos)
 			{
-				NppChar c = fileName.at(pos);
+				wchar_t c = fileName.at(pos);
 				if (c <= 31)
 				{
 					invalidASCIIChar = true;
@@ -1837,13 +1837,13 @@ bool isUnsupportedFileName(const wstring& fileName)
 				// strip input string to a filename without a possible path and/or ending dot-char
 				wstring fileNameOnly;
 				if (fileName.ends_with(L'.'))
-					fileNameOnly = fileName.substr(0, fileName.rfind("."));
+					fileNameOnly = fileName.substr(0, fileName.rfind(L"."));
 				else
 					fileNameOnly = fileName;
 
-				size_t pos = fileNameOnly.find_last_of("\\");
+				size_t pos = fileNameOnly.find_last_of(L"\\");
 				if (pos == std::string::npos)
-					pos = fileNameOnly.find_last_of("/");
+					pos = fileNameOnly.find_last_of(L"/");
 				if (pos != std::string::npos)
 					fileNameOnly = fileNameOnly.substr(pos + 1);
 
@@ -1856,10 +1856,10 @@ bool isUnsupportedFileName(const wstring& fileName)
 				std::transform(fileNameOnly.begin(), fileNameOnly.end(), fileNameOnly.begin(),
 					[](auto ch) { return std::toupper(ch, loc); });
 
-				const std::vector<NppString> reservedWin32NamespaceDeviceList {
-				"CON", "PRN", "AUX", "NUL",
-				"COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-				"LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+				const std::vector<std::wstring> reservedWin32NamespaceDeviceList {
+				L"CON", L"PRN", L"AUX", L"NUL",
+				L"COM1", L"COM2", L"COM3", L"COM4", L"COM5", L"COM6", L"COM7", L"COM8", L"COM9",
+				L"LPT1", L"LPT2", L"LPT3", L"LPT4", L"LPT5", L"LPT6", L"LPT7", L"LPT8", L"LPT9"
 				};
 
 				// last check is for all the old reserved Windows OS filenames
@@ -1875,29 +1875,29 @@ bool isUnsupportedFileName(const wstring& fileName)
 	return isUnsupported;
 }
 
-bool isUnsupportedFileName(const NppChar* szFileName)
+bool isUnsupportedFileName(const wchar_t* szFileName)
 {
-	const NppString fileName = szFileName;
+	const std::wstring fileName = szFileName;
 	return isUnsupportedFileName(fileName);
 }
 
-bool isUncPath(const NppString& path)
+bool isUncPath(const std::wstring& path)
 {
 	// Extended-length UNC: \\?\UNC\server\share\...  or  //?/UNC/server/share/...
 	if (isWin32NamespacePrefixedFileName(path))
 	{
-		NppString rest = path.substr(4); // strip \\?\ or //?/
-		return (rest.starts_with("UNC\\") || rest.starts_with("UNC/"));
+		std::wstring rest = path.substr(4); // strip \\?\ or //?/
+		return (rest.starts_with(L"UNC\\") || rest.starts_with(L"UNC/"));
 	}
 
 	// Plain UNC: \\server\share\...  or  //server/share/...
-	return (path.starts_with("\\\\") || path.starts_with("//"));
+	return (path.starts_with(L"\\\\") || path.starts_with(L"//"));
 }
 
-bool isUncFileUrl(const NppString& url)
+bool isUncFileUrl(const std::wstring& url)
 {
 	// file://server/share/... -> leaks NTLM. file:///C:/... or file://localhost/... does not.
-	if (!url.starts_with("file://"))
+	if (!url.starts_with(L"file://"))
 		return false;
 
 	size_t hostStart = 7; // after "file://"
@@ -1905,15 +1905,15 @@ bool isUncFileUrl(const NppString& url)
 	                                            // file://localhost/C:/dossier/fichier.txt -> hostEnd = 16
 	                                            // file://./C:/dossier/fichier.txt -> hostEnd = 8
 
-	NppString host = (hostEnd == NppString::npos) ? url.substr(hostStart) : url.substr(hostStart, hostEnd - hostStart);
+	std::wstring host = (hostEnd == std::wstring::npos) ? url.substr(hostStart) : url.substr(hostStart, hostEnd - hostStart);
 
-	if (host.empty() || host == ".")
+	if (host.empty() || host == L".")
 		return false;
 
-	if (_wcsicmp(host.c_str(), "localhost") == 0)
+	if (_wcsicmp(host.c_str(), L"localhost") == 0)
 		return false;
 
-	if (host == "127.0.0.1" || host == "::1" || host == "[::1]")
+	if (host == L"127.0.0.1" || host == L"::1" || host == L"[::1]")
 		return false;
 
 	// host like "C:" or "C|" (drive letter, sometimes seen w/o triple slash)
@@ -1930,10 +1930,10 @@ Version::Version(const wstring& versionStr)
 
 		if (ss.size() > 4)
 		{
-			NppString msg("\"");
+			std::wstring msg(L"\"");
 			msg += versionStr;
-			msg += "\"";
-			msg += ": Version parts are more than 4. The string to parse is not a valid version format. Let's make it default value in catch block.";
+			msg += L"\"";
+			msg += L": Version parts are more than 4. The string to parse is not a valid version format. Let's make it default value in catch block.";
 			throw msg;
 		}
 
@@ -1943,10 +1943,10 @@ Version::Version(const wstring& versionStr)
 		{
 			if (!isNumber(s))
 			{
-				NppString msg("\"");
+				std::wstring msg(L"\"");
 				msg += versionStr;
-				msg += "\"";
-				msg += ": One of version character is not number. The string to parse is not a valid version format. Let's make it default value in catch block.";
+				msg += L"\"";
+				msg += L": One of version character is not number. The string to parse is not a valid version format. Let's make it default value in catch block.";
 				throw msg;
 			}
 			*(v[i]) = std::stoi(s);
@@ -1955,7 +1955,7 @@ Version::Version(const wstring& versionStr)
 		}
 	}
 #if !defined(NDEBUG) 
-	catch (const NppString& s)
+	catch (const std::wstring& s)
 	{
 		_major = 0;
 		_minor = 0;
@@ -1972,7 +1972,7 @@ Version::Version(const wstring& versionStr)
 		_patch = 0;
 		_build = 0;
 #if !defined(NDEBUG) 
-		throw NppString("Unknown exception from \"Version::Version(const wstring& versionStr)\"");
+		throw std::wstring(L"Unknown exception from \"Version::Version(const wstring& versionStr)\"");
 #endif
 	}
 }
@@ -1994,7 +1994,7 @@ void Version::setVersionFrom(const wstring& filePath)
 
 	VS_FIXEDFILEINFO* lpFileInfo = nullptr;
 	UINT cbFileInfo = 0;
-	::VerQueryValueW(buffer.get(), "\\", reinterpret_cast<LPVOID*>(&lpFileInfo), &cbFileInfo);
+	::VerQueryValueW(buffer.get(), L"\\", reinterpret_cast<LPVOID*>(&lpFileInfo), &cbFileInfo);
 	if (cbFileInfo)
 	{
 		_major = (lpFileInfo->dwFileVersionMS & 0xFFFF0000) >> 16;
@@ -2008,7 +2008,7 @@ wstring Version::toString() const
 {
 	if (_build == 0 && _patch == 0 && _minor == 0 && _major == 0) // ""
 	{
-		return "";
+		return L"";
 	}
 	else if (_build == 0 && _patch == 0 && _minor == 0) // "major"
 	{
@@ -2016,28 +2016,28 @@ wstring Version::toString() const
 	}
 	else if (_build == 0 && _patch == 0) // "major.minor"
 	{
-		NppString v = std::to_wstring(_major);
-		v += ".";
+		std::wstring v = std::to_wstring(_major);
+		v += L".";
 		v += std::to_wstring(_minor);
 		return v;
 	}
 	else if (_build == 0) // "major.minor.patch"
 	{
-		NppString v = std::to_wstring(_major);
-		v += ".";
+		std::wstring v = std::to_wstring(_major);
+		v += L".";
 		v += std::to_wstring(_minor);
-		v += ".";
+		v += L".";
 		v += std::to_wstring(_patch);
 		return v;
 	}
 
 	// "major.minor.patch.build"
-	NppString ver = std::to_wstring(_major);
-	ver += ".";
+	std::wstring ver = std::to_wstring(_major);
+	ver += L".";
 	ver += std::to_wstring(_minor);
-	ver += ".";
+	ver += L".";
 	ver += std::to_wstring(_patch);
-	ver += ".";
+	ver += L".";
 	ver += std::to_wstring(_build);
 
 	return ver;
@@ -2113,12 +2113,12 @@ static constexpr DWORD DEFAULT_MILLISEC = 3000;
 
 struct GetDiskFreeSpaceParamResult
 {
-	NppString _dirPath;
+	std::wstring _dirPath;
 	ULARGE_INTEGER _freeBytesForUser {};
 	BOOL _result = FALSE;
 	bool _isTimeoutReached = true;
 
-	explicit GetDiskFreeSpaceParamResult(const NppString& dirPath) noexcept : _dirPath(dirPath) {}
+	explicit GetDiskFreeSpaceParamResult(const std::wstring& dirPath) noexcept : _dirPath(dirPath) {}
 };
 
 static DWORD WINAPI getDiskFreeSpaceExWorker(void* data)
@@ -2129,7 +2129,7 @@ static DWORD WINAPI getDiskFreeSpaceExWorker(void* data)
 	return ERROR_SUCCESS;
 }
 
-BOOL getDiskFreeSpaceWithTimeout(const NppChar* dirPath, ULARGE_INTEGER* freeBytesForUser, DWORD milliSec2wait, bool* isTimeoutReached)
+BOOL getDiskFreeSpaceWithTimeout(const wchar_t* dirPath, ULARGE_INTEGER* freeBytesForUser, DWORD milliSec2wait, bool* isTimeoutReached)
 {
 	GetDiskFreeSpaceParamResult data(dirPath);
 
@@ -2174,7 +2174,7 @@ struct GetAttrExParamResult
 	DWORD _error = NO_ERROR;
 	bool _isTimeoutReached = true;
 
-	explicit GetAttrExParamResult(const NppString& filePath) noexcept : _filePath(filePath) {
+	explicit GetAttrExParamResult(const std::wstring& filePath) noexcept : _filePath(filePath) {
 		_attributes.dwFileAttributes = INVALID_FILE_ATTRIBUTES;
 	}
 };
@@ -2190,7 +2190,7 @@ static DWORD WINAPI getFileAttributesExWorker(void* data)
 	return ERROR_SUCCESS;
 }
 
-BOOL getFileAttributesExWithTimeout(const NppChar* filePath, WIN32_FILE_ATTRIBUTE_DATA* fileAttr,
+BOOL getFileAttributesExWithTimeout(const wchar_t* filePath, WIN32_FILE_ATTRIBUTE_DATA* fileAttr,
 	DWORD milliSec2wait, bool* isTimeoutReached, DWORD* pdwWin32ApiError)
 {
 	GetAttrExParamResult data(filePath);
@@ -2228,7 +2228,7 @@ BOOL getFileAttributesExWithTimeout(const NppChar* filePath, WIN32_FILE_ATTRIBUT
 	return data._result;
 }
 
-bool doesFileExist(const NppChar* filePath, DWORD milliSec2wait, bool* isTimeoutReached)
+bool doesFileExist(const wchar_t* filePath, DWORD milliSec2wait, bool* isTimeoutReached)
 {
 	WIN32_FILE_ATTRIBUTE_DATA attributes{};
 	attributes.dwFileAttributes = INVALID_FILE_ATTRIBUTES;
@@ -2236,7 +2236,7 @@ bool doesFileExist(const NppChar* filePath, DWORD milliSec2wait, bool* isTimeout
 	return (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES && !(attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool doesDirectoryExist(const NppChar* dirPath, DWORD milliSec2wait, bool* isTimeoutReached)
+bool doesDirectoryExist(const wchar_t* dirPath, DWORD milliSec2wait, bool* isTimeoutReached)
 {
 	WIN32_FILE_ATTRIBUTE_DATA attributes{};
 	attributes.dwFileAttributes = INVALID_FILE_ATTRIBUTES;
@@ -2244,7 +2244,7 @@ bool doesDirectoryExist(const NppChar* dirPath, DWORD milliSec2wait, bool* isTim
 	return (attributes.dwFileAttributes != INVALID_FILE_ATTRIBUTES && (attributes.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-bool doesPathExist(const NppChar* path, DWORD milliSec2wait, bool* isTimeoutReached)
+bool doesPathExist(const wchar_t* path, DWORD milliSec2wait, bool* isTimeoutReached)
 {
 	WIN32_FILE_ATTRIBUTE_DATA attributes{};
 	attributes.dwFileAttributes = INVALID_FILE_ATTRIBUTES;
@@ -2349,15 +2349,15 @@ bool isCoreWindows()
 	{
 		// in Core Server 2012+, the recommended way to determine is via the Registry
 		HKEY hKey = nullptr;
-		if (::RegOpenKeyExW(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+		if (::RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
 			0, KEY_READ, &hKey) == ERROR_SUCCESS)
 		{
 			static constexpr size_t bufLen = 127;
-			NppChar wszBuf[bufLen + 1]{}; // +1 ... to be always NULL-terminated string
-			DWORD dataSize = sizeof(NppChar) * bufLen;
-			if (::RegQueryValueExW(hKey, "InstallationType", nullptr, nullptr, reinterpret_cast<LPBYTE>(&wszBuf), &dataSize) == ERROR_SUCCESS)
+			wchar_t wszBuf[bufLen + 1]{}; // +1 ... to be always NULL-terminated string
+			DWORD dataSize = sizeof(wchar_t) * bufLen;
+			if (::RegQueryValueExW(hKey, L"InstallationType", nullptr, nullptr, reinterpret_cast<LPBYTE>(&wszBuf), &dataSize) == ERROR_SUCCESS)
 			{
-				if (lstrcmpiW(wszBuf, "Server Core") == 0)
+				if (lstrcmpiW(wszBuf, L"Server Core") == 0)
 					isCoreWindows = true;
 			}
 			::RegCloseKey(hKey);
@@ -2438,7 +2438,7 @@ void ControlInfoTip::hide()
 #pragma warning(default:4996)
 #endif
 
-DWORD invokeNppUacOp(const NppString& strCmdLineParams)
+DWORD invokeNppUacOp(const std::wstring& strCmdLineParams)
 {
 	if ((strCmdLineParams.length() == 0) || (strCmdLineParams.length() > (UINT16_MAX / sizeof(WCHAR))))
 	{
@@ -2446,7 +2446,7 @@ DWORD invokeNppUacOp(const NppString& strCmdLineParams)
 		return ERROR_INVALID_PARAMETER;
 	}
 
-	NppChar wszNppFullPath[MAX_PATH]{};
+	wchar_t wszNppFullPath[MAX_PATH]{};
 	::SetLastError(NO_ERROR);
 	if (!::GetModuleFileName(NULL, wszNppFullPath, MAX_PATH) || (::GetLastError() == ERROR_INSUFFICIENT_BUFFER))
 	{
@@ -2455,7 +2455,7 @@ DWORD invokeNppUacOp(const NppString& strCmdLineParams)
 
 	SHELLEXECUTEINFOW sei{};
 	sei.cbSize = sizeof(SHELLEXECUTEINFOW);
-	sei.lpVerb = "runas"; // UAC prompt
+	sei.lpVerb = L"runas"; // UAC prompt
 	sei.nShow = SW_SHOWNORMAL;
 	sei.fMask = SEE_MASK_NOCLOSEPROCESS; // sei.hProcess member receives the launched process handle
 	sei.lpFile = wszNppFullPath;
@@ -2493,27 +2493,27 @@ bool fileTimeToYMD(const FILETIME& ft, int& yyyymmdd)
 
 void expandEnv(wstring& path2Expand)
 {
-	NppChar buffer[MAX_PATH] = { '\0' };
+	wchar_t buffer[MAX_PATH] = { '\0' };
 	// This returns the resulting string length or 0 in case of error.
 	DWORD ret = ::ExpandEnvironmentStringsW(path2Expand.c_str(), buffer, static_cast<DWORD>(std::size(buffer)));
 	if (ret != 0)
 	{
-		if (ret == static_cast<DWORD>(strlen(buffer) + 1))
+		if (ret == static_cast<DWORD>(lstrlen(buffer) + 1))
 		{
 			path2Expand = buffer;
 		}
 		else
 		{
 			// Buffer was too small, try with a bigger buffer of the required size.
-			std::vector<NppChar> buffer2(ret, 0);
+			std::vector<wchar_t> buffer2(ret, 0);
 			ret = ::ExpandEnvironmentStringsW(path2Expand.c_str(), buffer2.data(), static_cast<DWORD>(buffer2.size()));
-			assert(ret == static_cast<DWORD>(strlen(buffer2.data()) + 1));
+			assert(ret == static_cast<DWORD>(lstrlen(buffer2.data()) + 1));
 			path2Expand = buffer2.data();
 		}
 	}
 }
 
-HRESULT openInExplorerAndSelect(const NppChar* path)
+HRESULT openInExplorerAndSelect(const wchar_t* path)
 {
 	if (!doesPathExist(path))
 		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
@@ -2532,7 +2532,7 @@ HRESULT openInExplorerAndSelect(const NppChar* path)
 	return hr;
 }
 
-bool needsElevation4Access(const NppString& path2check, bool bWriteAccess)
+bool needsElevation4Access(const std::wstring& path2check, bool bWriteAccess)
 {
 	namespace fs = std::filesystem;
 
@@ -2593,7 +2593,7 @@ bool needsElevation4Access(const NppString& path2check, bool bWriteAccess)
 				return false; // no elevation required (no exception case, we only want to check READ access and can read it - it's empty)
 
 			// generate a pseudorandom tempfile to test WRITE access
-			NppString tempFileName = "test-" + std::to_wstring(::GetTickCount64()) + ".tmp";
+			std::wstring tempFileName = L"test-" + std::to_wstring(::GetTickCount64()) + L".tmp";
 			testFile = targetDir / tempFileName;
 			fileExists = false;
 		}

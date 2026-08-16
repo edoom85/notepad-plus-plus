@@ -35,12 +35,12 @@ intptr_t CALLBACK AnsiCharPanel::run_dlgProc(UINT message, WPARAM wParam, LPARAM
 		{
 			NppParameters& nppParam = NppParameters::getInstance();
 			NativeLangSpeaker *pNativeSpeaker = nppParam.getNativeLangSpeaker();
-			wstring valStr = pNativeSpeaker->getAttrNameStr("Value", "AsciiInsertion", "ColumnVal");
-			wstring hexStr = pNativeSpeaker->getAttrNameStr("Hex", "AsciiInsertion", "ColumnHex");
-			wstring charStr = pNativeSpeaker->getAttrNameStr("Character", "AsciiInsertion", "ColumnChar");
-			wstring htmlNameStr = pNativeSpeaker->getAttrNameStr("HTML Name", "AsciiInsertion", "ColumnHtmlName");
-			wstring htmlNumberStr = pNativeSpeaker->getAttrNameStr("HTML Decimal", "AsciiInsertion", "ColumnHtmlNumber");
-			wstring htmlHexNbStr = pNativeSpeaker->getAttrNameStr("HTML Hexadecimal", "AsciiInsertion", "ColumnHtmlHexNb");
+			wstring valStr = pNativeSpeaker->getAttrNameStr(L"Value", "AsciiInsertion", "ColumnVal");
+			wstring hexStr = pNativeSpeaker->getAttrNameStr(L"Hex", "AsciiInsertion", "ColumnHex");
+			wstring charStr = pNativeSpeaker->getAttrNameStr(L"Character", "AsciiInsertion", "ColumnChar");
+			wstring htmlNameStr = pNativeSpeaker->getAttrNameStr(L"HTML Name", "AsciiInsertion", "ColumnHtmlName");
+			wstring htmlNumberStr = pNativeSpeaker->getAttrNameStr(L"HTML Decimal", "AsciiInsertion", "ColumnHtmlNumber");
+			wstring htmlHexNbStr = pNativeSpeaker->getAttrNameStr(L"HTML Hexadecimal", "AsciiInsertion", "ColumnHtmlHexNb");
 
 			StaticDialog::setDpi();
 
@@ -88,7 +88,7 @@ intptr_t CALLBACK AnsiCharPanel::run_dlgProc(UINT message, WPARAM wParam, LPARAM
 
 					int i = pInfo.iItem;
 					int j = pInfo.iSubItem;
-					NppChar buffer[10]{};
+					wchar_t buffer[10]{};
 					LVITEM item{};
 					item.mask = LVIF_TEXT | LVIF_PARAM;
 					item.iItem = i;
@@ -153,7 +153,7 @@ void AnsiCharPanel::insertChar(unsigned char char2insert) const
 	char charStr[2]{};
 	charStr[0] = char2insert;
 	charStr[1] = '\0';
-	NppChar wCharStr[10]{};
+	wchar_t wCharStr[10]{};
 	char multiByteStr[10]{};
 	int codepage = (*_ppEditView)->getCurrentBuffer()->getEncoding();
 	if (codepage == -1)
@@ -161,8 +161,8 @@ void AnsiCharPanel::insertChar(unsigned char char2insert) const
 		bool isUnicode = ((*_ppEditView)->execute(SCI_GETCODEPAGE) == SC_CP_UTF8);
 		if (isUnicode)
 		{
-			nppMBtoWC(0, 0, charStr, -1, wCharStr, _countof(wCharStr));
-			nppWCtoMB(CP_UTF8, 0, wCharStr, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
+			MultiByteToWideChar(0, 0, charStr, -1, wCharStr, _countof(wCharStr));
+			WideCharToMultiByte(CP_UTF8, 0, wCharStr, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
 		}
 		else // ANSI
 		{
@@ -172,8 +172,8 @@ void AnsiCharPanel::insertChar(unsigned char char2insert) const
 	}
 	else
 	{
-		nppMBtoWC(codepage, 0, charStr, -1, wCharStr, _countof(wCharStr));
-		nppWCtoMB(CP_UTF8, 0, wCharStr, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
+		MultiByteToWideChar(codepage, 0, charStr, -1, wCharStr, _countof(wCharStr));
+		WideCharToMultiByte(CP_UTF8, 0, wCharStr, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
 	}
 	(*_ppEditView)->execute(SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(""));
 	size_t len = (char2insert < 128) ? 1 : strlen(multiByteStr);
@@ -190,7 +190,7 @@ void AnsiCharPanel::insertString(LPWSTR string2insert) const
 		bool isUnicode = ((*_ppEditView)->execute(SCI_GETCODEPAGE) == SC_CP_UTF8);
 		if (isUnicode)
 		{
-			nppWCtoMB(CP_UTF8, 0, string2insert, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
+			WideCharToMultiByte(CP_UTF8, 0, string2insert, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
 		}
 		else // ANSI
 		{
@@ -199,7 +199,7 @@ void AnsiCharPanel::insertString(LPWSTR string2insert) const
 	}
 	else
 	{
-		nppWCtoMB(CP_UTF8, 0, string2insert, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
+		WideCharToMultiByte(CP_UTF8, 0, string2insert, -1, multiByteStr, sizeof(multiByteStr), NULL, NULL);
 	}
 
 	(*_ppEditView)->execute(SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(""));

@@ -39,7 +39,7 @@ void VerticalFileSwitcherListView::init(HINSTANCE hInst, HWND parent, HIMAGELIST
 						| LVS_SHAREIMAGELISTS | LVS_SHOWSELALWAYS | LVS_ALIGNTOP;
 
 	_hSelf = ::CreateWindow(WC_LISTVIEW,
-                                "",
+                                L"",
                                 WS_CHILD | WS_BORDER | listViewStyles,
                                 0,
                                 0,
@@ -60,7 +60,7 @@ void VerticalFileSwitcherListView::init(HINSTANCE hInst, HWND parent, HIMAGELIST
 
 	LVGROUP group{};
 	constexpr size_t headerLen = 1;
-	NppChar header[headerLen] = "";
+	wchar_t header[headerLen] = L"";
 	group.cbSize = sizeof(LVGROUP);
 	group.mask = LVGF_HEADER | LVGF_GROUPID | LVGF_STATE;
 	group.pszHeader = header;
@@ -116,16 +116,16 @@ void VerticalFileSwitcherListView::initList()
 		nameWidth -= pathWidthDyn;
 
 	//add columns
-	wstring nameStr = pNativeSpeaker->getAttrNameStr("Name", FS_ROOTNODE, FS_CLMNNAME);
+	wstring nameStr = pNativeSpeaker->getAttrNameStr(L"Name", FS_ROOTNODE, FS_CLMNNAME);
 	insertColumn(nameStr.c_str(), nameWidth, ++colIndex);
 	if (isExtColumn)
 	{
-		wstring extStr = pNativeSpeaker->getAttrNameStr("Ext.", FS_ROOTNODE, FS_CLMNEXT);
+		wstring extStr = pNativeSpeaker->getAttrNameStr(L"Ext.", FS_ROOTNODE, FS_CLMNEXT);
 		insertColumn(extStr.c_str(), extWidthDyn, ++colIndex); //2nd column
 	}
 	if (isPathColumn)
 	{
-		wstring pathStr = pNativeSpeaker->getAttrNameStr("Path", FS_ROOTNODE, FS_CLMNPATH);
+		wstring pathStr = pNativeSpeaker->getAttrNameStr(L"Path", FS_ROOTNODE, FS_CLMNPATH);
 		insertColumn(pathStr.c_str(), pathWidthDyn, ++colIndex); //2nd column if .ext is off
 	}
 
@@ -139,7 +139,7 @@ void VerticalFileSwitcherListView::initList()
 
 		TaskLstFnStatus *tl = new TaskLstFnStatus(fileNameStatus);
 
-		NppChar fn[MAX_PATH] = { '\0' };
+		wchar_t fn[MAX_PATH] = { '\0' };
 		wcscpy_s(fn, ::PathFindFileName(fileNameStatus._fn.c_str()));
 
 		if (isExtColumn)
@@ -163,7 +163,7 @@ void VerticalFileSwitcherListView::initList()
 		}
 		if (isPathColumn)
 		{
-			NppChar dir[MAX_PATH] = { '\0' }, drive[MAX_PATH] = { '\0' };
+			wchar_t dir[MAX_PATH] = { '\0' }, drive[MAX_PATH] = { '\0' };
 			_wsplitpath_s(fileNameStatus._fn.c_str(), drive, MAX_PATH, dir, MAX_PATH, NULL, 0, NULL, 0);
 			wcscat_s(drive, dir);
 			ListView_SetItemText(_hSelf, i, ++colIndex2, drive);
@@ -227,7 +227,7 @@ void VerticalFileSwitcherListView::setItemIconStatus(BufferID bufferID)
 {
 	Buffer *buf = bufferID;
 	
-	NppChar fn[MAX_PATH] = { '\0' };
+	wchar_t fn[MAX_PATH] = { '\0' };
 	wcscpy_s(fn, ::PathFindFileName(buf->getFileName()));
 	bool isExtColumn = !(NppParameters::getInstance()).getNppGUI()._fileSwitcherWithoutExtColumn;
 	bool isPathColumn = !(NppParameters::getInstance()).getNppGUI()._fileSwitcherWithoutPathColumn;
@@ -256,11 +256,11 @@ void VerticalFileSwitcherListView::setItemIconStatus(BufferID bufferID)
 			int colIndex = 0;
 			if (isExtColumn)
 			{
-				ListView_SetItemText(_hSelf, i, ++colIndex, (NppChar*)::PathFindExtension(buf->getFileName()));
+				ListView_SetItemText(_hSelf, i, ++colIndex, (LPTSTR)::PathFindExtension(buf->getFileName()));
 			}
 			if (isPathColumn)
 			{
-				NppChar dir[MAX_PATH] = { '\0' }, drive[MAX_PATH] = { '\0' };
+				wchar_t dir[MAX_PATH] = { '\0' }, drive[MAX_PATH] = { '\0' };
 				_wsplitpath_s(buf->getFullPathName(), drive, MAX_PATH, dir, MAX_PATH, NULL, 0, NULL, 0);
 				wcscat_s(drive, dir);
 				ListView_SetItemText(_hSelf, i, ++colIndex, drive);
@@ -297,7 +297,7 @@ wstring VerticalFileSwitcherListView::getFullFilePath(size_t i) const
 {
 	size_t nbItem = ListView_GetItemCount(_hSelf);
 	if (i > nbItem)
-		return "";
+		return L"";
 
 	LVITEM item{};
 	item.mask = LVIF_PARAM;
@@ -338,11 +338,11 @@ int VerticalFileSwitcherListView::add(BufferID bufferID, int iView)
 {
 	_currentIndex = ListView_GetItemCount(_hSelf);
 	Buffer *buf = bufferID;
-	const NppChar *fileName = buf->getFileName();
+	const wchar_t *fileName = buf->getFileName();
 	const NppGUI& nppGUI = NppParameters::getInstance().getNppGUI();
 	TaskLstFnStatus *tl = new TaskLstFnStatus(iView, 0, buf->getFullPathName(), 0, (void *)bufferID, -1);
 
-	NppChar fn[MAX_PATH] = { '\0' };
+	wchar_t fn[MAX_PATH] = { '\0' };
 	wcscpy_s(fn, ::PathFindFileName(fileName));
 	bool isExtColumn = !nppGUI._fileSwitcherWithoutExtColumn;
 	bool isPathColumn = !nppGUI._fileSwitcherWithoutPathColumn;
@@ -367,7 +367,7 @@ int VerticalFileSwitcherListView::add(BufferID bufferID, int iView)
 	}
 	if (isPathColumn)
 	{
-		NppChar dir[MAX_PATH] = { '\0' }, drive[MAX_PATH] = { '\0' };
+		wchar_t dir[MAX_PATH] = { '\0' }, drive[MAX_PATH] = { '\0' };
 		_wsplitpath_s(buf->getFullPathName(), drive, MAX_PATH, dir, MAX_PATH, NULL, 0, NULL, 0);
 		wcscat_s(drive, dir);
 		ListView_SetItemText(_hSelf, _currentIndex, ++colIndex, drive);
@@ -431,13 +431,13 @@ int VerticalFileSwitcherListView::find(BufferID bufferID, int iView) const
 	return (found?i:-1);	
 }
 
-void VerticalFileSwitcherListView::insertColumn(const NppChar *name, int width, int index)
+void VerticalFileSwitcherListView::insertColumn(const wchar_t *name, int width, int index)
 {
 	LVCOLUMN lvColumn{};
  
 	lvColumn.mask = LVCF_TEXT | LVCF_WIDTH;
 	lvColumn.cx = width;
-	lvColumn.pszText = (NppChar *)name;
+	lvColumn.pszText = (wchar_t *)name;
 	ListView_InsertColumn(_hSelf, index, &lvColumn); // index is not 0 based but 1 based
 }
 

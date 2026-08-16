@@ -25,7 +25,7 @@
 #include "dpiManagerV2.h"
 
 
-void URLCtrl::create(HWND itemHandle, const NppChar * link, COLORREF linkColor)
+void URLCtrl::create(HWND itemHandle, const wchar_t * link, COLORREF linkColor)
 {
 	// turn on notify style
     ::SetWindowLongPtr(itemHandle, GWL_STYLE, ::GetWindowLongPtr(itemHandle, GWL_STYLE) | SS_NOTIFY);
@@ -103,13 +103,13 @@ void URLCtrl::action()
 		// Open a browser
 		if (!_URL.empty())
 		{
-			::ShellExecute(NULL, "open", _URL.c_str(), NULL, NULL, SW_SHOWNORMAL);
+			::ShellExecute(NULL, L"open", _URL.c_str(), NULL, NULL, SW_SHOWNORMAL);
 		}
 		else
 		{
-			NppChar szWinText[MAX_PATH] = { '\0' };
+			wchar_t szWinText[MAX_PATH] = { '\0' };
 			::GetWindowText(_hSelf, szWinText, MAX_PATH);
-			::ShellExecute(NULL, "open", szWinText, NULL, NULL, SW_SHOWNORMAL);
+			::ShellExecute(NULL, L"open", szWinText, NULL, NULL, SW_SHOWNORMAL);
 		}
 	}
 }
@@ -181,7 +181,7 @@ LRESULT CALLBACK URLCtrl::URLCtrlProc(
 			auto hOld = static_cast<HFONT>(::SelectObject(hdc, pRefData->_hfUnderlined));
 
 		    // Draw the text!
-			NppChar szWinText[MAX_PATH] = { '\0' };
+			wchar_t szWinText[MAX_PATH] = { '\0' };
             ::GetWindowText(hwnd, szWinText, MAX_PATH);
             ::DrawText(hdc, szWinText, -1, &rect, dwDTStyle);
 

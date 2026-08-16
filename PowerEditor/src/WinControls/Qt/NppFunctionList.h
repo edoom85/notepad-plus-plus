@@ -160,7 +160,7 @@ private:
             if (!filter.isEmpty() && !sym.name.contains(filter, Qt::CaseInsensitive))
                 continue;
 
-            auto* item = _treeView->addChildItem(rootGroup, sym.name.toStdString() + " [" + std::to_string(sym.line) + "]");
+            auto* item = _treeView->addChildItem(rootGroup, sym.name.toStdString() + " [L" + std::to_string(sym.line) + "]");
             item->setData(sym.line, Qt::UserRole + 1);
         }
 

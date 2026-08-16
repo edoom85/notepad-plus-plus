@@ -46,16 +46,16 @@ SecurityMode SecurityGuard::_securityMode = sm_certif;
 
 SecurityGuard::SecurityGuard()
 {
-	_gupSha256.push_back("1f72af0d9f108d99981f58837c26de16b46f6233ccd76ef560ba756094699404"); // v5.3.3 x64 bit (unsigned)
-	_gupSha256.push_back("7a5068be842ed50d9857be29da2e27e7b0243f6ced3763d1ac4640a9cadc6ee7"); // v5.3.3 x86 bit (unsigned)
-	_gupSha256.push_back("57f10b58d9492026d1bf74611a522da9ed05a682ae5ddeffe6c1c16ba839a89b"); // v5.3.3 arm64 bit (unsigned)
+	_gupSha256.push_back(L"1f72af0d9f108d99981f58837c26de16b46f6233ccd76ef560ba756094699404"); // v5.3.3 x64 bit (unsigned)
+	_gupSha256.push_back(L"7a5068be842ed50d9857be29da2e27e7b0243f6ced3763d1ac4640a9cadc6ee7"); // v5.3.3 x86 bit (unsigned)
+	_gupSha256.push_back(L"57f10b58d9492026d1bf74611a522da9ed05a682ae5ddeffe6c1c16ba839a89b"); // v5.3.3 arm64 bit (unsigned)
 
-	_pluginListSha256.push_back("311a92116cf2ea649f87c6f05f4325d8b8370ca6b624ecf1174ec559859b203c"); // v1.8.4 x64 bit (unsigned)
-	_pluginListSha256.push_back("c7253eaafb43d5d63356830122d27ae4f9b22b98e4656a195c20d5ae35d537f3"); // v1.8.4 x86 bit (unsigned)
-	_pluginListSha256.push_back("2a684a000843f43d81096b5515f3386120c4256f369323db2def401e72e38792"); // v1.8.4 arm64 bit (unsigned)
+	_pluginListSha256.push_back(L"311a92116cf2ea649f87c6f05f4325d8b8370ca6b624ecf1174ec559859b203c"); // v1.8.4 x64 bit (unsigned)
+	_pluginListSha256.push_back(L"c7253eaafb43d5d63356830122d27ae4f9b22b98e4656a195c20d5ae35d537f3"); // v1.8.4 x86 bit (unsigned)
+	_pluginListSha256.push_back(L"2a684a000843f43d81096b5515f3386120c4256f369323db2def401e72e38792"); // v1.8.4 arm64 bit (unsigned)
 }
 
-bool SecurityGuard::checkModule([[maybe_unused]] const NppString& filePath, [[maybe_unused]] NppModule module2check)
+bool SecurityGuard::checkModule([[maybe_unused]] const std::wstring& filePath, [[maybe_unused]] NppModule module2check)
 {
 #ifdef NDEBUG
 	if (_securityMode == sm_certif)
@@ -72,7 +72,7 @@ bool SecurityGuard::checkModule([[maybe_unused]] const NppString& filePath, [[ma
 #endif
 }
 
-bool SecurityGuard::checkSha256(const NppString& filePath, NppModule module2check) const
+bool SecurityGuard::checkSha256(const std::wstring& filePath, NppModule module2check) const
 {
 	// Uncomment the following code if the components are rebuilt for testing
 	// It should be stay in commenting out
@@ -90,11 +90,11 @@ bool SecurityGuard::checkSha256(const NppString& filePath, NppModule module2chec
 	uint8_t sha2hash[32];
 	calc_sha_256(sha2hash, reinterpret_cast<const uint8_t*>(content.c_str()), content.length());
 
-	NppChar sha2hashStr[65] = { '\0' };
+	wchar_t sha2hashStr[65] = { '\0' };
 	for (size_t i = 0; i < 32; i++)
-		sprintf(sha2hashStr + i * 2, "%02x", sha2hash[i]);
+		wsprintf(sha2hashStr + i * 2, L"%02x", sha2hash[i]);
 
-	const std::vector<NppString>* moduleSha256 = nullptr;
+	const std::vector<std::wstring>* moduleSha256 = nullptr;
 
 	if (module2check == nm_gup)
 		moduleSha256 = &_gupSha256;
@@ -107,27 +107,27 @@ bool SecurityGuard::checkSha256(const NppString& filePath, NppModule module2chec
 	{
 		if (i == sha2hashStr)
 		{
-			//::MessageBox(NULL, filePath.c_str(), "OK", MB_OK);
+			//::MessageBox(NULL, filePath.c_str(), L"OK", MB_OK);
 			return true;
 		}
 	}
 
-	//::MessageBox(NULL, filePath.c_str(), "KO", MB_OK);
+	//::MessageBox(NULL, filePath.c_str(), L"KO", MB_OK);
 	return false;
 }
 
 // Debug use
 bool doLogCertifError = false;
-const wstring errorLogPath = "%LOCALAPPDATA%\\Notepad++\\log\\nppComponentCertErrors.log";
+const wstring errorLogPath = L"%LOCALAPPDATA%\\Notepad++\\log\\nppComponentCertErrors.log";
 
-static void writeCertVerifLog(const NppChar* logFileName, const NppChar* log2write)
+static void writeCertVerifLog(const wchar_t* logFileName, const wchar_t* log2write)
 {
 	wstring expandedLogFileName = logFileName;
 	expandEnv(expandedLogFileName);
 	writeLog(expandedLogFileName.c_str(), log2write);
 }
 
-bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
+bool SecurityGuard::verifySignedBinary(const std::wstring& filepath) const
 {
 	wstring display_name;
 	wstring key_id_hex;
@@ -135,7 +135,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 
 	if (doLogCertifError)
 	{	
-		wstring dmsg("VerifyComponent: ");
+		wstring dmsg(L"VerifyComponent: ");
 		dmsg += filepath;
 		writeCertVerifLog(errorLogPath.c_str(), dmsg.c_str());
 	}	
@@ -165,7 +165,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 		winTEXTrust_data.fdwRevocationChecks = WTD_REVOKE_NONE;
 
 		if (doLogCertifError)
-			writeCertVerifLog(errorLogPath.c_str(), "VerifyComponent: certificate revocation checking is disabled");
+			writeCertVerifLog(errorLogPath.c_str(), L"VerifyComponent: certificate revocation checking is disabled");
 	}
 	else
 	{
@@ -174,7 +174,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 		DWORD netstatus;
 		QOCINFO oci{};
 		oci.dwSize = sizeof(oci);
-		CONST NppChar* msftTEXTest_site = "http://www.msftncsi.com/ncsi.txt";
+		CONST wchar_t* msftTEXTest_site = L"http://www.msftncsi.com/ncsi.txt";
 		bool online = false;
 		online = (0 != IsNetworkAlive(&netstatus));
 		online = online && (GetLastError() == 0);
@@ -184,7 +184,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 			winTEXTrust_data.fdwRevocationChecks = WTD_REVOKE_NONE;
 
 			if (doLogCertifError)
-				writeCertVerifLog(errorLogPath.c_str(), "VerifyComponent: system is offline - certificate revocation won't be checked");
+				writeCertVerifLog(errorLogPath.c_str(), L"VerifyComponent: system is offline - certificate revocation won't be checked");
 		}
 	}
 
@@ -200,14 +200,14 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 
 		if (hasError)
 		{
-			writeCertVerifLog(errorLogPath.c_str(), "VerifyComponent: trust verification failed");
+			writeCertVerifLog(errorLogPath.c_str(), L"VerifyComponent: trust verification failed");
 			return false;
 		}
 
 		if (t2)
 		{
 			if (doLogCertifError)
-				writeCertVerifLog(errorLogPath.c_str(), "VerifyComponent: error encountered while cleaning up after WinVerifyTrust");
+				writeCertVerifLog(errorLogPath.c_str(), L"VerifyComponent: error encountered while cleaning up after WinVerifyTrust");
 
 			return false;
 		}
@@ -271,7 +271,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 			throw string("Getting x509 field size problem.");
 		}
 
-		std::unique_ptr<NppChar[]> subject_buffer(new NppChar[subject_sze]);
+		std::unique_ptr<wchar_t[]> subject_buffer(new wchar_t[subject_sze]);
 		if (::CertNameToStr(X509_ASN_ENCODING, &context->pCertInfo->Subject, CERT_X500_NAME_STR, subject_buffer.get(), subject_sze) <= 1)
 		{
 			throw string("Failed to get x509 field infos from certificate.");
@@ -294,7 +294,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 		wstringstream ss;
 		for (unsigned i = 0; i < key_id_sze; i++)
 		{
-			ss << std::uppercase << std::setfill(NppChar('0')) << std::setw(2) << std::hex
+			ss << std::uppercase << std::setfill(wchar_t('0')) << std::setw(2) << std::hex
 				<< key_id_buff[i];
 		}
 		key_id_hex = ss.str();
@@ -310,7 +310,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 		}
 
 		// Get display name.
-		std::unique_ptr<NppChar[]> display_name_buffer(new NppChar[sze]);
+		std::unique_ptr<wchar_t[]> display_name_buffer(new wchar_t[sze]);
 		if (::CertGetNameString(context, CERT_NAME_SIMPLE_DISPLAY_TYPE, 0, NULL, display_name_buffer.get(), sze) <= 1)
 		{
 			throw string("Cannot get certificate info." + wstring2string(GetLastErrorAsString(GetLastError()), CP_UTF8));
@@ -323,7 +323,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 		if (doLogCertifError)
 		{
 			wstring msg = string2wstring(s, CP_UTF8);
-			msg += " - VerifyComponent: error while getting certificate information";
+			msg += L" - VerifyComponent: error while getting certificate information";
 			writeCertVerifLog(errorLogPath.c_str(), msg.c_str());
 		}
 		status = false;
@@ -332,7 +332,7 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 	{
 		// Unknown error
 		if (doLogCertifError)
-			writeCertVerifLog(errorLogPath.c_str(), "VerifyComponent: error while getting certificate information");
+			writeCertVerifLog(errorLogPath.c_str(), L"VerifyComponent: error while getting certificate information");
 
 		status = false;
 	}
@@ -346,10 +346,10 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 
 		if (doLogCertifError)
 		{
-			wstring msg = "VerifyComponent - ";
-			msg += "Invalid certificate display name: ";
+			wstring msg = L"VerifyComponent - ";
+			msg += L"Invalid certificate display name: ";
 			msg += _signer_display_name;
-			msg += " vs ";
+			msg += L" vs ";
 			msg += display_name;
 
 			writeCertVerifLog(errorLogPath.c_str(), msg.c_str());
@@ -362,10 +362,10 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 
 		if (doLogCertifError)
 		{
-			wstring msg = "VerifyComponent - ";
-			msg += "Invalid certificate subject: ";
+			wstring msg = L"VerifyComponent - ";
+			msg += L"Invalid certificate subject: ";
 			msg += _signer_subject;
-			msg += " vs ";
+			msg += L" vs ";
 			msg += subject;
 
 			writeCertVerifLog(errorLogPath.c_str(), msg.c_str());
@@ -378,10 +378,10 @@ bool SecurityGuard::verifySignedBinary(const NppString& filepath) const
 
 		if (doLogCertifError)
 		{
-			wstring msg = "VerifyComponent - ";
-			msg += "Invalid certificate key id: ";
+			wstring msg = L"VerifyComponent - ";
+			msg += L"Invalid certificate key id: ";
 			msg += _signer_key_id;
-			msg += " vs ";
+			msg += L" vs ";
 			msg += key_id_hex;
 
 			writeCertVerifLog(errorLogPath.c_str(), msg.c_str());

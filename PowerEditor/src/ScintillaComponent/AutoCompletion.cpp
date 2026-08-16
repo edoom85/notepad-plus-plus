@@ -531,15 +531,15 @@ void AutoCompletion::getWordArray(std::vector<std::string>& wordArray, const cha
 	}
 }
 
-static NppString addTrailingSlash(const NppString& path)
+static std::wstring addTrailingSlash(const std::wstring& path)
 {
 	if (path.length() >=1 && path[path.length() - 1] == '\\')
 		return path;
 	else
-		return path + "\\";
+		return path + L"\\";
 }
 
-static NppString removeTrailingSlash(const NppString& path)
+static std::wstring removeTrailingSlash(const std::wstring& path)
 {
 	if (path.length() >= 1 && path[path.length() - 1] == '\\')
 		return path.substr(0, path.length() - 1);
@@ -548,18 +548,18 @@ static NppString removeTrailingSlash(const NppString& path)
 }
 
 
-static bool isAllowedBeforeDriveLetter(NppChar c)
+static bool isAllowedBeforeDriveLetter(wchar_t c)
 {
 	return c == L'\'' || c == L'"' || c == L'(' || std::isspace(c, getSysLocale());
 }
 
-static bool getRawPath(const NppString& input, NppString &rawPath_out)
+static bool getRawPath(const std::wstring& input, std::wstring &rawPath_out)
 {
 	// Try to find a path in the given input.
 	// Algorithm: look for a colon. The colon must be preceded by an alphabetic character.
 	// The alphabetic character must, in turn, be preceded by nothing, or by whitespace, or by
 	// a quotation mark.
-	size_t lastOccurrence = input.rfind(":");
+	size_t lastOccurrence = input.rfind(L":");
 	if (lastOccurrence == std::string::npos) // No match.
 		return false;
 	else if (lastOccurrence == 0)
@@ -573,9 +573,9 @@ static bool getRawPath(const NppString& input, NppString &rawPath_out)
 	return true;
 }
 
-static bool getPathsForPathCompletion(const NppString& input, NppString &rawPath_out, NppString &pathToMatch_out)
+static bool getPathsForPathCompletion(const std::wstring& input, std::wstring &rawPath_out, std::wstring &pathToMatch_out)
 {
-	NppString rawPath;
+	std::wstring rawPath;
 	if (! getRawPath(input, rawPath))
 	{
 		return false;
@@ -592,8 +592,8 @@ static bool getPathsForPathCompletion(const NppString& input, NppString &rawPath
 	}
 	else
 	{
-		size_t last_occurrence = rawPath.rfind("\\");
-		if (last_occurrence == NppString::npos) // No match.
+		size_t last_occurrence = rawPath.rfind(L"\\");
+		if (last_occurrence == std::wstring::npos) // No match.
 			return false;
 		else
 		{
@@ -607,7 +607,7 @@ static bool getPathsForPathCompletion(const NppString& input, NppString &rawPath
 void AutoCompletion::showPathCompletion()
 {
 	// Get current line (at most MAX_PATH characters "backwards" from current caret).
-	NppString currentLine;
+	std::wstring currentLine;
 	{
 		static constexpr intptr_t bufSize = MAX_PATH;
 		auto buf = std::string(bufSize + 1, '\0');
@@ -627,16 +627,16 @@ void AutoCompletion::showPathCompletion()
 	   For instance: the user wants to autocomplete "C:\Wind", and assuming that no such directory
 	   exists, this means we should list all files and directories in C:.
 	*/
-	NppString rawPath, pathToMatch;
+	std::wstring rawPath, pathToMatch;
 	if (! getPathsForPathCompletion(currentLine, rawPath, pathToMatch))
 		return;
 
 	// Get all files and directories in the path.
-	NppString autoCompleteEntries;
+	std::wstring autoCompleteEntries;
 	{
 		WIN32_FIND_DATA data;
-		NppString pathToMatchPlusSlash = addTrailingSlash(pathToMatch);
-		NppString searchString = pathToMatchPlusSlash + "*.*";
+		std::wstring pathToMatchPlusSlash = addTrailingSlash(pathToMatch);
+		std::wstring searchString = pathToMatchPlusSlash + L"*.*";
 		HANDLE hFind = ::FindFirstFile(searchString.c_str(), &data);
 		if (hFind != INVALID_HANDLE_VALUE)
 		{
@@ -649,16 +649,16 @@ void AutoCompletion::showPathCompletion()
 				if (++counter > maxEntries)
 					break;
 
-				if (std::wcscmp(data.cFileName, ".") == 0 || std::wcscmp(data.cFileName, "..") == 0)
+				if (std::wcscmp(data.cFileName, L".") == 0 || std::wcscmp(data.cFileName, L"..") == 0)
 					continue;
 
 				if (!autoCompleteEntries.empty())
-					autoCompleteEntries += "\n";
+					autoCompleteEntries += L"\n";
 
 				autoCompleteEntries += pathToMatchPlusSlash;
 				autoCompleteEntries += data.cFileName;
 				if (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) // If directory, add trailing slash.
-					autoCompleteEntries += "\\";
+					autoCompleteEntries += L"\\";
 
 			} while (::FindNextFile(hFind, &data));
 			::FindClose(hFind);
@@ -1105,12 +1105,12 @@ bool AutoCompletion::setLanguage(LangType language)
 
 	_curLang = language;
 
-	NppChar path[MAX_PATH];
+	wchar_t path[MAX_PATH];
 	::GetModuleFileNameW(nullptr, path, MAX_PATH);
 	PathRemoveFileSpec(path);
-	wcscat_s(path, "\\autoCompletion\\");
+	wcscat_s(path, L"\\autoCompletion\\");
 	wcscat_s(path, getApiFileName());
-	wcscat_s(path, ".xml");
+	wcscat_s(path, L".xml");
 
 	if (_pXmlFile)
 		delete _pXmlFile;
@@ -1233,7 +1233,7 @@ bool AutoCompletion::setLanguage(LangType language)
 	return _funcCompletionActive;
 }
 
-const NppChar* AutoCompletion::getApiFileName()
+const wchar_t* AutoCompletion::getApiFileName()
 {
 	if (_curLang == L_USER)
 	{

@@ -29,32 +29,32 @@
 #include "StaticDialog.h"
 #include "TreeView.h"
 
-#define PM_PROJECTPANELTITLE       "Project Panel"
-#define PM_WORKSPACEROOTNAME       "Workspace"
-#define PM_NEWFOLDERNAME           "Folder Name"
-#define PM_NEWPROJECTNAME          "Project Name"
+#define PM_PROJECTPANELTITLE       L"Project Panel"
+#define PM_WORKSPACEROOTNAME       L"Workspace"
+#define PM_NEWFOLDERNAME           L"Folder Name"
+#define PM_NEWPROJECTNAME          L"Project Name"
 
-#define PM_NEWWORKSPACE            "New Workspace"
-#define PM_OPENWORKSPACE           "Open Workspace"
-#define PM_RELOADWORKSPACE         "Reload Workspace"
-#define PM_SAVEWORKSPACE           "Save"
-#define PM_SAVEASWORKSPACE         "Save As..."
-#define PM_SAVEACOPYASWORKSPACE    "Save a Copy As..."
-#define PM_NEWPROJECTWORKSPACE     "Add New Project"
-#define PM_FINDINFILESWORKSPACE    "Find in Projects..."
+#define PM_NEWWORKSPACE            L"New Workspace"
+#define PM_OPENWORKSPACE           L"Open Workspace"
+#define PM_RELOADWORKSPACE         L"Reload Workspace"
+#define PM_SAVEWORKSPACE           L"Save"
+#define PM_SAVEASWORKSPACE         L"Save As..."
+#define PM_SAVEACOPYASWORKSPACE    L"Save a Copy As..."
+#define PM_NEWPROJECTWORKSPACE     L"Add New Project"
+#define PM_FINDINFILESWORKSPACE    L"Find in Projects..."
 
-#define PM_EDITRENAME              "Rename"
-#define PM_EDITNEWFOLDER           "Add Folder"
-#define PM_EDITADDFILES            "Add Files..."
-#define PM_EDITADDFILESRECUSIVELY  "Add Files from Directory..."
-#define PM_EDITREMOVE              "Remove\tDEL"
-#define PM_EDITMODIFYFILE          "Modify File Path"
+#define PM_EDITRENAME              L"Rename"
+#define PM_EDITNEWFOLDER           L"Add Folder"
+#define PM_EDITADDFILES            L"Add Files..."
+#define PM_EDITADDFILESRECUSIVELY  L"Add Files from Directory..."
+#define PM_EDITREMOVE              L"Remove\tDEL"
+#define PM_EDITMODIFYFILE          L"Modify File Path"
 
-#define PM_WORKSPACEMENUENTRY      "Workspace"
-#define PM_EDITMENUENTRY           "Edit"
+#define PM_WORKSPACEMENUENTRY      L"Workspace"
+#define PM_EDITMENUENTRY           L"Edit"
 
-#define PM_MOVEUPENTRY             "Move Up\tCtrl+Up"
-#define PM_MOVEDOWNENTRY           "Move Down\tCtrl+Down"
+#define PM_MOVEUPENTRY             L"Move Up\tCtrl+Up"
+#define PM_MOVEDOWNENTRY           L"Move Down\tCtrl+Down"
 
 enum NodeType {
 	nodeType_root = 0, nodeType_project = 1, nodeType_folder = 2, nodeType_file = 3
@@ -76,22 +76,22 @@ public:
 		_hParent = parent2set;
 	}
 
-	void setPanelTitle(const NppString& title) {
+	void setPanelTitle(const std::wstring& title) {
 		_panelTitle = title;
 	}
-	const NppChar* getPanelTitle() const {
+	const wchar_t* getPanelTitle() const {
 		return _panelTitle.c_str();
 	}
 
 	void newWorkSpace();
 	bool saveWorkspaceRequest();
-	bool openWorkSpace(const NppChar* projectFileName, bool force = false);
+	bool openWorkSpace(const wchar_t* projectFileName, bool force = false);
 	bool saveWorkSpace();
 	bool saveWorkSpaceAs(bool saveCopyAs);
-	void setWorkSpaceFilePath(const NppChar* projectFileName) {
+	void setWorkSpaceFilePath(const wchar_t* projectFileName) {
 		_workSpaceFilePath = projectFileName;
 	}
-	const NppChar* getWorkSpaceFilePath() const {
+	const wchar_t* getWorkSpaceFilePath() const {
 		return _workSpaceFilePath.c_str();
 	}
 	bool isDirty() const {
@@ -105,7 +105,7 @@ public:
 	void setForegroundColor(COLORREF fgColour) override {
 		TreeView_SetTextColor(_treeView.getHSelf(), fgColour);
 	}
-	bool enumWorkSpaceFiles(HTREEITEM tvFrom, const std::vector<NppString>& patterns, std::vector<NppString>& fileNames);
+	bool enumWorkSpaceFiles(HTREEITEM tvFrom, const std::vector<std::wstring>& patterns, std::vector<std::wstring>& fileNames);
 
 protected:
 	TreeView _treeView;
@@ -115,9 +115,9 @@ protected:
 	HMENU _hProjectMenu = nullptr;
 	HMENU _hFolderMenu = nullptr;
 	HMENU _hFileMenu = nullptr;
-	NppString _panelTitle;
-	NppString _workSpaceFilePath;
-	NppString _selDirOfFilesFromDirDlg;
+	std::wstring _panelTitle;
+	std::wstring _workSpaceFilePath;
+	std::wstring _selDirOfFilesFromDirDlg;
 	bool _isDirty = false;
 	int _panelID = 0;
 
@@ -125,12 +125,12 @@ protected:
 	void destroyMenus() const;
 	void addFiles(HTREEITEM hTreeItem);
 	void addFilesFromDirectory(HTREEITEM hTreeItem);
-	void recursiveAddFilesFrom(const NppChar* folderPath, HTREEITEM hTreeItem);
-	HTREEITEM addFolder(HTREEITEM hTreeItem, const NppChar* folderName);
+	void recursiveAddFilesFrom(const wchar_t* folderPath, HTREEITEM hTreeItem);
+	HTREEITEM addFolder(HTREEITEM hTreeItem, const wchar_t* folderName);
 
-	bool writeWorkSpace(const NppChar* projectFileName = nullptr, bool doUpdateGUI = true);
-	NppString getRelativePath(const NppString& filePath, const NppChar* workSpaceFileName);
-	void buildProjectXml(NppXml::Element& root, HTREEITEM hItem, const NppChar* fn2write);
+	bool writeWorkSpace(const wchar_t* projectFileName = nullptr, bool doUpdateGUI = true);
+	std::wstring getRelativePath(const std::wstring& filePath, const wchar_t* workSpaceFileName);
+	void buildProjectXml(NppXml::Element& root, HTREEITEM hItem, const wchar_t* fn2write);
 	NodeType getNodeType(HTREEITEM hItem);
 	void setWorkSpaceDirty(bool isDirty);
 	void popupMenuCmd(int cmdID);
@@ -141,10 +141,10 @@ protected:
 	void showContextMenu(int x, int y);
 	void showContextMenuFromMenuKey(HTREEITEM selectedItem, int x, int y);
 	HMENU getMenuHandler(HTREEITEM selectedItem);
-	NppString getAbsoluteFilePath(const NppChar* relativePath);
+	std::wstring getAbsoluteFilePath(const wchar_t* relativePath);
 	void openSelectFile();
 	void setFileExtFilter(CustomFileDialog& fDlg);
-	std::vector<std::unique_ptr<NppString>> _fullPathStrs;
+	std::vector<std::unique_ptr<std::wstring>> _fullPathStrs;
 
 private:
 	using DockingDlgInterface::init;
@@ -155,11 +155,11 @@ class FileRelocalizerDlg : public StaticDialog
 public:
 	FileRelocalizerDlg() = default;
 
-	int doDialog(const NppChar* fn, bool isRTL = false);
+	int doDialog(const wchar_t* fn, bool isRTL = false);
 
 	void destroy() override {}
 
-	const NppString& getFullFilePath() const {
+	const std::wstring& getFullFilePath() const {
 		return _fullFilePath;
 	}
 
@@ -167,5 +167,5 @@ protected:
 	intptr_t CALLBACK run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 
 private:
-	NppString _fullFilePath;
+	std::wstring _fullFilePath;
 };

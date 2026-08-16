@@ -36,27 +36,27 @@ namespace NppXml
 
 	[[nodiscard]] inline pugi::string_t normalizeEOL(const pugi::string_t& text);
 
-	[[nodiscard]] inline bool loadFile(Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool loadFile(Document doc, const wchar_t* filename) {
 		return doc->load_file(filename, pugi::parse_default | pugi::parse_comments | pugi::parse_declaration);
 	}
 
-	[[nodiscard]] inline bool saveFile(const Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool saveFile(const Document doc, const wchar_t* filename) {
 		return doc->save_file(filename, "    ", pugi::format_indent | pugi::format_save_file_text);
 	}
 
-	[[nodiscard]] inline bool loadFileNativeLang(Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool loadFileNativeLang(Document doc, const wchar_t* filename) {
 		return doc->load_file(filename, pugi::parse_cdata | pugi::parse_escapes | pugi::parse_eol | pugi::parse_comments | pugi::parse_declaration);
 	}
 
-	[[nodiscard]] inline bool loadFileContextMenu(Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool loadFileContextMenu(Document doc, const wchar_t* filename) {
 		return doc->load_file(filename, pugi::parse_cdata | pugi::parse_escapes | pugi::parse_eol);
 	}
 
-	[[nodiscard]] inline bool loadFileShortcut(Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool loadFileShortcut(Document doc, const wchar_t* filename) {
 		return doc->load_file(filename, pugi::parse_cdata | pugi::parse_escapes | pugi::parse_comments | pugi::parse_declaration);
 	}
 
-	[[nodiscard]] inline bool saveFileShortcut(const Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool saveFileShortcut(const Document doc, const wchar_t* filename) {
 		// Without pugi::parse_eol comments are not eol normalized when loaded.
 		// To avoid issue with CRLF converting to CRCRLF on save, comments are normalized on save
 		// to have LF eol.
@@ -78,21 +78,21 @@ namespace NppXml
 		return doc->save_file(filename, "    ", pugi::format_indent | pugi::format_save_file_text | pugi::format_control_chars_in_hexadecimal);
 	}
 
-	[[nodiscard]] inline bool loadFileFunctionParser(Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool loadFileFunctionParser(Document doc, const wchar_t* filename) {
 		return doc->load_file(filename, pugi::parse_cdata | pugi::parse_escapes | pugi::parse_eol);
 	}
 
-	[[nodiscard]] inline bool saveFileProject(const Document doc, const NppChar* filename) {
+	[[nodiscard]] inline bool saveFileProject(const Document doc, const wchar_t* filename) {
 		return doc->save_file(filename, "    ", pugi::format_indent | pugi::format_no_declaration | pugi::format_save_file_text);
 	}
 
-	[[nodiscard]] inline bool loadFileUDL(Document doc, const NppChar* filename)
+	[[nodiscard]] inline bool loadFileUDL(Document doc, const wchar_t* filename)
 	{
 		// UDL lists can contain EOL separator, so UDL must be loaded without pugi::parse_eol.
 		return doc->load_file(filename, pugi::parse_cdata | pugi::parse_escapes | pugi::parse_comments | pugi::parse_declaration);
 	}
 
-	[[nodiscard]] inline bool saveFileUDL(const Document doc, const NppChar* filename)
+	[[nodiscard]] inline bool saveFileUDL(const Document doc, const wchar_t* filename)
 	{
 		// Without pugi::parse_eol EOL are not normalized when loaded.
 		// To avoid issue with CRLF converting to CRCRLF on save, EOL are normalized on save
@@ -161,13 +161,13 @@ namespace NppXml
 		return elem.attribute(name).as_string(defaultValue);
 	}
 
-	[[nodiscard]] inline NppString attributeW(const Element& elem, const char* name, const pugi::string_t& defaultValue = "") {
+	[[nodiscard]] inline std::wstring attributeW(const Element& elem, const char* name, const pugi::string_t& defaultValue = "") {
 		if (const char* attr = elem.attribute(name).as_string(defaultValue.c_str());
 			attr != nullptr && attr[0])
 		{
 			return pugi::as_wide(attr);
 		}
-		return "";
+		return L"";
 	}
 
 	[[nodiscard]] inline int intAttribute(const Element& elem, const char* name, int defaultValue = 0) {
@@ -188,8 +188,8 @@ namespace NppXml
 
 	template <typename T>
 		requires (!std::same_as<T, pugi::string_t>
-			&& !std::same_as<T, NppString>
-			&& !std::same_as<std::remove_cvref_t<std::remove_pointer_t<std::decay_t<T>>>, NppChar>)
+			&& !std::same_as<T, std::wstring>
+			&& !std::same_as<std::remove_cvref_t<std::remove_pointer_t<std::decay_t<T>>>, wchar_t>)
 	inline bool setAttribute(Element& elem, const char* name, T value) {
 		return elem.ensure_attribute(name).set_value(value);
 	}
@@ -198,7 +198,7 @@ namespace NppXml
 		return elem.ensure_attribute(name).set_value(value);
 	}
 
-	inline bool setAttribute(Element& elem, const char* name, const NppString& value) {
+	inline bool setAttribute(Element& elem, const char* name, const std::wstring& value) {
 		return elem.ensure_attribute(name).set_value(pugi::as_utf8(value));
 	}
 

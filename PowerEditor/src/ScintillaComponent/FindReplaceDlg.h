@@ -38,21 +38,21 @@ enum DIALOG_TYPE {FIND_DLG, REPLACE_DLG, FINDINFILES_DLG, FINDINPROJECTS_DLG, MA
 #define DIR_DOWN true
 #define DIR_UP false
 
-#define FIND_STATUS_END_REACHED_TEXT "Find: Reached document end, first occurrence from the top found."
-#define FIND_STATUS_TOP_REACHED_TEXT "Find:  Reached document beginning, first occurrence from the bottom found."
-#define FIND_STATUS_REPLACE_END_REACHED_TEXT "Replace: Reached document end, started from top."
-#define FIND_STATUS_REPLACE_TOP_REACHED_TEXT "Replace: Reached document beginning, started from bottom."
+#define FIND_STATUS_END_REACHED_TEXT L"Find: Reached document end, first occurrence from the top found."
+#define FIND_STATUS_TOP_REACHED_TEXT L"Find:  Reached document beginning, first occurrence from the bottom found."
+#define FIND_STATUS_REPLACE_END_REACHED_TEXT L"Replace: Reached document end, started from top."
+#define FIND_STATUS_REPLACE_TOP_REACHED_TEXT L"Replace: Reached document beginning, started from bottom."
 
 enum InWhat{ALL_OPEN_DOCS, FILES_IN_DIR, CURRENT_DOC, CURR_DOC_SELECTION, FILES_IN_PROJECTS};
 
 struct FoundInfo {
-	FoundInfo(intptr_t start, intptr_t end, size_t lineNumber, const NppChar *fullPath)
+	FoundInfo(intptr_t start, intptr_t end, size_t lineNumber, const wchar_t *fullPath)
 		: _lineNumber(lineNumber), _fullPath(fullPath) {
 		_ranges.push_back(std::pair<intptr_t, intptr_t>(start, end));
 	}
 	std::vector<std::pair<intptr_t, intptr_t>> _ranges;
 	size_t _lineNumber = 0;
-	NppString _fullPath;
+	std::wstring _fullPath;
 };
 
 struct TargetRange {
@@ -75,10 +75,10 @@ struct FindOption
 	bool _doPurge = false;
 	bool _doMarkLine = false;
 	bool _isInSelection = false;
-	NppString _str2Search;
-	NppString _str4Replace;
-	NppString _filters;
-	NppString _directory;
+	std::wstring _str2Search;
+	std::wstring _str4Replace;
+	std::wstring _filters;
+	std::wstring _directory;
 	bool _isRecursive = true;
 	bool _isInHiddenDir = false;
 	bool _isProjectPanel_1 = false;
@@ -97,7 +97,7 @@ struct MatchPosition
 //This class contains generic search functions as static functions for easy access
 class Searching {
 public:
-	static int convertExtendedToString(const NppChar * query, NppChar * result, int length);
+	static int convertExtendedToString(const wchar_t * query, wchar_t * result, int length);
 	static TargetRange t;
 	static int buildSearchFlags(const FindOption * option) {
 		return	(option->_isWholeWord ? SCFIND_WHOLEWORD : 0) |
@@ -108,7 +108,7 @@ public:
 	static void displaySectionCentered(size_t posStart, size_t posEnd, ScintillaEditView* pEditView, bool isDownwards = true);
 
 private:
-	static bool readBase(const NppChar * str, int * value, int base, int size);
+	static bool readBase(const wchar_t * str, int * value, int base, int size);
 
 };
 
@@ -130,11 +130,11 @@ public:
 		_ppEditView = ppEditView;
 	}
 
-	void addSearchLine(const NppChar *searchName);
-	void addFileNameTitle(const NppChar * fileName);
+	void addSearchLine(const wchar_t *searchName);
+	void addFileNameTitle(const wchar_t * fileName);
 	void addFileHitCount(int count);
 	void addSearchResultInfo(int count, int countSearched, bool searchedEntireNotSelection, const FindOption *pFindOpt);
-	std::string foundLine(FoundInfo fi, SearchResultMarkingLine mi, const NppChar* foundline, size_t foundLineLen, size_t totalLineNumber);
+	std::string foundLine(FoundInfo fi, SearchResultMarkingLine mi, const wchar_t* foundline, size_t foundLineLen, size_t totalLineNumber);
 	void setFinderStyle();
 	void setFinderStyleForNpc(bool onlyColor = false);
 	void removeAll();
@@ -149,10 +149,10 @@ public:
 	void gotoNextFoundResult(int direction);
 	std::pair<intptr_t, intptr_t> gotoFoundLine(size_t nOccurrence = 0); // value 0 means this argument is not used
 	void deleteResult();
-	std::vector<NppString> getResultFilePaths(bool onlyInSelectedText) const;
-	bool canFind(const NppChar *fileName, size_t lineNumber, size_t* indexToStartFrom) const;
+	std::vector<std::wstring> getResultFilePaths(bool onlyInSelectedText) const;
+	bool canFind(const wchar_t *fileName, size_t lineNumber, size_t* indexToStartFrom) const;
 	void setVolatiled(bool val) { _canBeVolatiled = val; }
-	NppString getHitsString(int count) const;
+	std::wstring getHitsString(int count) const;
 
 	LRESULT scintillaExecute(UINT msg, WPARAM wParam = 0, LPARAM lParam = 0) const {
 		return _scintView.execute(msg, wParam, lParam);
@@ -191,7 +191,7 @@ private:
 	bool _longLinesAreWrapped = false;
 	bool _purgeBeforeEverySearch = false;
 
-	NppString _prefixLineStr;
+	std::wstring _prefixLineStr;
 
 	using DockingDlgInterface::init;
 
@@ -199,8 +199,8 @@ private:
 		_scintView.execute(SCI_SETREADONLY, isReadOnly);
 	}
 
-	bool isLineActualSearchResult(const NppString & s) const;
-	NppString & prepareStringForClipboard(NppString & s) const;
+	bool isLineActualSearchResult(const std::wstring & s) const;
+	std::wstring & prepareStringForClipboard(std::wstring & s) const;
 
 	static FoundInfo EmptyFoundInfo;
 	static SearchResultMarkingLine EmptySearchResultMarking;
@@ -220,8 +220,8 @@ enum FindNextType {
 
 struct FindReplaceInfo
 {
-	const NppChar *_txt2find = nullptr;
-	const NppChar *_txt2replace = nullptr;
+	const wchar_t *_txt2find = nullptr;
+	const wchar_t *_txt2replace = nullptr;
 	intptr_t _startRange = -1;
 	intptr_t _endRange = -1;
 };
@@ -230,7 +230,7 @@ struct FindersInfo
 {
 	Finder *_pSourceFinder = nullptr;
 	Finder *_pDestFinder = nullptr;
-	const NppChar *_pFileName = nullptr;
+	const wchar_t *_pFileName = nullptr;
 
 	FindOption _findOption;
 };
@@ -281,11 +281,11 @@ public :
 	void initOptionsFromDlg();
 
 	void doDialog(DIALOG_TYPE whichType, bool isRTL = false, bool toShow = true);
-	bool processFindNext(const NppChar* txt2find,
+	bool processFindNext(const wchar_t* txt2find,
 		const FindOption* options = nullptr, FindStatus* oFindStatus = nullptr, FindNextType findNextType = FINDNEXTTYPE_FINDNEXT, MatchPosition* pMatch = nullptr);
-	bool processReplace(const NppChar* txt2find, const NppChar* txt2replace, const FindOption* options = nullptr);
+	bool processReplace(const wchar_t* txt2find, const wchar_t* txt2replace, const FindOption* options = nullptr);
 
-	int markAll(const NppChar* txt2find, int styleID);
+	int markAll(const wchar_t* txt2find, int styleID);
 	int markAllInc(const FindOption* opt);
 
 	int processAll(ProcessOperation op, const FindOption* opt,
@@ -295,7 +295,7 @@ public :
 
 	void replaceAllInOpenedDocs();
 	void findAllIn(InWhat op);
-	void setSearchText(const NppChar * txt2find);
+	void setSearchText(const wchar_t * txt2find);
 
 	void gotoNextFoundResult(int direction = 0) const {
 		if (_pFinder) _pFinder->gotoNextFoundResult(direction);
@@ -304,21 +304,21 @@ public :
 	void putFindResult(int result) {
 		_findAllResult = result;
 	}
-	const NppChar * getDir2Search() const { return _env->_directory.c_str(); }
+	const wchar_t * getDir2Search() const { return _env->_directory.c_str(); }
 
-	void getPatterns(std::vector<NppString> & patternVect);
-	void getAndValidatePatterns(std::vector<NppString> & patternVect);
+	void getPatterns(std::vector<std::wstring> & patternVect);
+	void getAndValidatePatterns(std::vector<std::wstring> & patternVect);
 
-	void setFindInFilesDirFilter(const NppChar *dir, const NppChar *filters);
+	void setFindInFilesDirFilter(const wchar_t *dir, const wchar_t *filters);
 	void setProjectCheckmarks(FindHistory *findHistory, int Msk);
 	void enableProjectCheckmarks();
 
-	const NppString& getText2search() const {
+	const std::wstring& getText2search() const {
 		return _env->_str2Search;
 	}
 
-	const NppString& getFilters() const { return _env->_filters; }
-	const NppString& getDirectory() const { return _env->_directory; }
+	const std::wstring& getFilters() const { return _env->_filters; }
+	const std::wstring& getDirectory() const { return _env->_directory; }
 	const FindOption& getCurrentOptions() const { return *_env; }
 	bool isRecursive() const { return _env->_isRecursive; }
 	bool isInHiddenDir() const { return _env->_isInHiddenDir; }
@@ -326,13 +326,13 @@ public :
 	bool isProjectPanel_2() const { return _env->_isProjectPanel_2; }
 	bool isProjectPanel_3() const { return _env->_isProjectPanel_3; }
 	void saveFindHistory();
-	void changeTabName(DIALOG_TYPE index, const NppChar *name2change) {
+	void changeTabName(DIALOG_TYPE index, const wchar_t *name2change) {
 		TCITEM tie{};
 		tie.mask = TCIF_TEXT;
-		tie.pszText = const_cast<NppChar*>(name2change);
+		tie.pszText = const_cast<wchar_t*>(name2change);
 		TabCtrl_SetItem(_tab.getHSelf(), index, &tie);
 
-		NppChar label[MAX_PATH]{};
+		wchar_t label[MAX_PATH]{};
 		_tab.getCurrentTitle(label, MAX_PATH);
 		::SetWindowText(_hSelf, label);
 	}
@@ -410,23 +410,23 @@ public :
 		return _findersOfFinder;
 	}
 
-	void execSavedCommand(int cmd, uptr_t intValue, const NppString& stringValue);
+	void execSavedCommand(int cmd, uptr_t intValue, const std::wstring& stringValue);
 	void clearMarks(const FindOption& opt);
-	void setStatusbarMessage(const NppString & msg, FindStatus status, const NppString& tooltipMsg = "");
+	void setStatusbarMessage(const std::wstring & msg, FindStatus status, const std::wstring& tooltipMsg = L"");
 	void setStatusbarMessageWithRegExprErr(ScintillaEditView* pEditView);
-	void setStatusMessageNotFound(const NppString& textNotFound, const NppString& tooltipMsg = "");
+	void setStatusMessageNotFound(const std::wstring& textNotFound, const std::wstring& tooltipMsg = L"");
 
 	void setStatusMessageWithInvisibleCharsWarning();
 	void removeStatusMessageWithInvisibleCharsWarning();
 
-	NppString getScopeInfoForStatusBar(FindOption const *pFindOpt) const;
+	std::wstring getScopeInfoForStatusBar(FindOption const *pFindOpt) const;
 	Finder * createFinder();
 	bool removeFinder(Finder *finder2remove);
 	DIALOG_TYPE getCurrentStatus() { return _currentStatus; }
 	Finder* getFinderFrom(HWND hwnd);
 	int regexBackwardMsgBox();
-	NppString setSearchText();
-	NppString setSearchTextWithSettings();
+	std::wstring setSearchText();
+	std::wstring setSearchTextWithSettings();
 
 protected :
 	void resizeDialogElements();
@@ -447,7 +447,7 @@ private:
 
 	ScintillaEditView** _ppEditView = nullptr;
 	Finder  *_pFinder = nullptr;
-	NppString _findResTitle;
+	std::wstring _findResTitle;
 
 	std::vector<Finder*> _findersOfFinder{};
 
@@ -459,7 +459,7 @@ private:
 	bool _isRTL = false;
 
 	int _findAllResult = 0;
-	NppChar _findAllResultStr[1024] = {'\0'};
+	wchar_t _findAllResultStr[1024] = {'\0'};
 
 	int _fileNameLenMax = 1024;
 	char *_uniFileName = nullptr;
@@ -469,7 +469,7 @@ private:
 	StatusBar _statusBar;
 	FindStatus _statusbarFindStatus;
 
-	NppString _statusbarTooltipMsg;
+	std::wstring _statusbarTooltipMsg;
 	HWND _statusbarTooltipWnd = nullptr;
 	HICON _statusbarTooltipIcon = nullptr;
 	int _statusbarTooltipIconSize = 0;
@@ -520,8 +520,8 @@ private:
 	void updateCombos();
 	void updateCombo(int comboID);
 	void fillFindHistory();
-	void fillComboHistory(int id, const std::vector<NppString> & strings);
-	int saveComboHistory(int id, int maxcount, std::vector<NppString> & strings, bool saveEmpty);
+	void fillComboHistory(int id, const std::vector<std::wstring> & strings);
+	int saveComboHistory(int id, int maxcount, std::vector<std::wstring> & strings, bool saveEmpty);
 	static const int FR_OP_FIND = 1;
 	static const int FR_OP_REPLACE = 2;
 	static const int FR_OP_FIF = 4;
@@ -529,11 +529,11 @@ private:
 	static const int FR_OP_FIP = 16;
 	void saveInMacro(size_t cmd, int cmdType);
 	void drawStatusBarItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
-	bool replaceInFilesConfirmCheck(const NppString& directory, const NppString& fileTypes);
+	bool replaceInFilesConfirmCheck(const std::wstring& directory, const std::wstring& fileTypes);
 	bool replaceInProjectsConfirmCheck();
 	bool replaceInOpenDocsConfirmCheck();
 
-	bool isSearchUnicodeCharOnAnsi(const NppChar* text) const;
+	bool isSearchUnicodeCharOnAnsi(const wchar_t* text) const;
 
 	ContextMenu _swapPopupMenu;
 	enum SwapButtonStatus {swap, down, up} _swapButtonStatus = swap;
@@ -550,7 +550,7 @@ public :
 	void destroy() override;
 	void display(bool toShow = true) const override;
 
-	void setSearchText(const NppChar* txt2find, bool) {
+	void setSearchText(const wchar_t* txt2find, bool) {
 		::SendDlgItemMessage(_hSelf, IDC_INCFINDTEXT, WM_SETTEXT, 0, reinterpret_cast<LPARAM>(txt2find));
 	}
 
@@ -602,7 +602,7 @@ public:
 	Progress(const Progress&) = delete;
 	const Progress& operator=(const Progress&) = delete;
 
-	HWND open(HWND hCallerWnd, const NppChar* header = NULL);
+	HWND open(HWND hCallerWnd, const wchar_t* header = NULL);
 	void close();
 
 	bool isCancelled() const
@@ -612,12 +612,12 @@ public:
 		return false;
 	}
 
-	void setPercent(unsigned percent, const NppChar* fileName, int nbHitsSoFar) const;
-	void setInfo(const NppChar* info, int nbHitsSoFar = -1) const;
+	void setPercent(unsigned percent, const wchar_t* fileName, int nbHitsSoFar) const;
+	void setInfo(const wchar_t* info, int nbHitsSoFar = -1) const;
 
 private:
-	static const NppChar cClassName[];
-	static const NppChar cDefaultHeader[];
+	static const wchar_t cClassName[];
+	static const wchar_t cDefaultHeader[];
 	static const int cBackgroundColor;
 	static const SIZE _szClient;
 
@@ -636,7 +636,7 @@ private:
 	HINSTANCE _hInst = nullptr;
 	volatile HWND _hwnd = nullptr;
 	HWND _hCallerWnd = nullptr;
-	NppChar _header[128] = {'\0'};
+	wchar_t _header[128] = {'\0'};
 	HANDLE _hThread = nullptr;
 	HANDLE _hActiveState = nullptr;
 	HWND _hPathText = nullptr;

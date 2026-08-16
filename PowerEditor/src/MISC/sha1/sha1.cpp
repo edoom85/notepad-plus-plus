@@ -141,11 +141,11 @@ void CSHA1::Update(const UINT_8* pbData, UINT_32 uLen)
 }
 
 #ifdef SHA1_UTILITY_FUNCTIONS
-bool CSHA1::HashFile(const NppChar* tszFileName)
+bool CSHA1::HashFile(const wchar_t* tszFileName)
 {
 	if(tszFileName == NULL) return false;
 
-	FILE* fpIn = _wfopen(tszFileName, "rb");
+	FILE* fpIn = _wfopen(tszFileName, L"rb");
 	if(fpIn == NULL) return false;
 
 	UINT_8* pbData = new UINT_8[SHA1_MAX_FILE_BUFFER];
@@ -203,18 +203,18 @@ void CSHA1::Final()
 }
 /*
 #ifdef SHA1_UTILITY_FUNCTIONS
-bool CSHA1::ReportHash(NppChar* tszReport, REPORT_TYPE rtReportType) const
+bool CSHA1::ReportHash(wchar_t* tszReport, REPORT_TYPE rtReportType) const
 {
 	if(tszReport == NULL) return false;
 
-	NppChar tszTemp[16]{};
+	wchar_t tszTemp[16]{};
 
 	if((rtReportType == REPORT_HEX) || (rtReportType == REPORT_HEX_SHORT))
 	{
-		_snwprintf(tszTemp, 15, "%02X", m_digest[0]);
+		_snwprintf(tszTemp, 15, L"%02X", m_digest[0]);
 		wcscpy(tszReport, tszTemp);
 
-		const NppChar* lpFmt = ((rtReportType == REPORT_HEX) ? " %02X" : "%02X");
+		const wchar_t* lpFmt = ((rtReportType == REPORT_HEX) ? L" %02X" : L"%02X");
 		for(size_t i = 1; i < 20; ++i)
 		{
 			_snwprintf(tszTemp, 15, lpFmt, m_digest[i]);
@@ -223,12 +223,12 @@ bool CSHA1::ReportHash(NppChar* tszReport, REPORT_TYPE rtReportType) const
 	}
 	else if(rtReportType == REPORT_DIGIT)
 	{
-		_snwprintf(tszTemp, 15, "%u", m_digest[0]);
+		_snwprintf(tszTemp, 15, L"%u", m_digest[0]);
 		wcscpy(tszReport, tszTemp);
 
 		for(size_t i = 1; i < 20; ++i)
 		{
-			_snwprintf(tszTemp, 15, " %u", m_digest[i]);
+			_snwprintf(tszTemp, 15, L" %u", m_digest[i]);
 			wcscat(tszReport, tszTemp);
 		}
 	}
@@ -239,9 +239,9 @@ bool CSHA1::ReportHash(NppChar* tszReport, REPORT_TYPE rtReportType) const
 #endif
 
 #ifdef SHA1_STL_FUNCTIONS
-bool CSHA1::ReportHashStl(std::basic_string<NppChar>& strOut, REPORT_TYPE rtReportType) const
+bool CSHA1::ReportHashStl(std::basic_string<wchar_t>& strOut, REPORT_TYPE rtReportType) const
 {
-	NppChar tszOut[84]{};
+	wchar_t tszOut[84]{};
 	const bool bResult = ReportHash(tszOut, rtReportType);
 	if(bResult) strOut = tszOut;
 	return bResult;

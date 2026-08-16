@@ -18,8 +18,8 @@
 #ifndef CLIPBOARDFORMATS_H
 #define CLIPBOARDFORMATS_H
 
-#define CF_HTML			"HTML Format"
-#define CF_RTF			"Rich Text Format"
-#define CF_NPPTEXTLEN	"Notepad++ Binary Length"
+#define CF_HTML			L"HTML Format"
+#define CF_RTF			L"Rich Text Format"
+#define CF_NPPTEXTLEN	L"Notepad++ Binary Length"
 
 #endif //CLIPBOARDFORMATS_H

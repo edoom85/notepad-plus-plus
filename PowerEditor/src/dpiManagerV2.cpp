@@ -104,7 +104,7 @@ void DPIManagerV2::initDpiAPI()
 {
 	if (NppDarkMode::isWindows10())
 	{
-		HMODULE hUser32 = ::GetModuleHandleW("user32.dll");
+		HMODULE hUser32 = ::GetModuleHandleW(L"user32.dll");
 		if (hUser32 != nullptr)
 		{
 			LoadFn(hUser32, _fnGetDpiForSystem, "GetDpiForSystem");
@@ -224,7 +224,7 @@ LOGFONT DPIManagerV2::getDefaultGUIFontForDpi(UINT dpi, FontType type)
 	return lf;
 }
 
-void DPIManagerV2::loadIcon(HINSTANCE hinst, const NppChar* pszName, int cx, int cy, HICON* phico, UINT fuLoad)
+void DPIManagerV2::loadIcon(HINSTANCE hinst, const wchar_t* pszName, int cx, int cy, HICON* phico, UINT fuLoad)
 {
 	if (::LoadIconWithScaleDown(hinst, pszName, cx, cy, phico) != S_OK)
 	{
@@ -237,8 +237,8 @@ DWORD DPIManagerV2::getTextScaleFactor()
 	static constexpr DWORD defaultVal = 100;
 	DWORD data = defaultVal;
 	DWORD dwBufSize = sizeof(data);
-	static constexpr LPCWSTR lpSubKey = "Software\\Microsoft\\Accessibility";
-	static constexpr LPCWSTR lpValue = "TextScaleFactor";
+	static constexpr LPCWSTR lpSubKey = L"Software\\Microsoft\\Accessibility";
+	static constexpr LPCWSTR lpValue = L"TextScaleFactor";
 
 	if (::RegGetValueW(HKEY_CURRENT_USER, lpSubKey, lpValue, RRF_RT_REG_DWORD, nullptr, &data, &dwBufSize) == ERROR_SUCCESS)
 	{

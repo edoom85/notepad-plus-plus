@@ -139,7 +139,7 @@ private:
   inline bool NppPluginLoader::load(const NppString& path) {
       _path = path;
       const DWORD dwFlags = 
-          GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory")
+          GetProcAddress(GetModuleHandle(L"kernel32.dll"), "AddDllDirectory")
           ? (0x00000100 | 0x00001000)   // LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | DEFAULT_DIRS
           : 0;
       _handle = reinterpret_cast<void*>(
@@ -155,11 +155,11 @@ private:
   }
   inline NppString NppPluginLoader::lastError() const {
       DWORD err = ::GetLastError();
-      if (!err) return "";
+      if (!err) return L"";
       LPWSTR buf = nullptr;
       FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
           nullptr, err, 0, reinterpret_cast<LPWSTR>(&buf), 0, nullptr);
-      NppString msg(buf ? buf : "Unknown error");
+      NppString msg(buf ? buf : L"Unknown error");
       if (buf) LocalFree(buf);
       return msg;
   }

@@ -62,7 +62,7 @@ long Buffer::_recentTagCtr = 0;
 // Invalid characters for a file name
 // Refer: https://docs.microsoft.com/en-us/windows/desktop/FileIO/naming-a-file
 // Including 'tab' and 'return/new line' characters
-const NppChar* fileNameInvalidChars = "\\/:*?\"<>|\t\r\n";
+const wchar_t* fileNameInvalidChars = L"\\/:*?\"<>|\t\r\n";
 
 namespace // anonymous
 {
@@ -100,7 +100,7 @@ namespace // anonymous
 
 using namespace std;
 
-Buffer::Buffer(FileManager * pManager, BufferID id, Document doc, DocFileStatus type, const NppChar *fileName, bool isLargeFile)
+Buffer::Buffer(FileManager * pManager, BufferID id, Document doc, DocFileStatus type, const wchar_t *fileName, bool isLargeFile)
 	// type must be either DOC_REGULAR or DOC_UNNAMED
 	: _pManager(pManager) , _id(id), _doc(doc), _lang(L_TEXT), _isLargeFile(isLargeFile)
 {
@@ -161,7 +161,7 @@ void Buffer::setUnicodeMode(UniMode mode)
 }
 
 
-void Buffer::setLangType(LangType lang, const NppChar* userLangName)
+void Buffer::setLangType(LangType lang, const wchar_t* userLangName)
 {
 	if (lang == _lang && lang != L_USER)
 		return;
@@ -198,7 +198,7 @@ void Buffer::updateTimeStamp()
 			if (nppParam.doNppLogNetworkDriveIssue())
 			{
 				wstring issueFn = nppLogNetworkDriveIssue;
-				issueFn += ".log";
+				issueFn += L".log";
 				wstring nppIssueLog = nppParam.getUserPath();
 				pathAppend(nppIssueLog, issueFn);
 				std::string msg = wstring2string(_fullPathName, CP_UTF8);
@@ -256,7 +256,7 @@ void Buffer::updateTimeStamp()
 			if (buf[0] != '\0')
 			{
 				wstring issueFn = nppLogNetworkDriveIssue;
-				issueFn += ".log";
+				issueFn += L".log";
 				wstring nppIssueLog = nppParam.getUserPath();
 				pathAppend(nppIssueLog, issueFn);
 				std::string msg = wstring2string(_fullPathName, CP_UTF8);
@@ -274,7 +274,7 @@ void Buffer::updateTimeStamp()
 
 // Set full path file name in buffer object,
 // and determine its language by its extension.
-void Buffer::setFileName(const NppChar *fn)
+void Buffer::setFileName(const wchar_t *fn)
 {
 	NppParameters& nppParamInst = NppParameters::getInstance();
 	if (_fullPathName == fn)
@@ -306,13 +306,13 @@ void Buffer::setFileName(const NppChar *fn)
 
 	// for _lang
 	LangType determinedLang = L_TEXT;
-	NppChar *ext = PathFindExtension(_fullPathName.c_str());
+	wchar_t *ext = PathFindExtension(_fullPathName.c_str());
 	if (*ext == '.') // extension found
 	{
 		ext += 1;
 
 		// Define User Lang firstly
-		const NppChar* langName = nppParamInst.getUserDefinedLangNameFromExt(ext, _fileName);
+		const wchar_t* langName = nppParamInst.getUserDefinedLangNameFromExt(ext, _fileName);
 		if (langName)
 		{
 			determinedLang = L_USER;
@@ -327,15 +327,15 @@ void Buffer::setFileName(const NppChar *fn)
 
 	if (determinedLang == L_TEXT)	// language can probably be refined
 	{
-		if ((_wcsicmp(_fileName, "makefile") == 0) || (_wcsicmp(_fileName, "GNUmakefile") == 0))
+		if ((_wcsicmp(_fileName, L"makefile") == 0) || (_wcsicmp(_fileName, L"GNUmakefile") == 0))
 			determinedLang = L_MAKEFILE;
-		else if (_wcsicmp(_fileName, "CmakeLists.txt") == 0)
+		else if (_wcsicmp(_fileName, L"CmakeLists.txt") == 0)
 			determinedLang = L_CMAKE;
-		else if ((_wcsicmp(_fileName, "SConstruct") == 0) || (_wcsicmp(_fileName, "SConscript") == 0) || (_wcsicmp(_fileName, "wscript") == 0))
+		else if ((_wcsicmp(_fileName, L"SConstruct") == 0) || (_wcsicmp(_fileName, L"SConscript") == 0) || (_wcsicmp(_fileName, L"wscript") == 0))
 			determinedLang = L_PYTHON;
-		else if ((_wcsicmp(_fileName, "Rakefile") == 0) || (_wcsicmp(_fileName, "Vagrantfile") == 0))
+		else if ((_wcsicmp(_fileName, L"Rakefile") == 0) || (_wcsicmp(_fileName, L"Vagrantfile") == 0))
 			determinedLang = L_RUBY;
-		else if ((_wcsicmp(_fileName, "crontab") == 0) || (_wcsicmp(_fileName, "PKGBUILD") == 0) || (_wcsicmp(_fileName, "APKBUILD") == 0))
+		else if ((_wcsicmp(_fileName, L"crontab") == 0) || (_wcsicmp(_fileName, L"PKGBUILD") == 0) || (_wcsicmp(_fileName, L"APKBUILD") == 0))
 			determinedLang = L_BASH;
 	}
 
@@ -367,10 +367,10 @@ void Buffer::normalizeTabName(wstring& tabName)
 
 		// remove invalid characters
 		wstring tempStr;
-		for (NppChar ch : tabName)
+		for (wchar_t ch : tabName)
 		{
 			bool isInvalid = false;
-			for (const NppChar* p = fileNameInvalidChars; *p != L'\0'; ++p)
+			for (const wchar_t* p = fileNameInvalidChars; *p != L'\0'; ++p)
 			{
 				if (ch == *p)
 				{
@@ -400,7 +400,7 @@ void Buffer::refreshCompactFileName()
 {
 	if (!_fileName)
 	{
-		_compactFileName = "";
+		_compactFileName = L"";
 	}
 	else
 	{
@@ -455,7 +455,7 @@ bool Buffer::checkFileState() // returns true if the status has been changed (it
 	if (!fileExists && nppParam.doNppLogNetworkDriveIssue())
 	{
 		wstring issueFn = nppLogNetworkDriveIssue;
-		issueFn += ".log";
+		issueFn += L".log";
 		wstring nppIssueLog = nppParam.getUserPath();
 		pathAppend(nppIssueLog, issueFn);
 		std::string msg = wstring2string(_fullPathName, CP_UTF8);
@@ -553,7 +553,7 @@ bool Buffer::checkFileState() // returns true if the status has been changed (it
 				if (buf[0] != '\0')
 				{
 					wstring issueFn = nppLogNetworkDriveIssue;
-					issueFn += ".log";
+					issueFn += L".log";
 					wstring nppIssueLog = nppParam.getUserPath();
 					pathAppend(nppIssueLog, issueFn);
 					std::string msg = wstring2string(_fullPathName, CP_UTF8);
@@ -629,12 +629,12 @@ wstring Buffer::getTimeString(FILETIME rawtime) const
 	SystemTimeToTzSpecificLocalTime(nullptr, &utcSystemTime, &localSystemTime);
 
 	const size_t dateTimeStrLen = 256;
-	NppChar bufDate[dateTimeStrLen] = { '\0' };
+	wchar_t bufDate[dateTimeStrLen] = { '\0' };
 	GetDateFormat(LOCALE_USER_DEFAULT, 0, &localSystemTime, nullptr, bufDate, dateTimeStrLen);
 	result += bufDate;
 	result += ' ';
 
-	NppChar bufTime[dateTimeStrLen] = { '\0' };
+	wchar_t bufTime[dateTimeStrLen] = { '\0' };
 	GetTimeFormat(LOCALE_USER_DEFAULT, 0, &localSystemTime, nullptr, bufTime, dateTimeStrLen);
 	result += bufTime;
 
@@ -664,7 +664,7 @@ wstring Buffer::getFileTime(fileTimeType ftt) const
 		return getTimeString(rawtime);
 	}
 
-	return "";
+	return L"";
 }
 
 
@@ -921,14 +921,14 @@ void FileManager::closeBuffer(BufferID id, const ScintillaEditView* identifier)
 
 
 // backupFileName is sentinel of backup mode: if it's not NULL, then we use it (load it). Otherwise we use filename
-BufferID FileManager::loadFile(const NppChar* filename, Document doc, int encoding, const NppChar* backupFileName, FILETIME fileNameTimestamp)
+BufferID FileManager::loadFile(const wchar_t* filename, Document doc, int encoding, const wchar_t* backupFileName, FILETIME fileNameTimestamp)
 {
 	if (!filename)
 		return BUFFER_INVALID;
 
 	//Get file size
 	int64_t fileSize = -1;
-	const NppChar* pPath = filename;
+	const wchar_t* pPath = filename;
 	if (!doesFileExist(pPath))
 	{
 		pPath = backupFileName;
@@ -982,7 +982,7 @@ BufferID FileManager::loadFile(const NppChar* filename, Document doc, int encodi
 		ownDoc = true;
 	}
 
-	NppChar fullpath[MAX_PATH] = { 0 };
+	wchar_t fullpath[MAX_PATH] = { 0 };
 	if (isWin32NamespacePrefixedFileName(filename)) // This function checks for the \\?\ prefix
 	{
 		// use directly the raw file name, skip the GetFullPathName WINAPI
@@ -1185,13 +1185,13 @@ bool FileManager::deleteFile(BufferID id)
 }
 
 
-bool FileManager::moveFile(BufferID id, const NppChar* newFileName)
+bool FileManager::moveFile(BufferID id, const wchar_t* newFileName)
 {
 	if (id == BUFFER_INVALID)
 		return false;
 
 	Buffer* buf = getBufferByID(id);
-	const NppChar* fileNamePath = buf->getFullPathName();
+	const wchar_t* fileNamePath = buf->getFullPathName();
 	if (!::MoveFileExW(fileNamePath, newFileName, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED | MOVEFILE_WRITE_THROUGH))
 	{
 		if (::GetLastError() != ERROR_ACCESS_DENIED)
@@ -1200,11 +1200,11 @@ bool FileManager::moveFile(BufferID id, const NppChar* newFileName)
 		// ERROR_ACCESS_DENIED, try to move elevated
 		// (notepad++.exe #UAC-MOVEFILE# original_file_path new_file_path)
 		wstring strCmdLineParams = NPP_UAC_MOVEFILE_SIGN;
-		strCmdLineParams += " \"";
+		strCmdLineParams += L" \"";
 		strCmdLineParams += fileNamePath;
-		strCmdLineParams += "\" \"";
+		strCmdLineParams += L"\" \"";
 		strCmdLineParams += newFileName;
-		strCmdLineParams += "\"";
+		strCmdLineParams += L"\"";
 		DWORD dwNppUacOpError = invokeNppUacOp(strCmdLineParams);
 		if (dwNppUacOpError != NO_ERROR)
 			return false;
@@ -1288,7 +1288,7 @@ bool FileManager::backupCurrentBuffer()
 			{
 				// Create file
 				backupFilePath = NppParameters::getInstance().getUserPath();
-				backupFilePath += "\\backup\\";
+				backupFilePath += L"\\backup\\";
 
 				// if "backup" folder doesn't exist, create it.
 				if (!doesDirectoryExist(backupFilePath.c_str()))
@@ -1299,15 +1299,15 @@ bool FileManager::backupCurrentBuffer()
 				backupFilePath += buffer->getFileName();
 
 				const int temBufLen = 32;
-				NppChar tmpbuf[temBufLen];
+				wchar_t tmpbuf[temBufLen];
 				time_t ltime = time(0);
 				const struct tm* today = localtime(&ltime);
 				if (!today)
 					return false;
 
-				wcsftime(tmpbuf, temBufLen, "%Y-%m-%d_%H%M%S", today);
+				wcsftime(tmpbuf, temBufLen, L"%Y-%m-%d_%H%M%S", today);
 
-				backupFilePath += "@";
+				backupFilePath += L"@";
 				backupFilePath += tmpbuf;
 
 				// Set created file name in buffer
@@ -1317,7 +1317,7 @@ bool FileManager::backupCurrentBuffer()
 				hasModifForSession = true;
 			}
 
-			NppChar fullpath[MAX_PATH]{};
+			wchar_t fullpath[MAX_PATH]{};
 			::GetFullPathName(backupFilePath.c_str(), MAX_PATH, fullpath, NULL);
 			if (wcschr(fullpath, '~'))
 			{
@@ -1327,8 +1327,8 @@ bool FileManager::backupCurrentBuffer()
 			// Make sure the backup file is not read only
 			removeReadOnlyFlagFromFileAttributes(fullpath);
 
-			NppString fullpathTemp = fullpath;
-			fullpathTemp += ".tmp";
+			std::wstring fullpathTemp = fullpath;
+			fullpathTemp += L".tmp";
 			if (UnicodeConvertor.openFile(buffer->isUntitled() ? fullpathTemp.c_str() : fullpath)) // Use temp only for "new #" due to they don't have the original physical existance on the hard drive
 			{
 				size_t lengthDoc = _pNotepadPlus->_pEditView->getCurrentDocLen();
@@ -1426,7 +1426,7 @@ bool FileManager::deleteBufferBackup(BufferID id)
 
 std::mutex save_mutex;
 
-SavingStatus FileManager::saveBuffer(BufferID id, const NppChar* filename, bool isCopy)
+SavingStatus FileManager::saveBuffer(BufferID id, const wchar_t* filename, bool isCopy)
 {
 	std::lock_guard<std::mutex> lock(save_mutex);
 
@@ -1441,7 +1441,7 @@ SavingStatus FileManager::saveBuffer(BufferID id, const NppChar* filename, bool 
 	Buffer* buffer = getBufferByID(id);
 	bool isHiddenOrSys = false;
 
-	NppChar fullpath[MAX_PATH]{};
+	wchar_t fullpath[MAX_PATH]{};
 	if (isWin32NamespacePrefixedFileName(filename))
 	{
 		// use directly the raw file name, skip the GetFullPathName WINAPI
@@ -1456,11 +1456,11 @@ SavingStatus FileManager::saveBuffer(BufferID id, const NppChar* filename, bool 
 		}
 	}
 	
-	NppChar dirDest[MAX_PATH]{};
+	wchar_t dirDest[MAX_PATH]{};
 	wcscpy_s(dirDest, MAX_PATH, fullpath);
 	::PathRemoveFileSpecW(dirDest);
 
-	const NppChar* currentBufFilePath = buffer->getFullPathName();
+	const wchar_t* currentBufFilePath = buffer->getFullPathName();
 	ULARGE_INTEGER freeBytesForUser;
 	 
 	BOOL getFreeSpaceSuccessful = getDiskFreeSpaceWithTimeout(dirDest, &freeBytesForUser);
@@ -1497,7 +1497,7 @@ SavingStatus FileManager::saveBuffer(BufferID id, const NppChar* filename, bool 
 
 	int encoding = buffer->getEncoding();
 
-	wstring strTempFile = "";
+	wstring strTempFile = L"";
 	if (!UnicodeConvertor.openFile(fullpath))
 	{
 		if (NppParameters::getInstance().isEndSessionCritical())
@@ -1508,12 +1508,12 @@ SavingStatus FileManager::saveBuffer(BufferID id, const NppChar* filename, bool 
 
 		// ERROR_ACCESS_DENIED, swap to temporary file copy for the UAC elevation way
 
-		NppChar wszBuf[MAX_PATH + 1]{};
+		wchar_t wszBuf[MAX_PATH + 1]{};
 		if (::GetTempPath(MAX_PATH, wszBuf) == 0)
 			return SavingStatus::SaveOpenFailed; // cannot continue
 
 		strTempFile = wszBuf;
-		strTempFile += "npp-" + std::to_wstring(GetUnixSysTimeInMilliseconds()) + ".tmp"; // make unique temporary filename
+		strTempFile += L"npp-" + std::to_wstring(GetUnixSysTimeInMilliseconds()) + L".tmp"; // make unique temporary filename
 		if (!UnicodeConvertor.openFile(strTempFile.c_str()))
 			return SavingStatus::SaveOpenFailed; // cannot continue, weird
 	}
@@ -1574,9 +1574,9 @@ SavingStatus FileManager::saveBuffer(BufferID id, const NppChar* filename, bool 
 		// elevated saving/overwriting of the original file by the help of the tempfile
 		// (notepad++.exe #UAC-SAVE# temp_file_path dest_file_path)
 		wstring strCmdLineParams = NPP_UAC_SAVE_SIGN;
-		strCmdLineParams += " \"" + strTempFile + "\" \"";
+		strCmdLineParams += L" \"" + strTempFile + L"\" \"";
 		strCmdLineParams += fullpath;
-		strCmdLineParams += "\"";
+		strCmdLineParams += L"\"";
 		DWORD dwNppUacOpError = invokeNppUacOp(strCmdLineParams);
 		if (dwNppUacOpError != NO_ERROR)
 		{
@@ -1642,7 +1642,7 @@ size_t FileManager::nextUntitledNewNumber() const
 			if ((buf->_referees[0])->isVisible())
 			{
 				wstring newTitle = ((NppParameters::getInstance()).getNativeLangSpeaker())->getLocalizedStrFromID("tab-untitled-string", UNTITLED_STR);
-				NppChar *numberStr = buf->_fileName + newTitle.length();
+				wchar_t *numberStr = buf->_fileName + newTitle.length();
 				int usedNumber = _wtoi(numberStr);
 				usedNumbers.push_back(usedNumber);
 			}
@@ -1683,8 +1683,8 @@ BufferID FileManager::newEmptyDocument()
 
 	wstring newTitle = (nppParams.getNativeLangSpeaker())->getLocalizedStrFromID("tab-untitled-string", UNTITLED_STR);
 
-	NppChar nb[10]{};
-	sprintf(nb, "%d", static_cast<int>(nextUntitledNewNumber()));
+	wchar_t nb[10]{};
+	wsprintf(nb, L"%d", static_cast<int>(nextUntitledNewNumber()));
 	newTitle += nb;
 
 	Document doc = static_cast<Document>(_pscratchTilla->execute(SCI_CREATEDOCUMENT, 0, SC_DOCUMENTOPTION_TEXT_LARGE)); // this already sets a reference for filemanager
@@ -1705,7 +1705,7 @@ BufferID FileManager::newEmptyDocument()
 	return id;
 }
 
-BufferID FileManager::newPlaceholderDocument(const NppChar* missingFilename, int whichOne, const NppChar* userCreatedSessionName)
+BufferID FileManager::newPlaceholderDocument(const wchar_t* missingFilename, int whichOne, const wchar_t* userCreatedSessionName)
 {
 	NppParameters& nppParamInst = NppParameters::getInstance();
 
@@ -1717,8 +1717,8 @@ BufferID FileManager::newPlaceholderDocument(const NppChar* missingFilename, int
 			res = (nppParamInst.getNativeLangSpeaker())->messageBox(
 				"FileInaccessibleUserSession",
 				_pNotepadPlus->_pEditView->getHSelf(),
-				"Some files from your manually-saved session \"$STR_REPLACE$\" are inaccessible. They can be opened as empty and read-only documents as placeholders.\n\nWould you like to create those placeholders?\n\nNOTE: Choosing not to create the placeholders or closing them later, your manually-saved session will NOT be modified on exit.",
-				"File inaccessible",
+				L"Some files from your manually-saved session \"$STR_REPLACE$\" are inaccessible. They can be opened as empty and read-only documents as placeholders.\n\nWould you like to create those placeholders?\n\nNOTE: Choosing not to create the placeholders or closing them later, your manually-saved session will NOT be modified on exit.",
+				L"File inaccessible",
 				MB_YESNO | MB_APPLMODAL,
 				0,
 				userCreatedSessionName);
@@ -1728,8 +1728,8 @@ BufferID FileManager::newPlaceholderDocument(const NppChar* missingFilename, int
 			res = (nppParamInst.getNativeLangSpeaker())->messageBox(
 				"FileInaccessibleDefaultSessionXml",
 				_pNotepadPlus->_pEditView->getHSelf(),
-				"Some files from your past session are inaccessible. They can be opened as empty and read-only documents as placeholders.\n\nWould you like to create those placeholders?\n\nNOTE: Choosing not to create the placeholders or closing them later, your session WILL BE MODIFIED ON EXIT! We suggest you backup your \"session.xml\" now.",
-				"File inaccessible",
+				L"Some files from your past session are inaccessible. They can be opened as empty and read-only documents as placeholders.\n\nWould you like to create those placeholders?\n\nNOTE: Choosing not to create the placeholders or closing them later, your session WILL BE MODIFIED ON EXIT! We suggest you backup your \"session.xml\" now.",
+				L"File inaccessible",
 				MB_YESNO | MB_APPLMODAL);
 		}
 
@@ -1754,14 +1754,14 @@ BufferID FileManager::newPlaceholderDocument(const NppChar* missingFilename, int
 BufferID FileManager::bufferFromDocument(Document doc, bool isMainEditZone)
 {
 	NppParameters& nppParamInst = NppParameters::getInstance();
-	NppString newTitle = "newNonMainEditZoneInvisibleTitle "; // This title is invisible for "Document map", "Find result" or other Scintilla controls other than _mainEditView and _subEditView.
+	std::wstring newTitle = L"newNonMainEditZoneInvisibleTitle "; // This title is invisible for "Document map", "Find result" or other Scintilla controls other than _mainEditView and _subEditView.
                                                                   // Its strong length and the space at the end are for preventing the tab name modification from the collision with it.
 
 	if (isMainEditZone) // only _mainEditView or _subEditView is main edit zone, so we count new number of doc only for these 2 scintilla edit views.
 	{
 		newTitle = (nppParamInst.getNativeLangSpeaker())->getLocalizedStrFromID("tab-untitled-string", UNTITLED_STR);
-		NppChar nb[10];
-		sprintf(nb, "%d", static_cast<int>(nextUntitledNewNumber()));
+		wchar_t nb[10];
+		wsprintf(nb, L"%d", static_cast<int>(nextUntitledNewNumber()));
 		newTitle += nb;
 	}
 
@@ -1885,7 +1885,7 @@ LangType FileManager::detectLanguageFromTextBeginning(const unsigned char *data,
 	return L_TEXT;
 }
 
-bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * filename, char* data, Utf8_16_Read * unicodeConvertor, LoadedFileFormat& fileFormat)
+bool FileManager::loadFileData(Document doc, int64_t fileSize, const wchar_t * filename, char* data, Utf8_16_Read * unicodeConvertor, LoadedFileFormat& fileFormat)
 {
 	// Check file size firstly
 	// size/6 is the normal room Scintilla keeps for editing, but here we limit it to 1MiB when loading (maybe we want to load big files without editing them too much)
@@ -1901,8 +1901,8 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 		{
 			pNativeSpeaker->messageBox("FileTooBigToOpen",
 				_pNotepadPlus->_pEditView->getHSelf(),
-				"File is too big to be opened by Notepad++",
-				"File size problem",
+				L"File is too big to be opened by Notepad++",
+				L"File size problem",
 				MB_OK | MB_APPLMODAL);
 
 			return false;
@@ -1914,8 +1914,8 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 			{
 				int res = pNativeSpeaker->messageBox("WantToOpenHugeFile",
 					_pNotepadPlus->_pEditView->getHSelf(),
-					"Opening a huge file of 2GB+ could take several minutes.\nDo you want to open it?",
-					"Opening huge file warning",
+					L"Opening a huge file of 2GB+ could take several minutes.\nDo you want to open it?",
+					L"Opening huge file warning",
 					MB_YESNO | MB_APPLMODAL);
 
 				if (res == IDYES)
@@ -1938,7 +1938,7 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 	bool isNetworkDirDisconnected = false;
 	if (PathIsNetworkPath(filename))
 	{
-		NppChar dir[MAX_PATH]{};
+		wchar_t dir[MAX_PATH]{};
 		wcscpy_s(dir,filename);
 		PathRemoveFileSpec(dir);
 		isNetworkDirDisconnected = !doesDirectoryExist(dir);
@@ -1948,7 +1948,7 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 		return false; // If network ressource is not reachable, we stop here for not having hanging issue because of _wfopen
 
 
-	FILE* fp = _wfopen(filename, "rb");
+	FILE* fp = _wfopen(filename, L"rb");
 
 	if (!fp)
 		return false;
@@ -1985,7 +1985,7 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 	bool success = true;
 	EolType format = EolType::unknown;
 	int sciStatus = SC_STATUS_OK;
-	NppChar szException[64] = {'\0'};
+	wchar_t szException[64] = {'\0'};
 	__try
 	{
 		// First allocate enough memory for the whole file (this will reduce memory copy during loading)
@@ -2129,23 +2129,23 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 #if defined(__GNUC__)
 				// there is the std::current_exception() possibility, but getting the real exception code from there requires an ugly hack,
 				// because of the std::exception_ptr has its members _Data1 (GetExceptionCode) and _Data2 (GetExceptionInformation) private
-				::swprintf_s(szException, _countof(szException), "unknown exception");
+				::swprintf_s(szException, _countof(szException), L"unknown exception");
 #else
-				::swprintf_s(szException, _countof(szException), "0x%X (SEH)", ::GetExceptionCode());
+				::swprintf_s(szException, _countof(szException), L"0x%X (SEH)", ::GetExceptionCode());
 #endif
 				break;
 			case SC_STATUS_BADALLOC:
 			{
 				pNativeSpeaker->messageBox("FileMemoryAllocationFailed",
 					_pNotepadPlus->_pEditView->getHSelf(),
-					"There is probably not enough contiguous free memory for the file being loaded by Notepad++.",
-					"Exception: File memory allocation failed",
+					L"There is probably not enough contiguous free memory for the file being loaded by Notepad++.",
+					L"Exception: File memory allocation failed",
 					MB_OK | MB_APPLMODAL);
 			}
 			[[fallthrough]];
 			case SC_STATUS_FAILURE:
 			default:
-				::swprintf_s(szException, _countof(szException), "%d (Scintilla)", sciStatus);
+				::swprintf_s(szException, _countof(szException), L"%d (Scintilla)", sciStatus);
 				break;
 		}
 
@@ -2153,8 +2153,8 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 		{
 			pNativeSpeaker->messageBox("FileLoadingException",
 				_pNotepadPlus->_pEditView->getHSelf(),
-				"An error occurred while loading the file!",
-				"Exception code: $STR_REPLACE$",
+				L"An error occurred while loading the file!",
+				L"Exception code: $STR_REPLACE$",
 				MB_OK | MB_APPLMODAL,
 				0,
 				szException);
@@ -2197,7 +2197,7 @@ bool FileManager::loadFileData(Document doc, int64_t fileSize, const NppChar * f
 }
 
 
-BufferID FileManager::getBufferFromName(const NppChar* name)
+BufferID FileManager::getBufferFromName(const wchar_t* name)
 {
 	for (auto buf : _buffers)
 	{
@@ -2224,7 +2224,7 @@ BufferID FileManager::getBufferFromDocument(Document doc)
 }
 
 
-bool FileManager::createEmptyFile(const NppChar* path)
+bool FileManager::createEmptyFile(const wchar_t* path)
 {
 	Win32_IO_File file(path);
 	if (!file.isOpened())
@@ -2235,9 +2235,9 @@ bool FileManager::createEmptyFile(const NppChar* path)
 		// ERROR_ACCESS_DENIED, try the same but elevated
 		// (notepad++.exe #UAC-CREATEEMPTYFILE# new_empty_file_path)
 		wstring strCmdLineParams = NPP_UAC_CREATEEMPTYFILE_SIGN;
-		strCmdLineParams += " \"";
+		strCmdLineParams += L" \"";
 		strCmdLineParams += path;
-		strCmdLineParams += "\"";
+		strCmdLineParams += L"\"";
 		DWORD dwNppUacOpError = invokeNppUacOp(strCmdLineParams);
 		if (dwNppUacOpError != NO_ERROR)
 			return false;
@@ -2247,7 +2247,7 @@ bool FileManager::createEmptyFile(const NppChar* path)
 }
 
 
-int FileManager::getFileNameFromBuffer(BufferID id, NppChar * fn2copy)
+int FileManager::getFileNameFromBuffer(BufferID id, wchar_t * fn2copy)
 {
 	if (getBufferIndexByID(id) == -1)
 		return -1;
@@ -2257,7 +2257,7 @@ int FileManager::getFileNameFromBuffer(BufferID id, NppChar * fn2copy)
 	if (fn2copy)
 		lstrcpy(fn2copy, buf->getFullPathName());
 
-	return strlen(buf->getFullPathName());
+	return lstrlen(buf->getFullPathName());
 }
 
 

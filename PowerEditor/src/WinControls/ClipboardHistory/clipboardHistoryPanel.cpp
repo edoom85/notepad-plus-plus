@@ -68,8 +68,8 @@ ClipboardDataInfo ClipboardHistoryPanel::getClipboadData()
 			}
 			else // Not internal binary clipboard data
 			{
-				NppChar* lpwchar = (NppChar*)pData;
-				size_t nbBytes = (lstrlenW(lpwchar) + 1) * sizeof(NppChar);
+				wchar_t* lpwchar = (wchar_t*)pData;
+				size_t nbBytes = (lstrlenW(lpwchar) + 1) * sizeof(wchar_t);
 				for (size_t i = 0 ; i < nbBytes ; ++i)
 				{
 					clipboardData._data.push_back(static_cast<unsigned char>(pData[i]));
@@ -172,7 +172,7 @@ void ClipboardHistoryPanel::addToClipboadHistory(ClipboardDataInfo cbd)
 	}
 	_clipboardDataInfos.insert(_clipboardDataInfos.begin(), cbd);
 
-	::SendDlgItemMessage(_hSelf, IDC_LIST_CLIPBOARD, LB_INSERTSTRING, 0, reinterpret_cast<LPARAM>("")); // String will be added in drawItem()
+	::SendDlgItemMessage(_hSelf, IDC_LIST_CLIPBOARD, LB_INSERTSTRING, 0, reinterpret_cast<LPARAM>(L"")); // String will be added in drawItem()
 }
 
 
@@ -182,28 +182,28 @@ void ClipboardHistoryPanel::drawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	if (i >= _clipboardDataInfos.size())
 		return;
 
-	//printStr("OK");
+	//printStr(L"OK");
 	COLORREF fgColor = _lbFgColor == -1?black:_lbFgColor; // fg black by default
 	COLORREF bgColor = _lbBgColor == -1?white:_lbBgColor; // bg white by default
 	
 	ClipboardDataInfo& cbd = _clipboardDataInfos[i];
 	StringArray sa(cbd, MAX_DISPLAY_LENGTH);
-	NppChar* displayStr = nullptr;
+	wchar_t* displayStr = nullptr;
 	WcharMbcsConvertor& wmc = WcharMbcsConvertor::getInstance();
 	if (cbd._isBinaryContained)
 	{
 		char* displayStrA = (char*)sa.getPointer();
-		displayStr = (NppChar*)wmc.char2wchar(displayStrA, SC_CP_UTF8);
+		displayStr = (wchar_t*)wmc.char2wchar(displayStrA, SC_CP_UTF8);
 	}
 	else
 	{
-		displayStr = (NppChar*)sa.getPointer();
+		displayStr = (wchar_t*)sa.getPointer();
 	}
 
 	::SetTextColor(lpDrawItemStruct->hDC, fgColor);
 	::SetBkColor(lpDrawItemStruct->hDC, bgColor);
 	
-	::DrawText(lpDrawItemStruct->hDC, displayStr, strlen(displayStr), &(lpDrawItemStruct->rcItem), DT_SINGLELINE | DT_VCENTER | DT_LEFT);
+	::DrawText(lpDrawItemStruct->hDC, displayStr, lstrlen(displayStr), &(lpDrawItemStruct->rcItem), DT_SINGLELINE | DT_VCENTER | DT_LEFT);
 }
 
 intptr_t CALLBACK ClipboardHistoryPanel::run_dlgProc(UINT message, WPARAM wParam, LPARAM lParam)
@@ -281,10 +281,10 @@ intptr_t CALLBACK ClipboardHistoryPanel::run_dlgProc(UINT message, WPARAM wParam
 								else
 								{
 									ByteArray ba(_clipboardDataInfos[i]);
-									int nbChar = nppWCtoMB(codepage, 0, (NppChar*)ba.getPointer(), static_cast<int32_t>(ba.getLength()), NULL, 0, NULL, NULL);
+									int nbChar = WideCharToMultiByte(codepage, 0, (wchar_t*)ba.getPointer(), static_cast<int32_t>(ba.getLength()), NULL, 0, NULL, NULL);
 
 									c = new char[nbChar + 1];
-									nppWCtoMB(codepage, 0, (NppChar*)ba.getPointer(), static_cast<int32_t>(ba.getLength()), c, nbChar + 1, NULL, NULL);
+									WideCharToMultiByte(codepage, 0, (wchar_t*)ba.getPointer(), static_cast<int32_t>(ba.getLength()), c, nbChar + 1, NULL, NULL);
 
 									(*_ppEditView)->execute(SCI_REPLACESEL, 0, reinterpret_cast<LPARAM>(""));
 									(*_ppEditView)->execute(SCI_ADDTEXT, strlen(c), reinterpret_cast<LPARAM>(c));
@@ -294,7 +294,7 @@ intptr_t CALLBACK ClipboardHistoryPanel::run_dlgProc(UINT message, WPARAM wParam
 							}
 							catch (...)
 							{
-								NppDarkMode::darkMessageBoxW(_hSelf, "Cannot process this clipboard data in the history:\nThe data is too large to be treated.", "Clipboard problem", MB_OK | MB_APPLMODAL);
+								NppDarkMode::darkMessageBoxW(_hSelf, L"Cannot process this clipboard data in the history:\nThe data is too large to be treated.", L"Clipboard problem", MB_OK | MB_APPLMODAL);
 								if (c)
 									delete[] c;
 							}

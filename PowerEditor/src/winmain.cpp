@@ -41,7 +41,7 @@
 #include "resource.h"
 #include "verifySignedfile.h"
 
-typedef std::vector<NppString> ParamVector;
+typedef std::vector<std::wstring> ParamVector;
 
 
 namespace
@@ -60,7 +60,7 @@ void allowPrivilegeMessages(const Notepad_plus_Window& notepad_plus_plus, winVer
 	// This (WM_COPYDATA) allows opening new files to already opened elevated Notepad++ process via explorer context menu.
 	if (winVer >= WV_VISTA || winVer == WV_UNKNOWN)
 	{
-		HMODULE hDll = GetModuleHandle("user32.dll");
+		HMODULE hDll = GetModuleHandle(L"user32.dll");
 		if (hDll)
 		{
 			// According to MSDN ChangeWindowMessageFilter may not be supported in future versions of Windows,
@@ -101,15 +101,15 @@ void allowPrivilegeMessages(const Notepad_plus_Window& notepad_plus_plus, winVer
 // 2. "-z"
 // 3. "C:\WINDOWS\system32\NOTEPAD.EXE"
 // 4. "C:\my folder\my file with whitespace.txt" 
-void parseCommandLine(const NppChar* commandLine, ParamVector& paramVector)
+void parseCommandLine(const wchar_t* commandLine, ParamVector& paramVector)
 {
 	if (!commandLine)
 		return;
 	
-	NppChar* cmdLine = new NppChar[strlen(commandLine) + 1];
+	wchar_t* cmdLine = new wchar_t[lstrlen(commandLine) + 1];
 	lstrcpy(cmdLine, commandLine);
 
-	NppChar* cmdLinePtr = cmdLine;
+	wchar_t* cmdLinePtr = cmdLine;
 
 	bool isBetweenFileNameQuotes = false;
 	bool isStringInArg = false;
@@ -122,8 +122,8 @@ void parseCommandLine(const NppChar* commandLine, ParamVector& paramVector)
 	                                 // then after processing next argument of "-z", zArg value will be increased from 1 to 2.
 	                                 // when zArg == 2 shouldBeTerminated will be set to true - it will trigger the treatment which consider the rest as a argument, with or without white space(s).
 
-	size_t commandLength = strlen(cmdLinePtr);
-	std::vector<NppChar *> args;
+	size_t commandLength = lstrlen(cmdLinePtr);
+	std::vector<wchar_t *> args;
 	for (size_t i = 0; i < commandLength && !shouldBeTerminated; ++i)
 	{
 		switch (cmdLinePtr[i])
@@ -168,13 +168,13 @@ void parseCommandLine(const NppChar* commandLine, ParamVector& paramVector)
 					cmdLinePtr[i] = 0;		//zap spaces into zero terminators, unless its part of a filename
 
 					size_t argsLen = args.size();
-					if (argsLen > 0 && lstrcmp(args[argsLen-1], "-z") == 0)
+					if (argsLen > 0 && lstrcmp(args[argsLen-1], L"-z") == 0)
 						++zArg; // "-z" argument is found: change zArg value from 0 (initial) to 1
 				}
 			}
 			break;
 
-			default: //default NppChar, if beginning of word, add it
+			default: //default wchar_t, if beginning of word, add it
 			{
 				if (!isBetweenFileNameQuotes && !isStringInArg && isInWhiteSpace)
 				{
@@ -199,14 +199,14 @@ void convertParamsToNotepadStyle(ParamVector& params)
 {
 	for (auto it = params.begin(); it != params.end(); ++it)
 	{
-		if (lstrcmp(it->c_str(), "/p") == 0 || lstrcmp(it->c_str(), "/P") == 0)
+		if (lstrcmp(it->c_str(), L"/p") == 0 || lstrcmp(it->c_str(), L"/P") == 0)
 		{
-			it->assign("-quickPrint");
+			it->assign(L"-quickPrint");
 		}
 	}
 }
 
-bool isInList(const NppChar *token2Find, ParamVector& params, bool eraseArg = true)
+bool isInList(const wchar_t *token2Find, ParamVector& params, bool eraseArg = true)
 {
 	for (auto it = params.begin(); it != params.end(); ++it)
 	{
@@ -219,15 +219,15 @@ bool isInList(const NppChar *token2Find, ParamVector& params, bool eraseArg = tr
 	return false;
 }
 
-bool getParamVal(NppChar c, ParamVector & params, NppString & value)
+bool getParamVal(wchar_t c, ParamVector & params, std::wstring & value)
 {
-	value = "";
+	value = L"";
 	size_t nbItems = params.size();
 
 	for (size_t i = 0; i < nbItems; ++i)
 	{
-		const NppChar * token = params.at(i).c_str();
-		if (token[0] == '-' && strlen(token) >= 2 && token[1] == c) //dash, and enough chars
+		const wchar_t * token = params.at(i).c_str();
+		if (token[0] == '-' && lstrlen(token) >= 2 && token[1] == c) //dash, and enough chars
 		{
 			value = (token+2);
 			params.erase(params.begin() + i);
@@ -237,19 +237,19 @@ bool getParamVal(NppChar c, ParamVector & params, NppString & value)
 	return false;
 }
 
-bool getParamValFromString(const NppChar *str, ParamVector & params, NppString & value)
+bool getParamValFromString(const wchar_t *str, ParamVector & params, std::wstring & value)
 {
-	value = "";
+	value = L"";
 	size_t nbItems = params.size();
 
 	for (size_t i = 0; i < nbItems; ++i)
 	{
-		const NppChar * token = params.at(i).c_str();
-		NppString tokenStr = token;
+		const wchar_t * token = params.at(i).c_str();
+		std::wstring tokenStr = token;
 		size_t pos = tokenStr.find(str);
-		if (pos != NppString::npos && pos == 0)
+		if (pos != std::wstring::npos && pos == 0)
 		{
-			value = (token + strlen(str));
+			value = (token + lstrlen(str));
 			params.erase(params.begin() + i);
 			return true;
 		}
@@ -259,24 +259,24 @@ bool getParamValFromString(const NppChar *str, ParamVector & params, NppString &
 
 LangType getLangTypeFromParam(ParamVector & params)
 {
-	NppString langStr;
+	std::wstring langStr;
 	if (!getParamVal('l', params, langStr))
 		return L_EXTERNAL;
 	return NppParameters::getLangIDFromStr(langStr.c_str());
 }
 
-NppString getLocalizationPathFromParam(ParamVector & params)
+std::wstring getLocalizationPathFromParam(ParamVector & params)
 {
-	NppString locStr;
+	std::wstring locStr;
 	if (!getParamVal('L', params, locStr))
-		return "";
-	locStr = stringToLower(stringReplace(locStr, "_", "-")); // convert to lowercase format with "-" as separator
+		return L"";
+	locStr = stringToLower(stringReplace(locStr, L"_", L"-")); // convert to lowercase format with "-" as separator
 	return NppParameters::getLocPathFromStr(locStr);
 }
 
 intptr_t getNumberFromParam(char paramName, ParamVector & params, bool & isParamePresent)
 {
-	NppString numStr;
+	std::wstring numStr;
 	if (!getParamVal(paramName, params, numStr))
 	{
 		isParamePresent = false;
@@ -286,15 +286,15 @@ intptr_t getNumberFromParam(char paramName, ParamVector & params, bool & isParam
 	return static_cast<intptr_t>(std::stoll(numStr));
 }
 
-NppString getEasterEggNameFromParam(ParamVector & params, unsigned char & type)
+std::wstring getEasterEggNameFromParam(ParamVector & params, unsigned char & type)
 {
-	NppString EasterEggName;
-	if (!getParamValFromString("-qn=", params, EasterEggName))  // get internal easter egg
+	std::wstring EasterEggName;
+	if (!getParamValFromString(L"-qn=", params, EasterEggName))  // get internal easter egg
 	{
-		if (!getParamValFromString("-qt=", params, EasterEggName)) // get user quote from cmdline argument
+		if (!getParamValFromString(L"-qt=", params, EasterEggName)) // get user quote from cmdline argument
 		{
-			if (!getParamValFromString("-qf=", params, EasterEggName)) // get user quote from a content of file
-				return "";
+			if (!getParamValFromString(L"-qf=", params, EasterEggName)) // get user quote from a content of file
+				return L"";
 			else
 			{
 				type = 2; // quote content in file
@@ -319,8 +319,8 @@ NppString getEasterEggNameFromParam(ParamVector & params, unsigned char & type)
 
 int getGhostTypingSpeedFromParam(ParamVector & params)
 {
-	NppString speedStr;
-	if (!getParamValFromString("-qSpeed", params, speedStr))
+	std::wstring speedStr;
+	if (!getParamValFromString(L"-qSpeed", params, speedStr))
 		return -1;
 	
 	int speed = std::stoi(speedStr, 0);
@@ -330,49 +330,49 @@ int getGhostTypingSpeedFromParam(ParamVector & params)
 	return speed;
 }
 
-const NppChar FLAG_MULTI_INSTANCE[] = "-multiInst";
-const NppChar FLAG_NO_PLUGIN[] = "-noPlugin";
-const NppChar FLAG_READONLY[] = "-ro"; // for current cmdline file(s) only
-const NppChar FLAG_FULL_READONLY[] = "-fullReadOnly"; // user still can manually toggle OFF the R/O-state of N++ tabs, so saving of the tab filebuffers is possible
-const NppChar FLAG_FULL_READONLY_SAVING_FORBIDDEN[] = "-fullReadOnlySavingForbidden"; // user cannot toggle R/O-state of N++ tabs, impossible to save opened tab filebuffers
-const NppChar FLAG_NOSESSION[] = "-nosession";
-const NppChar FLAG_NOTABBAR[] = "-notabbar";
-const NppChar FLAG_SYSTRAY[] = "-systemtray";
-const NppChar FLAG_LOADINGTIME[] = "-loadingTime";
-const NppChar FLAG_HELP[] = "--help";
-const NppChar FLAG_ALWAYS_ON_TOP[] = "-alwaysOnTop";
-const NppChar FLAG_OPENSESSIONFILE[] = "-openSession";
-const NppChar FLAG_RECURSIVE[] = "-r";
-const NppChar FLAG_FUNCLSTEXPORT[] = "-export=functionList";
-const NppChar FLAG_PRINTANDQUIT[] = "-quickPrint";
-const NppChar FLAG_NOTEPAD_COMPATIBILITY[] = "-notepadStyleCmdline";
-const NppChar FLAG_OPEN_FOLDERS_AS_WORKSPACE[] = "-openFoldersAsWorkspace";
-const NppChar FLAG_SETTINGS_DIR[] = "-settingsDir=";
-const NppChar FLAG_TITLEBAR_ADD[] = "-titleAdd=";
-const NppChar FLAG_APPLY_UDL[] = "-udl=";
-const NppChar FLAG_PLUGIN_MESSAGE[] = "-pluginMessage=";
-const NppChar FLAG_MONITOR_FILES[] = "-monitor";
-const NppChar FLAG_MONITORING_MODE[] = "-monitoringMode";
+const wchar_t FLAG_MULTI_INSTANCE[] = L"-multiInst";
+const wchar_t FLAG_NO_PLUGIN[] = L"-noPlugin";
+const wchar_t FLAG_READONLY[] = L"-ro"; // for current cmdline file(s) only
+const wchar_t FLAG_FULL_READONLY[] = L"-fullReadOnly"; // user still can manually toggle OFF the R/O-state of N++ tabs, so saving of the tab filebuffers is possible
+const wchar_t FLAG_FULL_READONLY_SAVING_FORBIDDEN[] = L"-fullReadOnlySavingForbidden"; // user cannot toggle R/O-state of N++ tabs, impossible to save opened tab filebuffers
+const wchar_t FLAG_NOSESSION[] = L"-nosession";
+const wchar_t FLAG_NOTABBAR[] = L"-notabbar";
+const wchar_t FLAG_SYSTRAY[] = L"-systemtray";
+const wchar_t FLAG_LOADINGTIME[] = L"-loadingTime";
+const wchar_t FLAG_HELP[] = L"--help";
+const wchar_t FLAG_ALWAYS_ON_TOP[] = L"-alwaysOnTop";
+const wchar_t FLAG_OPENSESSIONFILE[] = L"-openSession";
+const wchar_t FLAG_RECURSIVE[] = L"-r";
+const wchar_t FLAG_FUNCLSTEXPORT[] = L"-export=functionList";
+const wchar_t FLAG_PRINTANDQUIT[] = L"-quickPrint";
+const wchar_t FLAG_NOTEPAD_COMPATIBILITY[] = L"-notepadStyleCmdline";
+const wchar_t FLAG_OPEN_FOLDERS_AS_WORKSPACE[] = L"-openFoldersAsWorkspace";
+const wchar_t FLAG_SETTINGS_DIR[] = L"-settingsDir=";
+const wchar_t FLAG_TITLEBAR_ADD[] = L"-titleAdd=";
+const wchar_t FLAG_APPLY_UDL[] = L"-udl=";
+const wchar_t FLAG_PLUGIN_MESSAGE[] = L"-pluginMessage=";
+const wchar_t FLAG_MONITOR_FILES[] = L"-monitor";
+const wchar_t FLAG_MONITORING_MODE[] = L"-monitoringMode";
 
 void doException(Notepad_plus_Window & notepad_plus_plus)
 {
 	Win32Exception::removeHandler();	//disable exception handler after exception, we don't want corrupt data structures to crash the exception handler
-	::MessageBox(Notepad_plus_Window::gNppHWND, "Notepad++ will attempt to save any unsaved data. However, data loss is very likely.", "Recovery initiating", MB_OK | MB_ICONINFORMATION);
+	::MessageBox(Notepad_plus_Window::gNppHWND, L"Notepad++ will attempt to save any unsaved data. However, data loss is very likely.", L"Recovery initiating", MB_OK | MB_ICONINFORMATION);
 
-	NppChar tmpDir[1024];
+	wchar_t tmpDir[1024];
 	GetTempPath(1024, tmpDir);
-	NppString emergencySavedDir = tmpDir;
-	emergencySavedDir += "\\Notepad++ RECOV";
+	std::wstring emergencySavedDir = tmpDir;
+	emergencySavedDir += L"\\Notepad++ RECOV";
 
 	bool res = notepad_plus_plus.emergency(emergencySavedDir);
 	if (res)
 	{
-		NppString displayText = "Notepad++ was able to successfully recover some unsaved documents, or nothing to be saved could be found.\r\nYou can find the results at :\r\n";
+		std::wstring displayText = L"Notepad++ was able to successfully recover some unsaved documents, or nothing to be saved could be found.\r\nYou can find the results at :\r\n";
 		displayText += emergencySavedDir;
-		::MessageBox(Notepad_plus_Window::gNppHWND, displayText.c_str(), "Recovery success", MB_OK | MB_ICONINFORMATION);
+		::MessageBox(Notepad_plus_Window::gNppHWND, displayText.c_str(), L"Recovery success", MB_OK | MB_ICONINFORMATION);
 	}
 	else
-		::MessageBox(Notepad_plus_Window::gNppHWND, "Unfortunately, Notepad++ was not able to save your work. We are sorry for any lost data.", "Recovery failure", MB_OK | MB_ICONERROR);
+		::MessageBox(Notepad_plus_Window::gNppHWND, L"Unfortunately, Notepad++ was not able to save your work. We are sorry for any lost data.", L"Recovery failure", MB_OK | MB_ICONERROR);
 }
 
 // Looks for -z arguments and strips command line arguments following those, if any
@@ -380,7 +380,7 @@ void stripIgnoredParams(ParamVector & params)
 {
 	for (auto it = params.begin(); it != params.end(); )
 	{
-		if (lstrcmp(it->c_str(), "-z") == 0)
+		if (lstrcmp(it->c_str(), L"-z") == 0)
 		{
 			auto nextIt = std::next(it);
 			if ( nextIt != params.end() )
@@ -396,7 +396,7 @@ void stripIgnoredParams(ParamVector & params)
 	}
 }
 
-bool launchUpdater(const NppString& updaterFullPath, const NppString& updaterDir)
+bool launchUpdater(const std::wstring& updaterFullPath, const std::wstring& updaterDir)
 {
 	NppParameters& nppParameters = NppParameters::getInstance();
 	NppGUI& nppGui = nppParameters.getNppGUI();
@@ -406,7 +406,7 @@ bool launchUpdater(const NppString& updaterFullPath, const NppString& updaterDir
 	if (today < nppGui._autoUpdateOpt._nextUpdateDate)
 		return false;
 
-	NppString updaterParams;
+	std::wstring updaterParams;
 	nppParameters.buildGupParams(updaterParams);
 
 	Process updater(updaterFullPath.c_str(), updaterParams.c_str(), updaterDir.c_str());
@@ -420,9 +420,9 @@ bool launchUpdater(const NppString& updaterFullPath, const NppString& updaterDir
 	return true;
 }
 
-DWORD nppUacSave(const NppChar* wszTempFilePath, const NppChar* wszProtectedFilePath2Save)
+DWORD nppUacSave(const wchar_t* wszTempFilePath, const wchar_t* wszProtectedFilePath2Save)
 {
-	if ((lstrlenW(wszTempFilePath) == 0) || (lstrlenW(wszProtectedFilePath2Save) == 0)) // safe check (strlen returns 0 for possible nullptr)
+	if ((lstrlenW(wszTempFilePath) == 0) || (lstrlenW(wszProtectedFilePath2Save) == 0)) // safe check (lstrlen returns 0 for possible nullptr)
 		return ERROR_INVALID_PARAMETER;
 	if (!doesFileExist(wszTempFilePath))
 		return ERROR_FILE_NOT_FOUND;
@@ -473,9 +473,9 @@ DWORD nppUacSave(const NppChar* wszTempFilePath, const NppChar* wszProtectedFile
 	return dwRetCode;
 }
 
-DWORD nppUacSetFileAttributes(const DWORD dwFileAttribs, const NppChar* wszFilePath)
+DWORD nppUacSetFileAttributes(const DWORD dwFileAttribs, const wchar_t* wszFilePath)
 {
-	if (lstrlenW(wszFilePath) == 0) // safe check (strlen returns 0 for possible nullptr)
+	if (lstrlenW(wszFilePath) == 0) // safe check (lstrlen returns 0 for possible nullptr)
 		return ERROR_INVALID_PARAMETER;
 	if (!doesFileExist(wszFilePath))
 		return ERROR_FILE_NOT_FOUND;
@@ -488,9 +488,9 @@ DWORD nppUacSetFileAttributes(const DWORD dwFileAttribs, const NppChar* wszFileP
 	return ERROR_SUCCESS;
 }
 
-DWORD nppUacMoveFile(const NppChar* wszOriginalFilePath, const NppChar* wszNewFilePath)
+DWORD nppUacMoveFile(const wchar_t* wszOriginalFilePath, const wchar_t* wszNewFilePath)
 {
-	if ((lstrlenW(wszOriginalFilePath) == 0) || (lstrlenW(wszNewFilePath) == 0)) // safe check (strlen returns 0 for possible nullptr)
+	if ((lstrlenW(wszOriginalFilePath) == 0) || (lstrlenW(wszNewFilePath) == 0)) // safe check (lstrlen returns 0 for possible nullptr)
 		return ERROR_INVALID_PARAMETER;
 	if (!doesFileExist(wszOriginalFilePath))
 		return ERROR_FILE_NOT_FOUND;
@@ -501,9 +501,9 @@ DWORD nppUacMoveFile(const NppChar* wszOriginalFilePath, const NppChar* wszNewFi
 		return ERROR_SUCCESS;
 }
 
-DWORD nppUacCreateEmptyFile(const NppChar* wszNewEmptyFilePath)
+DWORD nppUacCreateEmptyFile(const wchar_t* wszNewEmptyFilePath)
 {
-	if (lstrlenW(wszNewEmptyFilePath) == 0) // safe check (strlen returns 0 for possible nullptr)
+	if (lstrlenW(wszNewEmptyFilePath) == 0) // safe check (lstrlen returns 0 for possible nullptr)
 		return ERROR_INVALID_PARAMETER;
 	if (doesFileExist(wszNewEmptyFilePath))
 		return ERROR_FILE_EXISTS;
@@ -526,10 +526,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	g_nppStartTimePoint = std::chrono::steady_clock::now();
 	
 	// Notepad++ UAC OPS /////////////////////////////////////////////////////////////////////////////////////////////
-	if ((lstrlenW(pCmdLine) > 0) && (__argc >= 2)) // safe (if pCmdLine is NULL, strlen returns 0)
+	if ((lstrlenW(pCmdLine) > 0) && (__argc >= 2)) // safe (if pCmdLine is NULL, lstrlen returns 0)
 	{
-		const NppChar* wszNppUacOpSign = __wargv[1];
-		if (lstrlenW(wszNppUacOpSign) > lstrlenW("#UAC-#"))
+		const wchar_t* wszNppUacOpSign = __wargv[1];
+		if (lstrlenW(wszNppUacOpSign) > lstrlenW(L"#UAC-#"))
 		{
 			if ((__argc == 4) && (wcscmp(wszNppUacOpSign, NPP_UAC_SAVE_SIGN) == 0))
 			{
@@ -541,7 +541,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			{
 				// __wargv[x]: 2 ... dwFileAttributes (string), 3  ...  filePath
 				try {
-					return static_cast<int>(nppUacSetFileAttributes(static_cast<DWORD>(std::stoul(NppString(__wargv[2]))), __wargv[3]));
+					return static_cast<int>(nppUacSetFileAttributes(static_cast<DWORD>(std::stoul(std::wstring(__wargv[2]))), __wargv[3]));
 				}
 				catch ([[maybe_unused]] const std::exception& e)
 				{
@@ -565,11 +565,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	bool TheFirstOne = true;
 	::SetLastError(NO_ERROR);
-	::CreateMutex(NULL, false, "nppInstance");
+	::CreateMutex(NULL, false, L"nppInstance");
 	if (::GetLastError() == ERROR_ALREADY_EXISTS)
 		TheFirstOne = false;
 
-	NppString cmdLineString = pCmdLine ? pCmdLine : "";
+	std::wstring cmdLineString = pCmdLine ? pCmdLine : L"";
 	ParamVector params;
 	parseCommandLine(pCmdLine, params);
 
@@ -609,7 +609,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	cmdLineParams._easterEggName = getEasterEggNameFromParam(params, cmdLineParams._quoteType);
 	cmdLineParams._ghostTypingSpeed = getGhostTypingSpeedFromParam(params);
 
-	NppString pluginMessage;
+	std::wstring pluginMessage;
 	if (getParamValFromString(FLAG_PLUGIN_MESSAGE, params, pluginMessage))
 	{
 		if (pluginMessage.length() >= 2 && (pluginMessage.front() == '"' && pluginMessage.back() == '"'))
@@ -630,7 +630,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 
 	nppParameters.setCmdLineString(cmdLineString);
 
-	NppString path;
+	std::wstring path;
 	if (getParamValFromString(FLAG_SETTINGS_DIR, params, path))
 	{
 		// path could contain double quotes if path contains white space
@@ -641,7 +641,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		nppParameters.setCmdSettingsDir(path);
 	}
 
-	NppString titleBarAdditional;
+	std::wstring titleBarAdditional;
 	if (getParamValFromString(FLAG_TITLEBAR_ADD, params, titleBarAdditional))
 	{
 		if (titleBarAdditional.length() >= 2)
@@ -654,7 +654,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		nppParameters.setTitleBarAdd(titleBarAdditional);
 	}
 
-	NppString udlName;
+	std::wstring udlName;
 	if (getParamValFromString(FLAG_APPLY_UDL, params, udlName))
 	{
 		if (udlName.length() >= 2)
@@ -667,7 +667,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		cmdLineParams._udlName = udlName;
 	}
 
-	if (cmdLineParams._localizationPath != "")
+	if (cmdLineParams._localizationPath != L"")
 	{
 		// setStartWithLocFileName() should be called before parameters are loaded
 		nppParameters.setStartWithLocFileName(cmdLineParams._localizationPath);
@@ -712,20 +712,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 			cmdLineParams._isNoSession = true;
 	}
 
-	NppString quotFileName = "";
+	std::wstring quotFileName = L"";
     // tell the running instance the FULL path to the new files to load
 	size_t nbFilesToOpen = params.size();
 
 	for (size_t i = 0; i < nbFilesToOpen; ++i)
 	{
-		const NppChar * currentFile = params.at(i).c_str();
+		const wchar_t * currentFile = params.at(i).c_str();
 		if (currentFile[0])
 		{
 			//check if relative or full path. Relative paths don't have a colon for driveletter
 
-			quotFileName += "\"";
+			quotFileName += L"\"";
 			quotFileName += relativeFilePathToFullFilePath(currentFile);
-			quotFileName += "\" ";
+			quotFileName += L"\" ";
 		}
 	}
 
@@ -777,13 +777,13 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 				COPYDATASTRUCT cmdLineData{};
 				cmdLineData.dwData = COPYDATA_FULL_CMDLINE;
 				cmdLineData.lpData = (void*)cmdLineString.c_str();
-				cmdLineData.cbData = static_cast<DWORD>((cmdLineString.length() + 1) * sizeof(NppChar));
+				cmdLineData.cbData = static_cast<DWORD>((cmdLineString.length() + 1) * sizeof(wchar_t));
 				::SendMessage(hNotepad_plus, WM_COPYDATA, reinterpret_cast<WPARAM>(hInstance), reinterpret_cast<LPARAM>(&cmdLineData));
 
 				COPYDATASTRUCT fileNamesData{};
 				fileNamesData.dwData = COPYDATA_FILENAMESW;
 				fileNamesData.lpData = (void *)quotFileName.c_str();
-				fileNamesData.cbData = static_cast<DWORD>((quotFileName.length() + 1) * sizeof(NppChar));
+				fileNamesData.cbData = static_cast<DWORD>((quotFileName.length() + 1) * sizeof(wchar_t));
 				::SendMessage(hNotepad_plus, WM_COPYDATA, reinterpret_cast<WPARAM>(hInstance), reinterpret_cast<LPARAM>(&fileNamesData));
 			}
 			return 0;
@@ -793,10 +793,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	auto upNotepadWindow = std::make_unique<Notepad_plus_Window>();
 	Notepad_plus_Window & notepad_plus_plus = *upNotepadWindow.get();
 
-	NppString updaterDir = nppParameters.getNppPath();
-	updaterDir += "\\updater\\";
+	std::wstring updaterDir = nppParameters.getNppPath();
+	updaterDir += L"\\updater\\";
 
-	NppString updaterFullPath = updaterDir + "gup.exe";
+	std::wstring updaterFullPath = updaterDir + L"gup.exe";
 
 	bool isUpExist = nppGui._doesExistUpdater = doesFileExist(updaterFullPath.c_str());
 
@@ -841,11 +841,11 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	catch (int i)
 	{
 		isException = true;
-		NppChar str[50] = "God Damned Exception:";
-		NppChar code[10];
-		sprintf(code, "%d", i);
+		wchar_t str[50] = L"God Damned Exception:";
+		wchar_t code[10];
+		wsprintf(code, L"%d", i);
 		wcscat_s(str, code);
-		::MessageBox(Notepad_plus_Window::gNppHWND, str, "Int Exception", MB_OK);
+		::MessageBox(Notepad_plus_Window::gNppHWND, str, L"Int Exception", MB_OK);
 		doException(notepad_plus_plus);
 	}
 	catch (std::runtime_error & ex)
@@ -857,10 +857,10 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 	catch (const Win32Exception & ex)
 	{
 		isException = true;
-		NppChar message[1024];
-		sprintf(message, "An exception occurred. Notepad++ cannot recover and must be shut down.\r\nThe exception details are as follows:\r\n"
-			"Code:\t0x%08X\r\nType:\t%S\r\nException address: 0x%p", ex.code(), ex.what(), ex.where());
-		::MessageBox(Notepad_plus_Window::gNppHWND, message, "Win32Exception", MB_OK | MB_ICONERROR);
+		wchar_t message[1024];
+		wsprintf(message, L"An exception occurred. Notepad++ cannot recover and must be shut down.\r\nThe exception details are as follows:\r\n"
+			L"Code:\t0x%08X\r\nType:\t%S\r\nException address: 0x%p", ex.code(), ex.what(), ex.where());
+		::MessageBox(Notepad_plus_Window::gNppHWND, message, L"Win32Exception", MB_OK | MB_ICONERROR);
 		mdump.writeDump(ex.info());
 		doException(notepad_plus_plus);
 	}

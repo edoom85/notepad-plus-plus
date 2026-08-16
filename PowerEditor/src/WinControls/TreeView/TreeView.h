@@ -23,8 +23,8 @@
 #include "NppDarkMode.h"
 
 struct TreeStateNode {
-	NppString _label;
-	NppString _extraData;
+	std::wstring _label;
+	std::wstring _extraData;
 	bool _isExpanded = false;
 	bool _isSelected = false;
 	std::vector<TreeStateNode> _children;
@@ -38,14 +38,14 @@ public:
 
 	virtual void init(HINSTANCE hInst, HWND parent, int treeViewID);
 	void destroy() override;
-	HTREEITEM addItem(const NppChar *itemName, HTREEITEM hParentItem, int iImage, LPARAM lParam = 0);
+	HTREEITEM addItem(const wchar_t *itemName, HTREEITEM hParentItem, int iImage, LPARAM lParam = 0);
 	bool setItemParam(HTREEITEM Item2Set, LPARAM param);
 	LPARAM getItemParam(HTREEITEM Item2Get) const;
-	NppString getItemDisplayName(HTREEITEM Item2Set) const;
-	HTREEITEM searchSubItemByName(const NppChar *itemName, HTREEITEM hParentItem);
+	std::wstring getItemDisplayName(HTREEITEM Item2Set) const;
+	HTREEITEM searchSubItemByName(const wchar_t *itemName, HTREEITEM hParentItem);
 	void removeItem(HTREEITEM hTreeItem);
 	void removeAllItems();
-	bool renameItem(const HTREEITEM Item2Set, const NppChar* newName);
+	bool renameItem(const HTREEITEM Item2Set, const wchar_t* newName);
 	void makeLabelEditable(bool toBeEnabled);
 
 	HTREEITEM getChildFrom(HTREEITEM hTreeItem) const {
@@ -114,7 +114,7 @@ public:
 	bool swapTreeViewItem(HTREEITEM itemGoDown, HTREEITEM itemGoUp);
 	bool restoreFoldingStateFrom(const TreeStateNode & treeState2Compare, HTREEITEM treeviewNode);
 	bool retrieveFoldingStateTo(TreeStateNode & treeState2Construct, HTREEITEM treeviewNode);
-	bool searchLeafAndBuildTree(const TreeView & tree2Build, const NppString & text2Search, int index2Search);
+	bool searchLeafAndBuildTree(const TreeView & tree2Build, const std::wstring & text2Search, int index2Search);
 	void sort(HTREEITEM hTreeItem, bool isRecusive);
 	void customSorting(HTREEITEM hTreeItem, PFNTVCOMPARE sortingCallbackFunc, LPARAM lParam, bool isRecursive);
 	bool setImageList(const std::vector<int>& imageIds, int imgSize = 0);
@@ -128,7 +128,7 @@ protected:
 
 	void cleanSubEntries(HTREEITEM hTreeItem);
 	void dupTree(HTREEITEM hTree2Dup, HTREEITEM hParentItem);
-	bool searchLeafRecusivelyAndBuildTree(HTREEITEM tree2Build, const NppString & text2Search, int index2Search, HTREEITEM tree2Search);
+	bool searchLeafRecusivelyAndBuildTree(HTREEITEM tree2Build, const std::wstring & text2Search, int index2Search, HTREEITEM tree2Search);
 
 	// Drag and Drop operations
 	HTREEITEM _draggedItem = nullptr;

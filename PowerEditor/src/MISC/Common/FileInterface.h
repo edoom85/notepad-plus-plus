@@ -26,7 +26,7 @@ class Win32_IO_File final
 {
 public:
 	//Win32_IO_File(const char *fname);
-	explicit Win32_IO_File(const NppChar *fname);
+	explicit Win32_IO_File(const wchar_t *fname);
 
 	Win32_IO_File() = delete;
 	Win32_IO_File(const Win32_IO_File&) = delete;

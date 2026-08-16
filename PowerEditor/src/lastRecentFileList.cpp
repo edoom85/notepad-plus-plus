@@ -97,14 +97,14 @@ void LastRecentFileList::updateMenu()
 		wstring openAllFiles = pNativeLangSpeaker->getNativeLangMenuString(IDM_OPEN_ALL_RECENT_FILE);
 		wstring cleanFileList = pNativeLangSpeaker->getNativeLangMenuString(IDM_CLEAN_RECENT_FILE_LIST);
 
-		if (recentFileList == "")
-			recentFileList = "&Recent Files";
-		if (openRecentClosedFile == "")
-			openRecentClosedFile = "Restore Recent Closed File";
-		if (openAllFiles == "")
-			openAllFiles = "Open All Recent Files";
-		if (cleanFileList == "")
-			cleanFileList = "Empty Recent Files List";
+		if (recentFileList == L"")
+			recentFileList = L"&Recent Files";
+		if (openRecentClosedFile == L"")
+			openRecentClosedFile = L"Restore Recent Closed File";
+		if (openAllFiles == L"")
+			openAllFiles = L"Open All Recent Files";
+		if (cleanFileList == L"")
+			cleanFileList = L"Empty Recent Files List";
 
 		if (!isSubMenuMode())
 			::InsertMenu(_hMenu, _posBase + 0, MF_BYPOSITION, static_cast<UINT_PTR>(-1), 0);
@@ -117,7 +117,7 @@ void LastRecentFileList::updateMenu()
 
 		if (isSubMenuMode())
 		{
-			::InsertMenu(_hParentMenu, _posBase + 0, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(_hMenu), (const NppChar*)recentFileList.c_str());
+			::InsertMenu(_hParentMenu, _posBase + 0, MF_BYPOSITION | MF_POPUP, reinterpret_cast<UINT_PTR>(_hMenu), (LPCTSTR)recentFileList.c_str());
 			::InsertMenu(_hParentMenu, _posBase + 1, MF_BYPOSITION, static_cast<UINT_PTR>(-1), 0);
 		}
 	}
@@ -157,7 +157,7 @@ void LastRecentFileList::updateMenu()
 	
 }
 
-void LastRecentFileList::add(const NppChar *fn) 
+void LastRecentFileList::add(const wchar_t *fn) 
 {
 	if (_userMax == 0 || _locked)
 		return;
@@ -185,7 +185,7 @@ void LastRecentFileList::add(const NppChar *fn)
 	updateMenu();
 }
 
-void LastRecentFileList::remove(const NppChar *fn) 
+void LastRecentFileList::remove(const wchar_t *fn) 
 { 
 	int index = find(fn);
 	if (index != -1)
@@ -279,7 +279,7 @@ void LastRecentFileList::saveLRFL()
 }
 
 
-int LastRecentFileList::find(const NppChar *fn)
+int LastRecentFileList::find(const wchar_t *fn)
 {
 	for (int i = 0; i < _size; ++i)
 	{
