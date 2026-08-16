@@ -65,8 +65,8 @@ if(WIN32)
         ./MISC/Common/Common.cpp
         ./WinControls/ContextMenu/ContextMenu.cpp
         ./WinControls/OpenSaveFileDialog/CustomFileDialog.cpp
-        ./WinControls/DockingWnd/Docking.cpp
         ./WinControls/DockingWnd/DockingCont.cpp
+
         ./WinControls/DockingWnd/DockingManager.cpp
         ./WinControls/DockingWnd/DockingSplitter.cpp
         ./ScintillaComponent/DocTabView.cpp
@@ -74,7 +74,6 @@ if(WIN32)
         ./WinControls/DocumentMap/documentSnapshot.cpp
         ./WinControls/DoubleBuffer/DoubleBuffer.cpp
         ./EncodingMapper.cpp
-        ./MISC/FileNameStringSplitter.cpp
         ./WinControls/FindCharsInRange/FindCharsInRange.cpp
         ./ScintillaComponent/FindReplaceDlg.cpp
         ./ScintillaComponent/FunctionCallTip.cpp
@@ -82,7 +81,6 @@ if(WIN32)
         ./WinControls/FunctionList/functionParser.cpp
         ./ScintillaComponent/GoToLineDlg.cpp
         ./WinControls/DockingWnd/Gripper.cpp
-        ./MISC/PluginsManager/IDAllocator.cpp
         ./WinControls/ImageListSet/ImageListSet.cpp
         ./uchardet/JpCntx.cpp
         ./lastRecentFileList.cpp
@@ -93,7 +91,6 @@ if(WIN32)
         ./Notepad_plus_Window.cpp
         ./uchardet/nsBig5Prober.cpp
         ./uchardet/nsCharSetProber.cpp
-        ./uchardet/nsCodingStateMachine.cpp
         ./uchardet/nsEscCharsetProber.cpp
         ./uchardet/nsEUCJPProber.cpp
         ./uchardet/nsEUCKRProber.cpp
@@ -139,20 +136,17 @@ if(WIN32)
         ./WinControls/VerticalFileSwitcher/VerticalFileSwitcher.cpp
         ./WinControls/VerticalFileSwitcher/VerticalFileSwitcherListView.cpp
         ./MISC/Exception/Win32Exception.cpp
-        ./WinControls/Window.cpp
         ./WinControls/WindowsDlg/WindowsDlg.cpp
         ./WinControls/WindowsDlg/WinMgr.cpp
         ./WinControls/ColourPicker/WordStyleDlg.cpp
         ./ScintillaComponent/xmlMatchedTagsHighlighter.cpp
         ./winmain.cpp
-        ./WinControls/FileBrowser/FileBrowser.cpp
-        ./WinControls/FileBrowser/FileBrowser_rc.cpp
+        ./WinControls/FileBrowser/fileBrowser.cpp
         ./WinControls/PluginsAdmin/pluginsAdmin.cpp
-        ./WinControls/PluginsAdmin/pluginsAdminRes.cpp
-        ./MISC/PluginsManager/PluginCommandGenerator.cpp
         ./WinControls/ColourPicker/ColourPicker.cpp
         ./WinControls/ColourPicker/ColourPopup.cpp
     )
+
 
     SET(rcFiles
         ./MISC/md5/md5Dlgs.rc

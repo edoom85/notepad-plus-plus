@@ -1,9 +1,7 @@
-// WinControls/Qt/NppFindReplaceDlg.h — Diálogo Find/Replace Qt6
+// WinControls/Qt/NppFindReplaceDlg.h — Diálogo Buscar / Reemplazar / Marcar (Qt6)
 // Reemplaza WinControls/FindCharsInRange/FindReplaceDlg.cpp/.h en Linux
-//
-// Uno de los diálogos más complejos de Notepad++.
-// En Windows: Win32 dialogs con HWND, message loop, custom painting
-// En Linux:   QDialog con layouts, QLineEdit, QCheckBox, etc.
+// Coincide al 100% con la interfaz y disposición de Notepad++ (5 pestañas, 
+// opciones de búsqueda, modo extendido/regex, transparencia y acciones completas).
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -26,15 +24,11 @@
 #include <QRadioButton>
 #include <QGroupBox>
 #include <QTabWidget>
-#include <QStatusBar>
-#include <QString>
+#include <QSlider>
+#include <QStackedLayout>
 #include <QKeySequence>
 
-/// Diálogo de Buscar/Reemplazar portable Qt6.
-/// Implementa las mismas funcionalidades que FindReplaceDlg de Win32:
-///   - Buscar / Reemplazar / Buscar en archivos / Marcar
-///   - Opciones: case sensitive, whole word, regex, wrap around
-///   - Historial de búsquedas en combobox dropdown
+/// Diálogo completo de Buscar / Reemplazar / Buscar en Archivos / Marcar para Notepad++ Linux.
 class NppFindReplaceDlg : public NppDialog {
     Q_OBJECT
 
@@ -43,189 +37,311 @@ public:
         : NppDialog(parent)
     {
         setWindowTitle("Buscar / Reemplazar");
-        setMinimumWidth(480);
+        resize(640, 380);
+
         buildUI();
     }
 
-    /// Abre el diálogo en modo "Find" (pestaña 0).
-    void showFind(const QString& selectedText = {}) {
-        if (!selectedText.isEmpty())
-            _findCombo->setCurrentText(selectedText);
-        _tabs->setCurrentIndex(0);
-        display(true);
-        _findCombo->setFocus();
+    /// Abre el diálogo en una pestaña específica (0: Buscar, 1: Reemplazar, 2: Archivos, 3: Proyectos, 4: Marcar).
+    void selectTab(int tabIndex, const QString& selectedText = {}) {
+        if (tabIndex >= 0 && tabIndex < _tabs->count()) {
+            _tabs->setCurrentIndex(tabIndex);
+        }
+        if (!selectedText.isEmpty()) {
+            _comboFind->setCurrentText(selectedText);
+        }
+        show();
+        raise();
+        activateWindow();
+        _comboFind->setFocus();
     }
 
-    /// Abre el diálogo en modo "Replace" (pestaña 1).
-    void showReplace(const QString& selectedText = {}) {
-        if (!selectedText.isEmpty())
-            _findCombo->setCurrentText(selectedText);
-        _tabs->setCurrentIndex(1);
-        display(true);
-        _findCombo->setFocus();
+    QString findText() const { return _comboFind->currentText(); }
+    QString replaceText() const { return _comboReplace->currentText(); }
+
+    bool isMatchCase() const      { return _chkMatchCase->isChecked(); }
+    bool isMatchWholeWord() const { return _chkMatchWholeWord->isChecked(); }
+    bool isWrapAround() const     { return _chkWrapAround->isChecked(); }
+    bool isInSelection() const    { return _chkInSelection->isChecked(); }
+    bool isDotMatchesNewline() const { return _chkDotMatchesNewline->isChecked(); }
+
+    int searchMode() const {
+        if (_rbModeExt->isChecked()) return 1;   // Extended (\n, \r, \t)
+        if (_rbModeRegex->isChecked()) return 2; // Regex
+        return 0;                                // Normal
     }
-
-    /// Obtener el patrón de búsqueda actual.
-    QString findText() const { return _findCombo->currentText(); }
-    QString replaceText() const { return _replaceCombo->currentText(); }
-
-    /// Opciones de búsqueda.
-    bool isCaseSensitive() const { return _chkCase->isChecked(); }
-    bool isWholeWord() const     { return _chkWholeWord->isChecked(); }
-    bool isRegex() const         { return _chkRegex->isChecked(); }
-    bool isWrapAround() const    { return _chkWrap->isChecked(); }
 
 signals:
-    void findNext(const QString& text);
-    void findPrev(const QString& text);
-    void replaceOne(const QString& find, const QString& replace);
-    void replaceAll(const QString& find, const QString& replace);
-    void countOccurrences(const QString& text);
+    void findNext(const QString& target);
+    void findPrev(const QString& target);
+    void replaceOne(const QString& target, const QString& replacement);
+    void replaceAll(const QString& target, const QString& replacement);
+    void replaceInOpenDocs(const QString& target, const QString& replacement);
+    void findAllInCurrentDoc(const QString& target);
+    void findAllInOpenDocs(const QString& target);
+    void markAll(const QString& target);
+    void clearAllMarks();
 
 private:
     void buildUI() {
         auto* mainLayout = new QVBoxLayout(this);
-        mainLayout->setSpacing(8);
+        mainLayout->setContentsMargins(8, 8, 8, 8);
+        mainLayout->setSpacing(6);
 
-        // ── Tabs: Buscar | Reemplazar ───────────────────────────────────
+        // ── Pestañas Superior: Buscar | Reemplazar | Buscar en archivos | Buscar en proyectos | Marcar ──
         _tabs = new QTabWidget(this);
-        _tabs->setStyleSheet(
-            "QTabWidget::pane { border: none; }"
-            "QTabBar::tab { background: #2D2D2D; color: #969696; padding: 6px 16px; }"
-            "QTabBar::tab:selected { background: #1E1E1E; color: #FFF; border-bottom: 2px solid #007ACC; }"
-        );
 
-        // Pestaña Find
-        QWidget* findPage = new QWidget();
-        QVBoxLayout* findLayout = new QVBoxLayout(findPage);
+        QWidget* tabFind    = new QWidget();
+        QWidget* tabReplace = new QWidget();
+        QWidget* tabInFiles = new QWidget();
+        QWidget* tabInProj  = new QWidget();
+        QWidget* tabMark    = new QWidget();
 
-        // Pestaña Replace
-        QWidget* replacePage = new QWidget();
-        QVBoxLayout* replaceLayout = new QVBoxLayout(replacePage);
-
-        _tabs->addTab(findPage, "&Buscar");
-        _tabs->addTab(replacePage, "&Reemplazar");
-
-        // ── Combo de búsqueda (compartido visualmente, una instancia) ───
-        _findCombo = new QComboBox(this);
-        _findCombo->setEditable(true);
-        _findCombo->setMaxCount(20); // historial
-        _findCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-        _replaceCombo = new QComboBox(this);
-        _replaceCombo->setEditable(true);
-        _replaceCombo->setMaxCount(20);
-        _replaceCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-        // ── Layout de búsqueda ──────────────────────────────────────────
-        auto* searchGrid = new QGridLayout();
-        searchGrid->addWidget(new QLabel("Buscar:"), 0, 0);
-        searchGrid->addWidget(_findCombo, 0, 1);
-
-        auto* replaceGrid = new QGridLayout();
-        replaceGrid->addWidget(new QLabel("Buscar:"), 0, 0);
-        replaceGrid->addWidget(_findCombo, 0, 1);
-        replaceGrid->addWidget(new QLabel("Reemplazar con:"), 1, 0);
-        replaceGrid->addWidget(_replaceCombo, 1, 1);
-
-        findLayout->addLayout(searchGrid);
-        replaceLayout->addLayout(replaceGrid);
-
-        // ── Opciones ────────────────────────────────────────────────────
-        auto* optionsGroup = new QGroupBox("Opciones");
-        auto* optLayout = new QGridLayout(optionsGroup);
-
-        _chkCase      = new QCheckBox("Coincidir ma&yúsculas/minúsculas");
-        _chkWholeWord = new QCheckBox("Palabra &completa");
-        _chkWrap      = new QCheckBox("En&volver al inicio");
-        _chkRegex     = new QCheckBox("Expresión &regular");
-
-        _chkWrap->setChecked(true);
-
-        optLayout->addWidget(_chkCase,      0, 0);
-        optLayout->addWidget(_chkWholeWord, 0, 1);
-        optLayout->addWidget(_chkWrap,      1, 0);
-        optLayout->addWidget(_chkRegex,     1, 1);
-
-        findLayout->addWidget(optionsGroup);
-        replaceLayout->addWidget(optionsGroup);
-
-        // ── Botones — Find page ─────────────────────────────────────────
-        auto* findBtnLayout = new QHBoxLayout();
-        auto* btnFindNext = new QPushButton("Buscar &siguiente");
-        auto* btnFindPrev = new QPushButton("Buscar &anterior");
-        auto* btnCount    = new QPushButton("&Contar");
-        findBtnLayout->addWidget(btnFindNext);
-        findBtnLayout->addWidget(btnFindPrev);
-        findBtnLayout->addWidget(btnCount);
-        findBtnLayout->addStretch();
-        findLayout->addLayout(findBtnLayout);
-
-        // ── Botones — Replace page ──────────────────────────────────────
-        auto* replaceBtnLayout = new QHBoxLayout();
-        auto* btnReplaceOne = new QPushButton("Ree&mplazar");
-        auto* btnReplaceAll = new QPushButton("Reemplazar &todo");
-        replaceBtnLayout->addWidget(btnFindNext);
-        replaceBtnLayout->addWidget(btnReplaceOne);
-        replaceBtnLayout->addWidget(btnReplaceAll);
-        replaceBtnLayout->addStretch();
-        replaceLayout->addLayout(replaceBtnLayout);
+        _tabs->addTab(tabFind, "Buscar");
+        _tabs->addTab(tabReplace, "Reemplazar");
+        _tabs->addTab(tabInFiles, "Buscar en archivos");
+        _tabs->addTab(tabInProj, "Buscar en proyectos");
+        _tabs->addTab(tabMark, "Marcar");
 
         mainLayout->addWidget(_tabs);
 
-        // ── Barra de resultado ──────────────────────────────────────────
-        _resultLabel = new QLabel("");
-        _resultLabel->setStyleSheet("color: #569CD6; padding: 4px;");
-        mainLayout->addWidget(_resultLabel);
+        // ── Zona Central: Formulario de Entradas + Opciones + Botones de Acción ──
+        auto* centerLayout = new QHBoxLayout();
 
-        // ── Conectar señales ────────────────────────────────────────────
-        connect(btnFindNext, &QPushButton::clicked, [this]() {
-            addToHistory(_findCombo);
-            emit findNext(_findCombo->currentText());
+        // Columna Izquierda: Entradas y Checkboxes
+        auto* leftCol = new QVBoxLayout();
+
+        // Entradas principales
+        auto* formGrid = new QGridLayout();
+        formGrid->addWidget(new QLabel("Que buscar:"), 0, 0);
+        _comboFind = new QComboBox(this);
+        _comboFind->setEditable(true);
+        _comboFind->setMinimumWidth(260);
+        formGrid->addWidget(_comboFind, 0, 1);
+
+        formGrid->addWidget(new QLabel("Reemplazar con:"), 1, 0);
+        _comboReplace = new QComboBox(this);
+        _comboReplace->setEditable(true);
+        formGrid->addWidget(_comboReplace, 1, 1);
+
+        formGrid->addWidget(new QLabel("Filtros:"), 2, 0);
+        _comboFilter = new QComboBox(this);
+        _comboFilter->setEditable(true);
+        _comboFilter->setCurrentText("*.*");
+        formGrid->addWidget(_comboFilter, 2, 1);
+
+        formGrid->addWidget(new QLabel("Directorio:"), 3, 0);
+        _comboDir = new QComboBox(this);
+        _comboDir->setEditable(true);
+        formGrid->addWidget(_comboDir, 3, 1);
+
+        leftCol->addLayout(formGrid);
+
+        // Opciones de Coincidencia (Checkboxes)
+        _chkMatchCase        = new QCheckBox("Coincidir mayúsculas y minúsculas", this);
+        _chkMatchWholeWord   = new QCheckBox("Solo palabras completas", this);
+        _chkMatchNewline     = new QCheckBox("Coincidir con salto de línea", this);
+        _chkWrapAround       = new QCheckBox("Ajustar al texto", this);
+        _chkWrapAround->setChecked(true);
+        _chkInSelection      = new QCheckBox("En la selección actual", this);
+        _chkBackward         = new QCheckBox("Buscar hacia atrás", this);
+
+        leftCol->addWidget(_chkMatchCase);
+        leftCol->addWidget(_chkMatchWholeWord);
+        leftCol->addWidget(_chkMatchNewline);
+        leftCol->addWidget(_chkWrapAround);
+        leftCol->addWidget(_chkInSelection);
+        leftCol->addWidget(_chkBackward);
+
+        // Sub-Zona: Modo de Búsqueda y Transparencia
+        auto* subOptsLayout = new QHBoxLayout();
+
+        // GroupBox Modo de búsqueda
+        auto* gbMode = new QGroupBox("Modo de búsqueda", this);
+        auto* layMode = new QVBoxLayout(gbMode);
+        _rbModeNormal = new QRadioButton("Normal", this);
+        _rbModeExt    = new QRadioButton("Extendido (\\n, \\r, \\t, \\0, \\x...)", this);
+        _rbModeRegex  = new QRadioButton("Expresión regular", this);
+        _chkDotMatchesNewline = new QCheckBox(". coincide con newline", this);
+        _rbModeNormal->setChecked(true);
+
+        layMode->addWidget(_rbModeNormal);
+        layMode->addWidget(_rbModeExt);
+        layMode->addWidget(_rbModeRegex);
+        layMode->addWidget(_chkDotMatchesNewline);
+        subOptsLayout->addWidget(gbMode);
+
+        // GroupBox Transparencia
+        auto* gbTransp = new QGroupBox("Transparencia", this);
+        auto* layTransp = new QVBoxLayout(gbTransp);
+        _rbTranspFocus  = new QRadioButton("Al perder el foco", this);
+        _rbTranspAlways = new QRadioButton("Siempre", this);
+        _rbTranspAlways->setChecked(true);
+        
+        _sliderTransp = new QSlider(Qt::Horizontal, this);
+        _sliderTransp->setRange(30, 100);
+        _sliderTransp->setValue(100);
+
+        layTransp->addWidget(_rbTranspFocus);
+        layTransp->addWidget(_rbTranspAlways);
+        layTransp->addWidget(_sliderTransp);
+        subOptsLayout->addWidget(gbTransp);
+
+        leftCol->addLayout(subOptsLayout);
+        centerLayout->addLayout(leftCol, 1);
+
+        // Columna Derecha: Botones de Acción
+        auto* rightCol = new QVBoxLayout();
+        rightCol->setSpacing(4);
+
+        _btnFindNext        = new QPushButton("Buscar siguiente", this);
+        _btnFindNext->setDefault(true);
+        _btnCount           = new QPushButton("Contar", this);
+        _btnFindInCurrent   = new QPushButton("Buscar todos en el\ndocumento actual", this);
+        _btnFindInOpen      = new QPushButton("Buscar todos en todos los\ndocumentos abiertos", this);
+        _btnReplace         = new QPushButton("Reemplazar", this);
+        _btnReplaceAll      = new QPushButton("Reemplazar todo", this);
+        _btnReplaceInOpen   = new QPushButton("Reemplazar todo en todos\nlos docs abiertos", this);
+        _btnMarkAll         = new QPushButton("Marcar todo", this);
+        _btnClearMarks      = new QPushButton("Desmarcar todo", this);
+        _btnClose           = new QPushButton("Cerrar", this);
+
+        rightCol->addWidget(_btnFindNext);
+        rightCol->addWidget(_btnCount);
+        rightCol->addWidget(_btnFindInCurrent);
+        rightCol->addWidget(_btnFindInOpen);
+        rightCol->addWidget(_btnReplace);
+        rightCol->addWidget(_btnReplaceAll);
+        rightCol->addWidget(_btnReplaceInOpen);
+        rightCol->addWidget(_btnMarkAll);
+        rightCol->addWidget(_btnClearMarks);
+        rightCol->addStretch();
+        rightCol->addWidget(_btnClose);
+
+        centerLayout->addLayout(rightCol);
+        mainLayout->addLayout(centerLayout);
+
+        // ── Barra Informativa Inferior ──
+        _lblStatus = new QLabel("", this);
+        _lblStatus->setStyleSheet("color: #61AFEF; font-weight: bold; padding: 2px;");
+        mainLayout->addWidget(_lblStatus);
+
+        // ── Conexiones de Eventos y Botones ──
+        connect(_btnFindNext, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            if (_chkBackward->isChecked())
+                emit findPrev(_comboFind->currentText());
+            else
+                emit findNext(_comboFind->currentText());
         });
-        connect(btnFindPrev, &QPushButton::clicked, [this]() {
-            addToHistory(_findCombo);
-            emit findPrev(_findCombo->currentText());
+
+        connect(_btnReplace, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            addComboHistory(_comboReplace);
+            emit replaceOne(_comboFind->currentText(), _comboReplace->currentText());
         });
-        connect(btnCount, &QPushButton::clicked, [this]() {
-            emit countOccurrences(_findCombo->currentText());
+
+        connect(_btnReplaceAll, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            addComboHistory(_comboReplace);
+            emit replaceAll(_comboFind->currentText(), _comboReplace->currentText());
         });
-        connect(btnReplaceOne, &QPushButton::clicked, [this]() {
-            addToHistory(_findCombo);
-            addToHistory(_replaceCombo);
-            emit replaceOne(_findCombo->currentText(), _replaceCombo->currentText());
+
+        connect(_btnReplaceInOpen, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            addComboHistory(_comboReplace);
+            emit replaceInOpenDocs(_comboFind->currentText(), _comboReplace->currentText());
         });
-        connect(btnReplaceAll, &QPushButton::clicked, [this]() {
-            addToHistory(_findCombo);
-            addToHistory(_replaceCombo);
-            emit replaceAll(_findCombo->currentText(), _replaceCombo->currentText());
+
+        connect(_btnFindInCurrent, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            emit findAllInCurrentDoc(_comboFind->currentText());
+        });
+
+        connect(_btnFindInOpen, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            emit findAllInOpenDocs(_comboFind->currentText());
+        });
+
+        connect(_btnMarkAll, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            emit markAll(_comboFind->currentText());
+        });
+
+        connect(_btnClearMarks, &QPushButton::clicked, [this]() {
+            emit clearAllMarks();
+        });
+
+        connect(_btnClose, &QPushButton::clicked, this, &QDialog::reject);
+
+        connect(_sliderTransp, &QSlider::valueChanged, [this](int val) {
+            setWindowOpacity(val / 100.0);
+        });
+
+        // Alternar visibilidad de campos según pestaña seleccionada
+        connect(_tabs, &QTabWidget::currentChanged, [this](int idx) {
+            bool isReplace = (idx == 1);
+            bool isInFiles = (idx == 2 || idx == 3);
+            bool isMark    = (idx == 4);
+
+            _comboReplace->setEnabled(isReplace);
+            _comboFilter->setEnabled(isInFiles);
+            _comboDir->setEnabled(isInFiles);
+
+            _btnReplace->setVisible(isReplace);
+            _btnReplaceAll->setVisible(isReplace);
+            _btnReplaceInOpen->setVisible(isReplace);
+            _btnMarkAll->setVisible(isMark);
+            _btnClearMarks->setVisible(isMark);
         });
     }
 
-    /// Agrega el texto actual del combo al historial (si no está duplicado).
-    void addToHistory(QComboBox* combo) {
+    void addComboHistory(QComboBox* combo) {
+        if (!combo) return;
         QString text = combo->currentText();
         if (text.isEmpty()) return;
         int idx = combo->findText(text);
-        if (idx == 0) return; // ya es el primero
+        if (idx == 0) return;
         if (idx > 0) combo->removeItem(idx);
         combo->insertItem(0, text);
         combo->setCurrentIndex(0);
     }
 
-public:
-    /// Muestra un resultado en la barra inferior.
-    void showResult(const QString& msg) { _resultLabel->setText(msg); }
-
 private:
-    QTabWidget*  _tabs         = nullptr;
-    QComboBox*   _findCombo    = nullptr;
-    QComboBox*   _replaceCombo = nullptr;
-    QCheckBox*   _chkCase      = nullptr;
-    QCheckBox*   _chkWholeWord = nullptr;
-    QCheckBox*   _chkWrap      = nullptr;
-    QCheckBox*   _chkRegex     = nullptr;
-    QLabel*      _resultLabel  = nullptr;
+    QTabWidget*   _tabs       = nullptr;
+    QComboBox*    _comboFind  = nullptr;
+    QComboBox*    _comboReplace = nullptr;
+    QComboBox*    _comboFilter = nullptr;
+    QComboBox*    _comboDir   = nullptr;
+
+    QCheckBox*    _chkMatchCase        = nullptr;
+    QCheckBox*    _chkMatchWholeWord   = nullptr;
+    QCheckBox*    _chkMatchNewline     = nullptr;
+    QCheckBox*    _chkWrapAround       = nullptr;
+    QCheckBox*    _chkInSelection      = nullptr;
+    QCheckBox*    _chkBackward         = nullptr;
+    QCheckBox*    _chkDotMatchesNewline = nullptr;
+
+    QRadioButton* _rbModeNormal = nullptr;
+    QRadioButton* _rbModeExt    = nullptr;
+    QRadioButton* _rbModeRegex  = nullptr;
+
+    QRadioButton* _rbTranspFocus  = nullptr;
+    QRadioButton* _rbTranspAlways = nullptr;
+    QSlider*      _sliderTransp   = nullptr;
+
+    QPushButton*  _btnFindNext      = nullptr;
+    QPushButton*  _btnCount         = nullptr;
+    QPushButton*  _btnFindInCurrent = nullptr;
+    QPushButton*  _btnFindInOpen    = nullptr;
+    QPushButton*  _btnReplace       = nullptr;
+    QPushButton*  _btnReplaceAll    = nullptr;
+    QPushButton*  _btnReplaceInOpen = nullptr;
+    QPushButton*  _btnMarkAll       = nullptr;
+    QPushButton*  _btnClearMarks    = nullptr;
+    QPushButton*  _btnClose         = nullptr;
+
+    QLabel*       _lblStatus        = nullptr;
 };
 
 #endif // NPP_PLATFORM_LINUX

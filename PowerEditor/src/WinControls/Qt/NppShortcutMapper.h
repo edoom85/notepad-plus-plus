@@ -2,7 +2,7 @@
 // Reemplaza WinControls/Shortcut/ShortcutMapper.cpp/.h en Linux
 //
 // En Windows: ListView Win32 + diálogos para reasignar atajos de teclado
-// En Linux:   NppDialog + QTableWidget con filtro en tiempo real y selector de teclas
+// En Linux:   NppDialog + QTabWidget + QTableWidget con filtro en tiempo real y selector de teclas
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -45,7 +45,7 @@ public:
         : NppDialog(parent)
     {
         setWindowTitle("Mapeador de Atajos de Teclado (Shortcut Mapper)");
-        setMinimumSize(780, 520);
+        setMinimumSize(820, 540);
         buildUI();
         populateDefaultShortcuts();
     }
@@ -53,6 +53,16 @@ public:
 private:
     void buildUI() {
         auto* mainLayout = new QVBoxLayout(this);
+
+        // ── Pestañas Superiores de Categorías de Atajos ─────────────────────
+        _tabs = new QTabWidget(this);
+        _tabs->addTab(new QWidget(), "Menú Principal");
+        _tabs->addTab(new QWidget(), "Macros");
+        _tabs->addTab(new QWidget(), "Comandos de Ejecutar");
+        _tabs->addTab(new QWidget(), "Comandos de Plugins");
+        _tabs->addTab(new QWidget(), "Comandos de Scintilla");
+
+        mainLayout->addWidget(_tabs);
 
         // ── Campo de filtro ──────────────────────────────────────────────────
         auto* filterLayout = new QHBoxLayout();
@@ -74,23 +84,7 @@ private:
         _table->setSelectionMode(QAbstractItemView::SingleSelection);
         _table->setEditTriggers(QAbstractItemView::NoEditTriggers);
         _table->setAlternatingRowColors(true);
-        _table->setStyleSheet(
-            "QTableWidget {"
-            "  background: #1E1E1E;"
-            "  color: #D4D4D4;"
-            "  gridline-color: #333333;"
-            "}"
-            "QTableWidget::item:selected {"
-            "  background: #094771;"
-            "  color: #FFFFFF;"
-            "}"
-            "QHeaderView::section {"
-            "  background: #252526;"
-            "  color: #CCCCCC;"
-            "  padding: 6px;"
-            "  border: 1px solid #333333;"
-            "}"
-        );
+
         mainLayout->addWidget(_table);
 
         // ── Panel inferior de edición de atajo ───────────────────────────────
@@ -117,37 +111,46 @@ private:
         connect(_table, &QTableWidget::itemSelectionChanged, this, &NppShortcutMapper::onSelectionChanged);
         connect(btnModify, &QPushButton::clicked, this, &NppShortcutMapper::onModifyShortcut);
         connect(btnClear, &QPushButton::clicked, this, &NppShortcutMapper::onClearShortcut);
+        connect(_tabs, &QTabWidget::currentChanged, this, &NppShortcutMapper::onFilterChanged);
     }
 
     void populateDefaultShortcuts() {
         _shortcuts = {
-            { 1, "Nuevo documento",      "Archivo",   QKeySequence::New },
-            { 2, "Abrir archivo",        "Archivo",   QKeySequence::Open },
-            { 3, "Guardar",              "Archivo",   QKeySequence::Save },
-            { 4, "Guardar como...",      "Archivo",   QKeySequence::SaveAs },
-            { 5, "Cerrar pestaña",       "Archivo",   QKeySequence::Close },
-            { 6, "Deshacer",             "Editar",    QKeySequence::Undo },
-            { 7, "Rehacer",              "Editar",    QKeySequence::Redo },
-            { 8, "Cortar",               "Editar",    QKeySequence::Cut },
-            { 9, "Copiar",               "Editar",    QKeySequence::Copy },
-            {10, "Pegar",                "Editar",    QKeySequence::Paste },
-            {11, "Buscar",               "Buscar",    QKeySequence::Find },
-            {12, "Reemplazar",           "Buscar",    QKeySequence::Replace },
-            {13, "Buscar en archivos",   "Buscar",    QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F) },
-            {14, "Ir a línea...",        "Buscar",    QKeySequence(Qt::CTRL | Qt::Key_G) },
-            {15, "Duplicar línea",       "Edición",   QKeySequence(Qt::CTRL | Qt::Key_D) },
-            {16, "Mover línea arriba",   "Edición",   QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Up) },
-            {17, "Mover línea abajo",    "Edición",   QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Down) },
+            { 1, "Nuevo documento",      "Menú Principal", QKeySequence::New },
+            { 2, "Abrir archivo",        "Menú Principal", QKeySequence::Open },
+            { 3, "Guardar",              "Menú Principal", QKeySequence::Save },
+            { 4, "Guardar como...",      "Menú Principal", QKeySequence::SaveAs },
+            { 5, "Cerrar pestaña",       "Menú Principal", QKeySequence::Close },
+            { 6, "Deshacer",             "Menú Principal", QKeySequence::Undo },
+            { 7, "Rehacer",              "Menú Principal", QKeySequence::Redo },
+            { 8, "Cortar",               "Menú Principal", QKeySequence::Cut },
+            { 9, "Copiar",               "Menú Principal", QKeySequence::Copy },
+            {10, "Pegar",                "Menú Principal", QKeySequence::Paste },
+            {11, "Buscar",               "Menú Principal", QKeySequence::Find },
+            {12, "Reemplazar",           "Menú Principal", QKeySequence::Replace },
+            {13, "Buscar en archivos",   "Menú Principal", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F) },
+            {14, "Ir a línea...",        "Menú Principal", QKeySequence(Qt::CTRL | Qt::Key_G) },
+            {15, "Duplicar línea",       "Menú Principal", QKeySequence(Qt::CTRL | Qt::Key_D) },
+            {16, "Mover línea arriba",   "Menú Principal", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Up) },
+            {17, "Mover línea abajo",    "Menú Principal", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Down) },
+            {18, "Iniciar grabación",    "Macros",         QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R) },
+            {19, "Reproducción de macro","Macros",         QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_P) },
+            {20, "Ejecutar comando...",  "Comandos de Ejecutar", QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_R) }
         };
         refreshTable();
     }
 
     void refreshTable() {
         QString filter = _filterEdit->text().trimmed();
+        int tabIdx = _tabs ? _tabs->currentIndex() : 0;
+        QString tabName = _tabs ? _tabs->tabText(tabIdx) : "Menú Principal";
+
         _table->setRowCount(0);
 
         for (size_t i = 0; i < _shortcuts.size(); ++i) {
             const auto& sc = _shortcuts[i];
+            if (sc.category != tabName && tabIdx != 0) continue;
+
             if (!filter.isEmpty() &&
                 !sc.name.contains(filter, Qt::CaseInsensitive) &&
                 !sc.category.contains(filter, Qt::CaseInsensitive)) {
@@ -197,6 +200,7 @@ private slots:
     }
 
 private:
+    QTabWidget*                 _tabs       = nullptr;
     QLineEdit*                  _filterEdit = nullptr;
     QTableWidget*               _table      = nullptr;
     QKeySequenceEdit*           _keyEdit    = nullptr;

@@ -1,6 +1,6 @@
 // Platform/PlatformLexerManager.h — Gestor de Lexers y Resaltado de Sintaxis (Qt6)
 // Soporta auto-detección por extensión (.json, .py, .cpp, .html, .xml, .js, .css, etc.)
-// y menú de selección de lenguaje de Notepad++.
+// y menús de selección de lenguaje de Notepad++ con temas de color vibrantes.
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -10,7 +10,6 @@
 #include "PlatformTheme.h"
 
 #ifdef NPP_PLATFORM_LINUX
-
 
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexercpp.h>
@@ -76,19 +75,16 @@ public:
 
         if (lexer) {
             lexer->setFont(font);
-            QColor paperBg = NppTheme::paperColor();
-            QColor textFg  = NppTheme::textColor();
-            // Aplicar fondo de papel y texto adaptativos (Modo Oscuro / Modo Claro)
-            for (int i = 0; i <= 128; ++i) {
-                lexer->setPaper(paperBg, i);
-                lexer->setColor(textFg, i);
-            }
+            configureThemeColors(lexer);
         }
 
-
         editor->setLexer(lexer);
+        
+        // Re-estilizar márgenes tras cambiar el lexer para mantener integración estética del tema
+        QColor bg = NppTheme::marginBackgroundColor();
+        editor->setMarginsBackgroundColor(bg);
+        editor->setFoldMarginColors(bg, bg);
     }
-
 
     /// Auto-detecta el lenguaje basado en la extensión del archivo.
     static Language detectFromExtension(const QString& filePath) {
@@ -108,6 +104,61 @@ public:
         if (ext == "yaml" || ext == "yml")             return Language::YAML;
 
         return Language::PlainText;
+    }
+
+private:
+    /// Configura los colores de resaltado sintáctico según el tema (Modo Oscuro / Modo Claro).
+    static void configureThemeColors(QsciLexer* lexer) {
+        if (!lexer) return;
+
+        bool isDark = NppTheme::isDarkMode();
+        QColor paperBg = NppTheme::paperColor();
+
+        // 1. Configurar el fondo de papel para todos los estilos sin alterar el color del texto por defecto
+        for (int i = 0; i <= 128; ++i) {
+            lexer->setPaper(paperBg, i);
+        }
+
+        // 2. Si estamos en modo oscuro, aplicar paleta vibrante estilo One Dark / Notepad++ Dark Theme
+        if (isDark) {
+            lexer->setDefaultPaper(paperBg);
+            lexer->setDefaultColor(QColor(0xAB, 0xB2, 0xBF));
+
+            if (auto* json = qobject_cast<QsciLexerJSON*>(lexer)) {
+                json->setColor(QColor(0xAB, 0xB2, 0xBF), QsciLexerJSON::Default);
+                json->setColor(QColor(0xD1, 0x9A, 0x66), QsciLexerJSON::Number);          // Números (Naranja/Marrón)
+                json->setColor(QColor(0x98, 0xC3, 0x79), QsciLexerJSON::String);          // Cadenas (Verde)
+                json->setColor(QColor(0xE0, 0x6C, 0x75), QsciLexerJSON::UnclosedString);  // Cadena sin cerrar (Rojo)
+                json->setColor(QColor(0x61, 0xAF, 0xEF), QsciLexerJSON::Property);        // Claves / Propiedades "id", "name" (Azul/Cyan)
+                json->setColor(QColor(0x56, 0xB6, 0xC2), QsciLexerJSON::EscapeSequence);  // Secuencias de escape
+                json->setColor(QColor(0x7F, 0x84, 0x8E), QsciLexerJSON::CommentLine);     // Comentarios (Gris)
+                json->setColor(QColor(0x7F, 0x84, 0x8E), QsciLexerJSON::CommentBlock);    // Comentarios bloque
+                json->setColor(QColor(0x56, 0xB6, 0xC2), QsciLexerJSON::Operator);        // Operadores : y ,
+                json->setColor(QColor(0xC6, 0x78, 0xDD), QsciLexerJSON::Keyword);         // true, false, null (Púrpura)
+            }
+            else if (auto* cpp = qobject_cast<QsciLexerCPP*>(lexer)) {
+                cpp->setColor(QColor(0x7F, 0x84, 0x8E), QsciLexerCPP::Comment);
+                cpp->setColor(QColor(0x7F, 0x84, 0x8E), QsciLexerCPP::CommentLine);
+                cpp->setColor(QColor(0x7F, 0x84, 0x8E), QsciLexerCPP::CommentDoc);
+                cpp->setColor(QColor(0xD1, 0x9A, 0x66), QsciLexerCPP::Number);
+                cpp->setColor(QColor(0xC6, 0x78, 0xDD), QsciLexerCPP::Keyword);
+                cpp->setColor(QColor(0x98, 0xC3, 0x79), QsciLexerCPP::DoubleQuotedString);
+                cpp->setColor(QColor(0x98, 0xC3, 0x79), QsciLexerCPP::SingleQuotedString);
+                cpp->setColor(QColor(0x56, 0xB6, 0xC2), QsciLexerCPP::Operator);
+                cpp->setColor(QColor(0x61, 0xAF, 0xEF), QsciLexerCPP::Identifier);
+                cpp->setColor(QColor(0xE5, 0xC0, 0x7B), QsciLexerCPP::PreProcessor);
+            }
+            else if (auto* py = qobject_cast<QsciLexerPython*>(lexer)) {
+                py->setColor(QColor(0x7F, 0x84, 0x8E), QsciLexerPython::Comment);
+                py->setColor(QColor(0xD1, 0x9A, 0x66), QsciLexerPython::Number);
+                py->setColor(QColor(0x98, 0xC3, 0x79), QsciLexerPython::DoubleQuotedString);
+                py->setColor(QColor(0x98, 0xC3, 0x79), QsciLexerPython::SingleQuotedString);
+                py->setColor(QColor(0xC6, 0x78, 0xDD), QsciLexerPython::Keyword);
+                py->setColor(QColor(0x61, 0xAF, 0xEF), QsciLexerPython::ClassName);
+                py->setColor(QColor(0x61, 0xAF, 0xEF), QsciLexerPython::FunctionMethodName);
+                py->setColor(QColor(0x56, 0xB6, 0xC2), QsciLexerPython::Operator);
+            }
+        }
     }
 };
 
