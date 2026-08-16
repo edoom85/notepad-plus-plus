@@ -13,8 +13,11 @@
 #include "Platform/PlatformString.h"
 #include "Platform/PlatformMsg.h"
 
+#ifdef NPP_PLATFORM_LINUX
+
 #include <QApplication>
 #include <QMainWindow>
+
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QDir>
@@ -173,3 +176,6 @@ int main(int argc, char* argv[]) {
 
     return status;
 }
+
+#endif // NPP_PLATFORM_LINUX
+

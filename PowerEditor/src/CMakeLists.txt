@@ -8,11 +8,20 @@ if(WIN32)
     # ── Configuración CMake para Windows (MinGW / MSVC) ─────────────────────
     SET(projIncludDir
         ./
+        ./json/
+        ./DarkMode/
         ./MISC/
         ./MISC/Common/
         ./MISC/Exception/
         ./MISC/PluginsManager/
+        ./MISC/Process/
         ./MISC/RegExt/
+        ./MISC/crc16/
+        ./MISC/hmac/
+        ./MISC/md5/
+        ./MISC/sha1/
+        ./MISC/sha2/
+        ./MISC/sha512/
         ./Platform/
         ./ScintillaComponent/
         ./uchardet/
@@ -63,7 +72,9 @@ if(WIN32)
         ./WinControls/ClipboardHistory/clipboardHistoryPanel.cpp
         ./ScintillaComponent/columnEditor.cpp
         ./MISC/Common/Common.cpp
+        ./MISC/Process/Processus.cpp
         ./WinControls/ContextMenu/ContextMenu.cpp
+
         ./WinControls/OpenSaveFileDialog/CustomFileDialog.cpp
         ./WinControls/DockingWnd/DockingCont.cpp
 

@@ -64,11 +64,15 @@
 #include "NppSummaryDlg.h"
 #include "NppDocumentMap.h"
 #include "NppVerticalFileSwitcher.h"
+#include "../../Platform/PlatformMacroEngine.h"
+#include "../../Platform/PlatformSessionManager.h"
 #include "NppStyleConfigDlg.h"
 #include "NppRunMacroDlg.h"
 #include "NppFindCharsInRange.h"
 #include "NppColumnEditor.h"
 #include "NppAnsiCharPanel.h"
+#include <QInputDialog>
+
 
 
 
@@ -125,8 +129,20 @@ public:
         setStatusBar(_statusBar->statusBar());
         updateStatusBar();
 
-        // ── 5. Crear pestaña vacía por defecto ──────────────────────────────
-        newDocument();
+        // ── 5. Restaurar sesión XML o crear documento vacío ─────────────────
+        QStringList sessionFiles;
+        int activeIdx = 0;
+        if (NppSessionManager::loadSession(sessionFiles, activeIdx)) {
+            for (const QString& file : sessionFiles) {
+                openFile(file.toStdString());
+            }
+            if (activeIdx >= 0 && activeIdx < _mainTabs->count()) {
+                _mainTabs->setCurrentIndex(activeIdx);
+            }
+        } else {
+            newDocument();
+        }
+
 
         // ── 6. Restaurar geometría ──────────────────────────────────────────
         restoreWindowState();
@@ -904,21 +920,14 @@ private:
         });
         configMenu->addAction("Configurador de &estilos...", [this]() {
             auto* dlg = new NppStyleConfigDlg(this);
-            connect(dlg, &NppStyleConfigDlg::styleApplied, [this](const QString& /*theme*/, const QColor& fg, const QColor& bg) {
+            connect(dlg, &NppStyleConfigDlg::styleApplied, [this](const QString& theme, const QColor& /*fg*/, const QColor& /*bg*/) {
                 if (auto* ed = activeEditor()) {
-                    ed->setPaper(bg);
-                    ed->setColor(fg);
-                    if (ed->lexer()) {
-                        ed->lexer()->setDefaultPaper(bg);
-                        ed->lexer()->setDefaultColor(fg);
-                        for (int i = 0; i <= 128; ++i) {
-                            ed->lexer()->setPaper(bg, i);
-                        }
-                    }
+                    NppLexerManager::applyTheme(ed, theme);
                 }
             });
             dlg->show();
         });
+
 
         configMenu->addAction("Configurador de &accesos directos...", [this]() {
             auto* dlg = new NppShortcutMapper(this);
@@ -1152,6 +1161,24 @@ private:
             move((screen.width() - 1200) / 2, (screen.height() - 800) / 2);
         }
     }
+
+protected:
+    void closeEvent(QCloseEvent* event) override {
+        saveWindowState();
+
+        // Auto-guardar sesión XML en ~/.config/notepadplusplus/session.xml
+        QStringList sessionFiles;
+        for (int i = 0; i < _mainTabs->count(); ++i) {
+            NppString path = _mainTabs->tabFilePath(i);
+            if (!path.empty()) {
+                sessionFiles.append(QString::fromStdString(path));
+            }
+        }
+        NppSessionManager::saveSession(sessionFiles, _mainTabs->currentIndex());
+
+        event->accept();
+    }
+
 
 private slots:
     void onOpen() {

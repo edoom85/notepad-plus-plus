@@ -64,9 +64,16 @@ public:
 
         mainLayout->addLayout(btnLayout);
 
-        connect(btnRun, &QPushButton::clicked, this, &QDialog::accept);
+        connect(btnRun, &QPushButton::clicked, [this]() {
+            int times = _rbEof->isChecked() ? 9999 : _spinTimes->value();
+            emit runMacroRequested(times);
+            accept();
+        });
         connect(btnCancel, &QPushButton::clicked, this, &QDialog::reject);
     }
+
+signals:
+    void runMacroRequested(int times);
 
 private:
     QRadioButton* _rbTimes = nullptr;
