@@ -166,3 +166,13 @@ PowerEditor/src/MISC/md5/RCa06792
 *.db
 *.sln
 *.opendb
+
+#-------------------------------------------------------------------------------
+# Linux & CMake Build Artifacts
+
+build/
+build-*/
+test/hello_scintilla_gtk
+test/hello_scintilla_qt
+scintilla/gtk/*.o
+lexilla/src/*.o
