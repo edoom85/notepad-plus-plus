@@ -23,6 +23,9 @@
 #include <vector>
 #include <string>
 
+#include "Platform/PlatformCrashHandler.h"
+#include "Platform/PlatformDesktopIntegration.h"
+
 static NotepadPlusWindowQt* g_mainWindow = nullptr;
 static PlatformSingleInstance* g_singleInstance = nullptr;
 
@@ -65,6 +68,9 @@ static void applyGlobalDarkTheme(QApplication* app) {
 /// Inicializa la ventana principal de Notepad++.
 /// Llamada desde linuxmain.cpp después de crear QApplication.
 void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) {
+    // -1. Instalar Crash Handler para generar informes de depuración en caso de SIGSEGV
+    NppCrashHandler::install();
+
     // 0. Instancia Única: si ya hay una instancia corriendo, enviarle los archivos e ingresar al proceso existente
     QStringList filesList;
     for (const auto& path : filesToOpen) {
@@ -89,6 +95,11 @@ void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) 
     // 3. Crear ventana principal
     g_mainWindow = new NotepadPlusWindowQt();
     g_mainWindow->show();
+
+    // 3b. Integración de escritorio y TrayIcon
+    auto* desktopInt = new NppDesktopIntegration(g_mainWindow, app);
+    desktopInt->createTrayIcon(appIcon);
+
 
     // 4. Iniciar servidor de instancia única
     g_singleInstance = new PlatformSingleInstance(g_mainWindow);
