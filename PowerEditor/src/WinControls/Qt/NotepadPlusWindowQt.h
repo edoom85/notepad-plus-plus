@@ -1257,32 +1257,16 @@ private:
             connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
             p->show();
         });
-        projMenu->addAction("Panel de proyecto 2", [this]() {
-            auto* p = new NppProjectPanel("Proyecto 2", this);
-            connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
-            p->show();
-        });
-        projMenu->addAction("Panel de proyecto 3", [this]() {
-            auto* p = new NppProjectPanel("Proyecto 3", this);
-            connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
-            p->show();
-        });
+        projMenu->addAction("Panel de proyecto 1", [this]() { toggleProjectPanel(1); });
+        projMenu->addAction("Panel de proyecto 2", [this]() { toggleProjectPanel(2); });
+        projMenu->addAction("Panel de proyecto 3", [this]() { toggleProjectPanel(3); });
 
-        viewMenu->addAction("Carpeta como área de trabajo", [this]() {
-            (new NppFileBrowser(this))->show();
-        });
-        viewMenu->addAction("Mapa del documento", [this]() {
-            (new NppDocumentMap(this))->show();
-        });
-        viewMenu->addAction("Lista de documentos", [this]() {
-            (new NppVerticalFileSwitcher(this))->show();
-        });
-        viewMenu->addAction("Lista de funciones", [this]() {
-            auto* fl = new NppFunctionList(this);
-            if (activeEditor()) fl->parseDocument(activeEditor()->text());
-            fl->show();
-        });
+        viewMenu->addAction("Carpeta como área de trabajo", [this]() { toggleFileBrowser(); });
+        viewMenu->addAction("Mapa del documento", [this]() { toggleDocumentMap(); });
+        viewMenu->addAction("Lista de documentos", [this]() { toggleFileSwitcher(); });
+        viewMenu->addAction("Lista de funciones", [this]() { toggleFunctionList(); });
         viewMenu->addSeparator();
+
 
         viewMenu->addAction("Sincronización vertical", [this]() { statusBar()->showMessage("Sincronización vertical activada", 3000); });
         viewMenu->addAction("Sincronización horizontal", [this]() { statusBar()->showMessage("Sincronización horizontal activada", 3000); });
@@ -1821,7 +1805,8 @@ private:
 
     // ── Crear editor QsciScintilla real ─────────────────────────────────────
     QWidget* createEditor() {
-        auto* editor = new QsciScintilla(this);
+        auto* editor = new QsciScintilla(nullptr);
+
 
         // Fuente monoespaciada
         QFont font("JetBrains Mono", 11);
@@ -2246,42 +2231,10 @@ private:
             case 12: (new NppFindReplaceDlg(this))->show(); break;
             case 13: if (auto* ed = activeEditor()) ed->zoomIn(); break;
             case 14: if (auto* ed = activeEditor()) ed->zoomOut(); break;
-            case 15: {
-                auto* fb = new NppFileBrowser(this);
-                connect(fb, &NppFileBrowser::fileSelected, [this](const NppString& filePath) { openFile(filePath); });
-                fb->show();
-                break;
-            }
-            case 16: {
-                auto* fl = new NppFunctionList(this);
-                if (activeEditor()) fl->parseDocument(activeEditor()->text(), "cpp");
-                connect(fl, &NppFunctionList::jumpToLineRequested, [this](int line) {
-                    if (auto* ed = activeEditor()) {
-                        ed->setCursorPosition(line - 1, 0);
-                        ed->ensureLineVisible(line - 1);
-                        ed->setFirstVisibleLine(std::max(0, line - 1 - 10));
-                    }
-                });
-                connect(fl, &NppFunctionList::refreshRequested, [this, fl]() {
-                    if (auto* ed = activeEditor()) fl->parseDocument(ed->text(), "cpp");
-                });
-                fl->show();
-                break;
-            }
-            case 17: {
-                auto* p = new NppProjectPanel("Proyecto Main", this);
-                connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
-                p->show();
-                break;
-            }
-            case 18: {
-                auto* history = new NppClipboardHistory(this);
-                connect(history, &NppClipboardHistory::pasteRequested, [this](const QString& text) {
-                    if (auto* ed = activeEditor()) ed->insert(text);
-                });
-                history->show();
-                break;
-            }
+            case 15: toggleFileBrowser(); break;
+            case 16: toggleFunctionList(); break;
+            case 17: toggleProjectPanel(1); break;
+            case 18: toggleClipboardHistory(); break;
 
             case 19: (new NppPluginsAdmin(this))->show(); break;
             case 20: (new NppPreferenceDlg(this))->show(); break;
@@ -2293,26 +2246,9 @@ private:
             case 31: /* Print */ break;
             case 32: case 33: /* Sync V/H */ break;
             case 34: (new NppUserDefineDlg(this))->show(); break;
-            case 35: {
-                auto* docMap = new NppDocumentMap(this);
-                if (activeEditor()) docMap->connectToEditor(activeEditor());
-                docMap->show();
-                break;
-            }
-            case 36: {
-                auto* switcher = new NppVerticalFileSwitcher(this);
-                std::vector<NppString> files;
-                for (int i = 0; i < _mainTabs->count(); ++i) {
-                    NppString path = _mainTabs->tabFilePath(i);
-                    files.push_back(path.empty() ? _mainTabs->tabText(i).toStdString() : path);
-                }
-                switcher->updateFileList(files, _mainTabs->currentIndex());
-                connect(switcher, &NppVerticalFileSwitcher::switchToTab, [this](int idx) {
-                    if (idx >= 0 && idx < _mainTabs->count()) _mainTabs->setCurrentIndex(idx);
-                });
-                switcher->show();
-                break;
-            }
+            case 35: toggleDocumentMap(); break;
+            case 36: toggleFileSwitcher(); break;
+
             case 37: /* Monitoring */ break;
             case 38: /* All Chars */ break;
             case 39: /* Indent Guide */ break;
@@ -2328,19 +2264,113 @@ private:
 
 
 
+public:
+    void toggleDocumentMap() {
+        if (!_docMapDock) {
+            auto* docMap = new NppDocumentMap(this);
+            if (activeEditor()) docMap->connectToEditor(activeEditor());
+            _docMapDock = docMap->createDock(this);
+        }
+        _docMapDock->setVisible(!_docMapDock->isVisible());
+    }
+
+    void toggleFunctionList() {
+        if (!_functionListDock) {
+            auto* fl = new NppFunctionList(this);
+            if (activeEditor()) fl->parseDocument(activeEditor()->text(), "cpp");
+            connect(fl, &NppFunctionList::jumpToLineRequested, [this](int line) {
+                if (auto* ed = activeEditor()) {
+                    ed->setCursorPosition(line - 1, 0);
+                    ed->ensureLineVisible(line - 1);
+                }
+            });
+            auto* dock = new NppDockWidget("Lista de Funciones", this, NppDockWidget::DockPosition::Right);
+            dock->setContent(fl);
+            dock->setFixedWidth(220);
+            _functionListDock = dock;
+        }
+        _functionListDock->setVisible(!_functionListDock->isVisible());
+    }
+
+    void toggleFileBrowser() {
+        if (!_fileBrowserDock) {
+            auto* fb = new NppFileBrowser(this);
+            connect(fb, &NppFileBrowser::fileSelected, [this](const NppString& filePath) { openFile(filePath); });
+            auto* dock = new NppDockWidget("Carpeta como área de trabajo", this, NppDockWidget::DockPosition::Left);
+            dock->setContent(fb);
+            dock->setFixedWidth(240);
+            _fileBrowserDock = dock;
+        }
+        _fileBrowserDock->setVisible(!_fileBrowserDock->isVisible());
+    }
+
+    void toggleFileSwitcher() {
+        if (!_fileSwitcherDock) {
+            auto* switcher = new NppVerticalFileSwitcher(this);
+            std::vector<NppString> files;
+            for (int i = 0; i < _mainTabs->count(); ++i) {
+                NppString path = _mainTabs->tabFilePath(i);
+                files.push_back(path.empty() ? _mainTabs->tabText(i).toStdString() : path);
+            }
+            switcher->updateFileList(files, _mainTabs->currentIndex());
+            connect(switcher, &NppVerticalFileSwitcher::switchToTab, [this](int idx) {
+                if (idx >= 0 && idx < _mainTabs->count()) _mainTabs->setCurrentIndex(idx);
+            });
+            auto* dock = new NppDockWidget("Lista de Documentos", this, NppDockWidget::DockPosition::Left);
+            dock->setContent(switcher);
+            dock->setFixedWidth(200);
+            _fileSwitcherDock = dock;
+        }
+        _fileSwitcherDock->setVisible(!_fileSwitcherDock->isVisible());
+    }
+
+    void toggleProjectPanel(int num = 1) {
+        if (!_projectPanelDock) {
+            auto* p = new NppProjectPanel("Panel de Proyecto " + QString::number(num), this);
+            connect(p, &NppProjectPanel::openFileRequested, [this](const NppString& filePath) { openFile(filePath); });
+            auto* dock = new NppDockWidget("Panel de Proyecto " + QString::number(num), this, NppDockWidget::DockPosition::Left);
+            dock->setContent(p);
+            dock->setFixedWidth(220);
+            _projectPanelDock = dock;
+        }
+        _projectPanelDock->setVisible(!_projectPanelDock->isVisible());
+    }
+
+
+    void toggleClipboardHistory() {
+        if (!_clipHistoryDock) {
+            auto* history = new NppClipboardHistory(this);
+            connect(history, &NppClipboardHistory::pasteRequested, [this](const QString& text) {
+                if (auto* ed = activeEditor()) ed->insert(text);
+            });
+            auto* dock = new NppDockWidget("Historial del Portapapeles", this, NppDockWidget::DockPosition::Right);
+            dock->setContent(history);
+            dock->setFixedWidth(220);
+            _clipHistoryDock = dock;
+        }
+        _clipHistoryDock->setVisible(!_clipHistoryDock->isVisible());
+    }
+
     // ── Componentes ─────────────────────────────────────────────────────────
 private:
-    NppToolBar*    _toolbar   = nullptr;
-    NppSplitter*   _splitter  = nullptr;
-    NppTabWidget*  _mainTabs  = nullptr;
-    NppTabWidget*  _subTabs   = nullptr;
+    NppToolBar*     _toolbar   = nullptr;
+    NppSplitter*    _splitter  = nullptr;
+    NppTabWidget*   _mainTabs  = nullptr;
+    NppTabWidget*   _subTabs   = nullptr;
     NppStatusBar*   _statusBar = nullptr;
     NppFileMonitor* _fileMonitor = nullptr;
     QSet<QString>   _selfSavedFiles;
+    NppDockWidget*  _docMapDock       = nullptr;
+    NppDockWidget*  _functionListDock = nullptr;
+    NppDockWidget*  _fileBrowserDock   = nullptr;
+    NppDockWidget*  _fileSwitcherDock  = nullptr;
+    NppDockWidget*  _projectPanelDock  = nullptr;
+    NppDockWidget*  _clipHistoryDock   = nullptr;
     bool            _isDarkMode = true;
     bool            _isOledTone = false;
     bool            _rememberSession = true;
 };
+
 
 
 #endif // NPP_PLATFORM_LINUX

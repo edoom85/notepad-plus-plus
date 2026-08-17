@@ -117,12 +117,26 @@ public:
         }
 
         if (!filename.isEmpty()) {
-            bool isFilled = (s_presetIndex == 2 || s_presetIndex == 3);
-            QString mode = s_isDarkMode ? "dark" : "light";
-            QString styleName = isFilled ? "filled" : "regular";
+            QString qrcPath;
+            switch (s_presetIndex) {
+                case 0: // SmallReg (sin relleno)
+                    qrcPath = QString(":/icons/dark/toolbar/regular/%1").arg(filename);
+                    break;
+                case 1: // LargeReg (sin relleno)
+                    qrcPath = QString(":/icons/dark/toolbar/regular/%1").arg(filename);
+                    break;
+                case 2: // SmallFilled (con relleno)
+                    qrcPath = QString(":/icons/light/toolbar/filled/%1").arg(filename);
+                    break;
+                case 3: // LargeFilled (con relleno)
+                    qrcPath = QString(":/icons/light/toolbar/filled/%1").arg(filename);
+                    break;
+                case 4: // Default ("Iconos pequeños predeterminados" - Colores oficiales Notepad++)
+                default:
+                    qrcPath = QString(":/icons/light/toolbar/regular/%1").arg(filename);
+                    break;
+            }
 
-            // Intentar ruta principal
-            QString qrcPath = QString(":/icons/%1/toolbar/%2/%3").arg(mode, styleName, filename);
             QIcon icon = loadIco(qrcPath);
             if (!icon.isNull()) return icon;
 
@@ -131,6 +145,7 @@ public:
             icon = loadIco(qrcPath);
             if (!icon.isNull()) return icon;
         }
+
 
         // 2. Fallback según tipo de acción
         switch (type) {
