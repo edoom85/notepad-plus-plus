@@ -1,6 +1,6 @@
-// Platform/PlatformIconProvider.h — Proveedor de iconos vectoriales y fallbacks (Linux/Qt6)
-// Garantiza que todos los botones y menús de Notepad++ tengan iconos limpios y visibles
-// incluso si el tema de iconos del sistema (KDE/GNOME) no está instalado.
+// Platform/PlatformIconProvider.h — Proveedor de iconos oficiales .ico (Linux/Qt6)
+// Carga los iconos oficiales de Notepad++ (.ico/.bmp) según el estilo seleccionado en Preferencias:
+// Iconos pequeños/grandes, con/sin relleno (regular/filled) y modo claro/oscuro.
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -47,11 +47,58 @@ public:
         AppLogo
     };
 
+    static inline int  s_presetIndex = 4; // 0: SmallReg, 1: LargeReg, 2: SmallFilled, 3: LargeFilled, 4: Default
+    static inline bool s_isDarkMode  = true;
+
+    static void setToolbarStyle(int presetIndex, bool isDarkMode = true) {
+        s_presetIndex = presetIndex;
+        s_isDarkMode  = isDarkMode;
+    }
 
     /// Obtiene un QIcon garantizado para el tipo de acción solicitado.
     static QIcon get(IconType type) {
         QStyle* style = QApplication::style();
 
+        // 1. Intentar cargar el archivo .ico oficial de Notepad++ según el preset
+        QString filename;
+        switch (type) {
+            case IconType::New:              filename = "new_off.ico"; break;
+            case IconType::Open:             filename = "open_off.ico"; break;
+            case IconType::Save:             filename = "save_off.ico"; break;
+            case IconType::SaveAll:          filename = "saveall_off.ico"; break;
+            case IconType::Close:            filename = "close_off.ico"; break;
+            case IconType::Undo:             filename = "undo_off.ico"; break;
+            case IconType::Redo:             filename = "redo_off.ico"; break;
+            case IconType::Cut:              filename = "cut_off.ico"; break;
+            case IconType::Copy:             filename = "copy_off.ico"; break;
+            case IconType::Paste:            filename = "paste_off.ico"; break;
+            case IconType::Find:             filename = "find_off.ico"; break;
+            case IconType::Replace:          filename = "findrep_off.ico"; break;
+            case IconType::ZoomIn:           filename = "zoomIn_off.ico"; break;
+            case IconType::ZoomOut:          filename = "zoomOut_off.ico"; break;
+            case IconType::FileBrowser:      filename = "fileBrowser_off.ico"; break;
+            case IconType::FunctionList:    filename = "funcList_off.ico"; break;
+            case IconType::ProjectPanel:    filename = "docList_off.ico"; break;
+            case IconType::ClipboardHistory: filename = "docMap_off.ico"; break;
+            default: break;
+        }
+
+        if (!filename.isEmpty()) {
+            bool isFilled = (s_presetIndex == 2 || s_presetIndex == 3);
+            QString mode = s_isDarkMode ? "dark" : "light";
+            QString styleName = isFilled ? "filled" : "regular";
+
+            QString qrcPath = QString(":/icons/%1/toolbar/%2/%3").arg(mode, styleName, filename);
+            QIcon icon(qrcPath);
+            if (!icon.isNull()) return icon;
+
+            // Intentar fallback al tema claro regular
+            qrcPath = QString(":/icons/light/toolbar/regular/%1").arg(filename);
+            QIcon fbIcon(qrcPath);
+            if (!fbIcon.isNull()) return fbIcon;
+        }
+
+        // 2. Fallback según tipo de acción
         switch (type) {
             case IconType::New:
                 return fetchThemeOrStandard("document-new", QStyle::SP_FileIcon, QColor(0x56, 0x9C, 0xD6), "📄");
@@ -75,7 +122,6 @@ public:
                 return fetchThemeOrStandard("edit-paste", QStyle::SP_FileDialogDetailedView, QColor(0xC5, 0x86, 0xC0), "📌");
             case IconType::Find:
                 return fetchThemeOrStandard("edit-find", QStyle::SP_FileDialogContentsView, QColor(0xDC, 0xDC, 0xAA), "🔍");
-
             case IconType::Replace:
                 return fetchThemeOrStandard("edit-find-replace", QStyle::SP_BrowserReload, QColor(0x56, 0x9C, 0xD6), "🔄");
             case IconType::ZoomIn:
@@ -92,10 +138,6 @@ public:
                 if (icon.isNull()) icon = fetchThemeOrStandard("notepad++", QStyle::SP_TitleBarMenuButton, QColor(0x90, 0xEE, 0x90), "🦎");
                 return icon;
             }
-
-
-
-
             case IconType::FileBrowser:
                 return fetchThemeOrStandard("folder", QStyle::SP_DirIcon, QColor(0xD6, 0x9D, 0x85), "📂");
             case IconType::FunctionList:
@@ -115,17 +157,14 @@ public:
 
 private:
     static QIcon fetchThemeOrStandard(const QString& themeName, QStyle::StandardPixmap sp, const QColor& accentColor, const QString& symbol) {
-        // 1. Intentar cargar del sistema si el icono del tema existe
         if (QIcon::hasThemeIcon(themeName)) {
             QIcon icon = QIcon::fromTheme(themeName);
             if (!icon.isNull()) return icon;
         }
 
-        // 2. Usar el icono estándar de QStyle si no es nulo
         QIcon stdIcon = QApplication::style()->standardIcon(sp);
         if (!stdIcon.isNull()) return stdIcon;
 
-        // 3. Fallback dibujado vectorialmente en QPixmap (nunca falla)
         return createFallbackIcon(accentColor, symbol);
     }
 
@@ -136,12 +175,10 @@ private:
         QPainter p(&pix);
         p.setRenderHint(QPainter::Antialiasing);
 
-        // Fondo circular redondeado
         p.setBrush(color);
         p.setPen(Qt::NoPen);
         p.drawRoundedRect(1, 1, 22, 22, 4, 4);
 
-        // Símbolo de texto centrado en blanco
         p.setPen(Qt::white);
         QFont f = p.font();
         f.setPixelSize(12);

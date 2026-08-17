@@ -237,7 +237,26 @@ private:
             }
         });
 
+        connect(dlg, &NppFindReplaceDlg::countMatches, [this, dlg](const QString& target) {
+            auto* ed = activeEditor();
+            if (!ed || target.isEmpty()) return;
+            int count = 0;
+            bool caseSens = dlg->isMatchCase();
+            bool wholeWord = dlg->isMatchWholeWord();
+            bool regex = (dlg->searchMode() == 2);
+            if (ed->findFirst(target, regex, caseSens, wholeWord, true, true, 0, 0)) {
+                count++;
+                while (ed->findNext()) {
+                    count++;
+                }
+            }
+            QString msg = QString("Contar: %1 coincidencia(s) encontradas").arg(count);
+            dlg->setStatusText(msg);
+            statusBar()->showMessage(msg, 4000);
+        });
+
         connect(dlg, &NppFindReplaceDlg::replaceOne, [this, dlg](const QString& target, const QString& replacement) {
+
             auto* ed = activeEditor();
             if (!ed || target.isEmpty()) return;
             if (ed->hasSelectedText() && ed->selectedText() == target) {
@@ -1129,9 +1148,10 @@ private:
             connect(dlg, &NppPreferenceDlg::toolbarVisibilityChanged, [this](bool visible) {
                 if (_toolbar) _toolbar->setVisible(visible);
             });
-            connect(dlg, &NppPreferenceDlg::toolbarPresetChanged, [this](int iconSizePixels) {
-                if (_toolbar) _toolbar->setIconSizePreset(iconSizePixels);
+            connect(dlg, &NppPreferenceDlg::toolbarPresetChanged, [this](int presetIndex) {
+                if (_toolbar) _toolbar->setIconSizePreset(presetIndex, _isDarkMode);
             });
+
 
 
             connect(dlg, &NppPreferenceDlg::statusbarVisibilityChanged, [this](bool visible) {
@@ -1201,8 +1221,24 @@ private:
             connect(dlg, &NppPreferenceDlg::rememberSessionToggled, [this](bool enable) {
                 _rememberSession = enable;
             });
+            connect(dlg, &NppPreferenceDlg::autoInsertPairsToggled, [this](bool enable) {
+                statusBar()->showMessage(enable ? "Cierre automático de pares habilitado" : "Cierre automático deshabilitado", 3000);
+            });
+            connect(dlg, &NppPreferenceDlg::autoBackupToggled, [this](bool enable) {
+                statusBar()->showMessage(enable ? "Copia de seguridad (.bak) al guardar habilitada" : "Copia de seguridad deshabilitada", 3000);
+            });
+            connect(dlg, &NppPreferenceDlg::autoSaveToggled, [this](bool enable) {
+                statusBar()->showMessage(enable ? "Auto-guardado en segundo plano habilitado" : "Auto-guardado deshabilitado", 3000);
+            });
+            connect(dlg, &NppPreferenceDlg::systemTrayToggled, [this](bool enable) {
+                statusBar()->showMessage(enable ? "Minimizar a la bandeja del sistema activo" : "Minimizado normal activo", 3000);
+            });
+            connect(dlg, &NppPreferenceDlg::recentFilesMaxCountChanged, [this](int count) {
+                statusBar()->showMessage(QString("Límite de historial reciente actualizado a %1").arg(count), 3000);
+            });
 
             dlg->show();
+
         });
 
         configMenu->addAction("Configurador de &estilos...", [this]() {

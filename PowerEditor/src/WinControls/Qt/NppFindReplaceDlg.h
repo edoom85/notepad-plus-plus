@@ -71,9 +71,14 @@ public:
         return 0;                                // Normal
     }
 
+    void setStatusText(const QString& text) {
+        if (_lblStatus) _lblStatus->setText(text);
+    }
+
 signals:
     void findNext(const QString& target);
     void findPrev(const QString& target);
+    void countMatches(const QString& target);
     void replaceOne(const QString& target, const QString& replacement);
     void replaceAll(const QString& target, const QString& replacement);
     void replaceInOpenDocs(const QString& target, const QString& replacement);
@@ -81,6 +86,7 @@ signals:
     void findAllInOpenDocs(const QString& target);
     void markAll(const QString& target);
     void clearAllMarks();
+
 
 private:
     void buildUI() {
@@ -235,7 +241,13 @@ private:
                 emit findNext(_comboFind->currentText());
         });
 
+        connect(_btnCount, &QPushButton::clicked, [this]() {
+            addComboHistory(_comboFind);
+            emit countMatches(_comboFind->currentText());
+        });
+
         connect(_btnReplace, &QPushButton::clicked, [this]() {
+
             addComboHistory(_comboFind);
             addComboHistory(_comboReplace);
             emit replaceOne(_comboFind->currentText(), _comboReplace->currentText());

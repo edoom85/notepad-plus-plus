@@ -66,8 +66,16 @@ signals:
     void autoCompletionToggled(bool enable);
     void autoCompletionThresholdChanged(int val);
     void rememberSessionToggled(bool enable);
+    void singleInstanceModeToggled(bool singleInstance);
+    void autoInsertPairsToggled(bool enable);
+    void autoBackupToggled(bool enable);
+    void autoSaveToggled(bool enable);
+    void systemTrayToggled(bool enable);
+    void recentFilesMaxCountChanged(int count);
 
 private:
+
+
     void buildUI() {
 
         auto* mainLayout = new QVBoxLayout(this);
@@ -165,11 +173,12 @@ private:
         auto* r5 = new QRadioButton("Iconos pequeños predeterminados", grp);
         r5->setChecked(true);
 
-        connect(r1, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(16); });
-        connect(r2, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(32); });
-        connect(r3, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(16); });
-        connect(r4, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(32); });
-        connect(r5, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(16); });
+        connect(r1, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(0); });
+        connect(r2, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(1); });
+        connect(r3, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(2); });
+        connect(r4, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(3); });
+        connect(r5, &QRadioButton::toggled, [this](bool checked) { if (checked) emit toolbarPresetChanged(4); });
+
 
         v->addWidget(r1); v->addWidget(r2); v->addWidget(r3); v->addWidget(r4); v->addWidget(r5);
         layout->addWidget(grp);
@@ -393,6 +402,9 @@ private:
         h->addWidget(new QLabel("Número máximo de entradas en el historial:", grp));
         auto* spin = new QSpinBox(grp);
         spin->setRange(1, 30); spin->setValue(15);
+        connect(spin, &QSpinBox::valueChanged, [this](int val) {
+            emit recentFilesMaxCountChanged(val);
+        });
         h->addWidget(spin);
         h->addStretch();
         v->addLayout(h);
@@ -403,6 +415,7 @@ private:
         layout->addStretch();
         return page;
     }
+
 
     // 11. Asociación de archivos
     QWidget* createFileAssocPage() {
@@ -467,8 +480,18 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Respaldo y Auto-Guardado", page);
         auto* v = new QVBoxLayout(grp);
-        v->addWidget(new QCheckBox("Activar guardado automático en segundo plano", grp));
-        v->addWidget(new QCheckBox("Crear copia de seguridad al guardar (Backup)", grp));
+        auto* chkAutoSave = new QCheckBox("Activar guardado automático en segundo plano", grp);
+        auto* chkBackup   = new QCheckBox("Crear copia de seguridad al guardar (Backup)", grp);
+
+        connect(chkAutoSave, &QCheckBox::toggled, [this](bool checked) {
+            emit autoSaveToggled(checked);
+        });
+        connect(chkBackup, &QCheckBox::toggled, [this](bool checked) {
+            emit autoBackupToggled(checked);
+        });
+
+        v->addWidget(chkAutoSave);
+        v->addWidget(chkBackup);
         layout->addWidget(grp);
         layout->addStretch();
         return page;
@@ -488,9 +511,22 @@ private:
         });
         v->addWidget(chkAC);
 
-        v->addWidget(new QCheckBox("Cierre automático de comillas \"\" y ''", grp));
-        v->addWidget(new QCheckBox("Cierre automático de paréntesis () y corchetes []", grp));
+        auto* chkQuotes  = new QCheckBox("Cierre automático de comillas \"\" y ''", grp);
+        auto* chkBrackets = new QCheckBox("Cierre automático de paréntesis () y corchetes []", grp);
+        chkQuotes->setChecked(true);
+        chkBrackets->setChecked(true);
+
+        connect(chkQuotes, &QCheckBox::toggled, [this](bool checked) {
+            emit autoInsertPairsToggled(checked);
+        });
+        connect(chkBrackets, &QCheckBox::toggled, [this](bool checked) {
+            emit autoInsertPairsToggled(checked);
+        });
+
+        v->addWidget(chkQuotes);
+        v->addWidget(chkBrackets);
         v->addWidget(new QCheckBox("Cierre automático de etiquetas HTML/XML </>", grp));
+
 
         auto* h = new QHBoxLayout();
         h->addWidget(new QLabel("Escribir caracteres desde:", grp));
@@ -514,12 +550,22 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Modo Multi-Instancia y Formato de Fecha", page);
         auto* v = new QVBoxLayout(grp);
-        v->addWidget(new QRadioButton("Modo instancia única (Predeterminado)", grp));
-        v->addWidget(new QRadioButton("Permitir múltiples instancias independientes", grp));
+        auto* rbSingle = new QRadioButton("Modo instancia única (Predeterminado)", grp);
+        auto* rbMulti  = new QRadioButton("Permitir múltiples instancias independientes", grp);
+
+        rbSingle->setChecked(true);
+        v->addWidget(rbSingle);
+        v->addWidget(rbMulti);
+
+        connect(rbSingle, &QRadioButton::toggled, [this](bool checked) {
+            emit singleInstanceModeToggled(checked);
+        });
+
         layout->addWidget(grp);
         layout->addStretch();
         return page;
     }
+
 
     // 18. Delimitador
     QWidget* createDelimiterPage() {
@@ -574,7 +620,13 @@ private:
         auto* layout = new QVBoxLayout(page);
         auto* grp = new QGroupBox("Opciones Varias (MISC)", page);
         auto* v = new QVBoxLayout(grp);
-        v->addWidget(new QCheckBox("Minimizar a la bandeja del sistema (System Tray)", grp));
+        
+        auto* chkTray = new QCheckBox("Minimizar a la bandeja del sistema (System Tray)", grp);
+        connect(chkTray, &QCheckBox::toggled, [this](bool checked) {
+            emit systemTrayToggled(checked);
+        });
+        v->addWidget(chkTray);
+
         v->addWidget(new QCheckBox("Comprobar actualizaciones automáticamente al iniciar", grp));
 
         auto* chkSess = new QCheckBox("Recordar sesión actual de archivos al reiniciar", grp);
@@ -583,6 +635,7 @@ private:
             emit rememberSessionToggled(checked);
         });
         v->addWidget(chkSess);
+
 
         layout->addWidget(grp);
         layout->addStretch();

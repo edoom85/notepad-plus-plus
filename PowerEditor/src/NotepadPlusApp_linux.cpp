@@ -17,10 +17,14 @@
 #include <QStyle>
 #include <QString>
 
+#include "Platform/PlatformSingleInstance.h"
+
+#include <iostream>
 #include <vector>
 #include <string>
 
 static NotepadPlusWindowQt* g_mainWindow = nullptr;
+static PlatformSingleInstance* g_singleInstance = nullptr;
 
 /// Aplica tema oscuro global a toda la aplicación Qt6.
 static void applyGlobalDarkTheme(QApplication* app) {
@@ -61,14 +65,23 @@ static void applyGlobalDarkTheme(QApplication* app) {
 /// Inicializa la ventana principal de Notepad++.
 /// Llamada desde linuxmain.cpp después de crear QApplication.
 void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) {
+    // 0. Instancia Única: si ya hay una instancia corriendo, enviarle los archivos e ingresar al proceso existente
+    QStringList filesList;
+    for (const auto& path : filesToOpen) {
+        filesList.append(QString::fromStdString(path));
+    }
+
+    if (PlatformSingleInstance::sendToExistingInstance(filesList)) {
+        std::cout << "[Notepad++] Archivos enviados a la instancia activa de Notepad++." << std::endl;
+        ::exit(0);
+    }
+
     // 1. Icono global de la aplicación nativa (Dock / Alt+Tab / Wayland / X11)
     QIcon appIcon;
     appIcon.addFile(":/Platform/npp_icon.png");
     appIcon.addFile(":/icons/npp_256.ico");
     app->setWindowIcon(appIcon);
     app->setDesktopFileName("notepadplusplus");
-
-
 
     // 2. Tema oscuro global
     applyGlobalDarkTheme(app);
@@ -77,12 +90,26 @@ void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) 
     g_mainWindow = new NotepadPlusWindowQt();
     g_mainWindow->show();
 
+    // 4. Iniciar servidor de instancia única
+    g_singleInstance = new PlatformSingleInstance(g_mainWindow);
+    QObject::connect(g_singleInstance, &PlatformSingleInstance::openFilesRequested, [](const QStringList& files) {
+        if (!g_mainWindow) return;
+        for (const QString& file : files) {
+            if (!file.trimmed().isEmpty()) {
+                g_mainWindow->openFile(file.toStdString());
+            }
+        }
+        g_mainWindow->show();
+        g_mainWindow->raise();
+        g_mainWindow->activateWindow();
+    });
 
-    // 3. Abrir archivos pasados por línea de comandos
+    // 5. Abrir archivos pasados por línea de comandos
     for (const auto& path : filesToOpen) {
         g_mainWindow->openFile(path);
     }
 }
+
 
 /// Limpia recursos al cerrar la aplicación.
 void nppLinuxShutdown() {

@@ -114,10 +114,47 @@ public:
         }
     }
 
-    /// Cambia el tamaño de iconos (16, 24, 32).
-    void setIconSizePreset(int pixels) {
-        setIconSize(QSize(pixels, pixels));
+    /// Refresca dinámicamente los iconos de todos los botones cargando el estilo .ico activo.
+    void refreshIcons() {
+        for (auto* action : _actions) {
+            int cmdId = action->data().toInt();
+            NppIconProvider::IconType type;
+            switch (cmdId) {
+                case 1:  type = NppIconProvider::IconType::New; break;
+                case 2:  type = NppIconProvider::IconType::Open; break;
+                case 3:  type = NppIconProvider::IconType::Save; break;
+                case 4:  type = NppIconProvider::IconType::SaveAll; break;
+                case 5:  type = NppIconProvider::IconType::Close; break;
+                case 6:  type = NppIconProvider::IconType::Undo; break;
+                case 7:  type = NppIconProvider::IconType::Redo; break;
+                case 8:  type = NppIconProvider::IconType::Cut; break;
+                case 9:  type = NppIconProvider::IconType::Copy; break;
+                case 10: type = NppIconProvider::IconType::Paste; break;
+                case 11: type = NppIconProvider::IconType::Find; break;
+                case 12: type = NppIconProvider::IconType::Replace; break;
+                case 13: type = NppIconProvider::IconType::ZoomIn; break;
+                case 14: type = NppIconProvider::IconType::ZoomOut; break;
+                case 15: type = NppIconProvider::IconType::FileBrowser; break;
+                case 16: type = NppIconProvider::IconType::FunctionList; break;
+                case 17: type = NppIconProvider::IconType::ProjectPanel; break;
+                case 18: type = NppIconProvider::IconType::ClipboardHistory; break;
+                case 19: type = NppIconProvider::IconType::Plugins; break;
+                case 20: type = NppIconProvider::IconType::Settings; break;
+                case 21: type = NppIconProvider::IconType::About; break;
+                default: continue;
+            }
+            action->setIcon(NppIconProvider::get(type));
+        }
     }
+
+    /// Cambia el estilo y tamaño de iconos de la barra de herramientas.
+    void setIconSizePreset(int presetIndex, bool isDarkMode = true) {
+        int pixels = (presetIndex == 1 || presetIndex == 3) ? 32 : 16;
+        setIconSize(QSize(pixels, pixels));
+        NppIconProvider::setToolbarStyle(presetIndex, isDarkMode);
+        refreshIcons();
+    }
+
 
     /// Crea la barra de herramientas completa de Notepad++ con iconos garantizados.
     void addStandardButtons() {

@@ -298,6 +298,7 @@ else()
         linuxmain.cpp
         NotepadPlusApp_linux.cpp
         Platform/PlatformMsg.cpp
+        Platform/PlatformSingleInstance.cpp
     )
 
     set(NPP_LINUX_HEADERS
@@ -308,6 +309,8 @@ else()
         Platform/PlatformLexerManager.h
         Platform/PlatformString.h
         Platform/PlatformMsg.h
+        Platform/PlatformSingleInstance.h
+
         Platform/PlatformWindow.h
         Platform/PlatformPlugin.h
         Platform/PlatformPluginManager.h
