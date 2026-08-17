@@ -86,8 +86,10 @@ void nppLinuxInit(QApplication* app, const std::vector<NppString>& filesToOpen) 
     QIcon appIcon;
     appIcon.addFile(":/Platform/npp_icon.png");
     appIcon.addFile(":/icons/npp_256.ico");
+    app->setQuitOnLastWindowClosed(true);
     app->setWindowIcon(appIcon);
     app->setDesktopFileName("notepadplusplus");
+
 
     // 2. Tema oscuro global
     applyGlobalDarkTheme(app);

@@ -1972,7 +1972,9 @@ protected:
         saveWindowState();
         saveCurrentSession();
         event->accept();
+        qApp->quit();
     }
+
 
 
 

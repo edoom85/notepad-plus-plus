@@ -255,6 +255,25 @@ private:
     }
 
     static QIcon loadIco(const QString& path) {
+        if (path.endsWith(".bmp", Qt::CaseInsensitive)) {
+            QImage img(path);
+            if (!img.isNull()) {
+                img = img.convertToFormat(QImage::Format_ARGB32);
+                QRgb cornerColor = img.pixel(0, 0);
+                for (int y = 0; y < img.height(); ++y) {
+                    for (int x = 0; x < img.width(); ++x) {
+                        QRgb p = img.pixel(x, y);
+                        if (p == cornerColor ||
+                            (qRed(p) >= 188 && qRed(p) <= 196 &&
+                             qGreen(p) >= 188 && qGreen(p) <= 196 &&
+                             qBlue(p) >= 188 && qBlue(p) <= 196)) {
+                            img.setPixelColor(x, y, QColor(0, 0, 0, 0));
+                        }
+                    }
+                }
+                return QIcon(QPixmap::fromImage(img));
+            }
+        }
 
         QIcon icon(path);
         if (!icon.availableSizes().isEmpty()) {
@@ -262,6 +281,7 @@ private:
         }
         return QIcon();
     }
+
 
     static QIcon fetchThemeOrStandard(const QString& themeName, QStyle::StandardPixmap sp, const QColor& accentColor, const QString& symbol) {
         if (QIcon::hasThemeIcon(themeName)) {
