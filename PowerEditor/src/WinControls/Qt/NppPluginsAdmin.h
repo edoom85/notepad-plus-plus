@@ -1,8 +1,8 @@
-// WinControls/Qt/NppPluginsAdmin.h — Administrador de Plugins (Plugins Admin) Qt6 con Catalogo Online Oficial
+// WinControls/Qt/NppPluginsAdmin.h — Administrador de Plugins (Plugins Admin) Qt6 con Selector de Arquitectura (x64 / x86 / ARM64)
 // Reemplaza WinControls/PluginsAdmin/PluginsAdmin.cpp/.h en Linux
 //
-// Conecta via QNetworkAccessManager con nppPluginList.json de Notepad++ (GitHub)
-// y despliega el catálogo online completo con paridad visual 1:1.
+// Conecta via QNetworkAccessManager con pl.x64.json, pl.x86.json y pl.arm64.json de Notepad++ (GitHub)
+// y permite conmutar dinámicamente entre las tres arquitecturas oficiales de plugins.
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -23,6 +23,7 @@
 #include <QPushButton>
 #include <QTabWidget>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QProgressBar>
 #include <QMessageBox>
 #include <QDialogButtonBox>
@@ -58,7 +59,7 @@ public:
         : NppDialog(parent), _netManager(new QNetworkAccessManager(this))
     {
         setWindowTitle("Administrador de Plugins (Plugins Admin)");
-        setMinimumSize(880, 580);
+        setMinimumSize(900, 600);
         buildUI();
         fetchOfficialCatalog();
     }
@@ -67,12 +68,35 @@ private:
     void buildUI() {
         auto* mainLayout = new QVBoxLayout(this);
 
-        // ── Tabs Superiores: Disponibles | Instalados | Actualizaciones ──────
+        // ── Header Superior: Tabs (Disponibles | Instalados | Actualizaciones) + Combo Arquitectura ──
+        auto* topHeaderLayout = new QHBoxLayout();
         _tabs = new QTabWidget(this);
         _tabs->addTab(new QWidget(), "Disponibles");
         _tabs->addTab(new QWidget(), "Instalados");
         _tabs->addTab(new QWidget(), "Actualizaciones");
-        mainLayout->addWidget(_tabs);
+        topHeaderLayout->addWidget(_tabs, 1);
+
+        // Selector de Arquitectura (x64 / x86 / ARM64)
+        auto* archLayout = new QHBoxLayout();
+        archLayout->addWidget(new QLabel("Arquitectura:", this));
+        _comboArch = new QComboBox(this);
+        _comboArch->addItem("x64 (64-bit)", "x64");
+        _comboArch->addItem("x86 (32-bit)", "x86");
+        _comboArch->addItem("ARM64 (aarch64)", "arm64");
+
+        // Seleccionar por defecto la arquitectura de la compilación actual
+#if defined(__aarch64__) || defined(_M_ARM64)
+        _comboArch->setCurrentIndex(2); // ARM64
+#elif defined(__i386__) || defined(_M_IX86)
+        _comboArch->setCurrentIndex(1); // x86
+#else
+        _comboArch->setCurrentIndex(0); // x64
+#endif
+
+        archLayout->addWidget(_comboArch);
+        topHeaderLayout->addLayout(archLayout);
+
+        mainLayout->addLayout(topHeaderLayout);
 
         // Barra de Estado y Progreso de Descarga del Catálogo
         auto* statusLayout = new QHBoxLayout();
@@ -143,20 +167,30 @@ private:
         // Conexiones
         connect(_searchEdit, &QLineEdit::textChanged, this, &NppPluginsAdmin::onSearchChanged);
         connect(_tabs, &QTabWidget::currentChanged, this, &NppPluginsAdmin::onTabChanged);
+        connect(_comboArch, &QComboBox::currentIndexChanged, [this](int) { fetchOfficialCatalog(); });
         connect(_btnActionButton, &QPushButton::clicked, this, &NppPluginsAdmin::onActionClicked);
     }
 
     void fetchOfficialCatalog() {
-        QUrl url("https://raw.githubusercontent.com/notepad-plus-plus/nppPluginList/master/src/pluginList.json");
+        QString archKey = _comboArch->currentData().toString();
+        if (archKey.isEmpty()) archKey = "x64";
+
+        _progress->setVisible(true);
+        _lblStatus->setText(QString("Conectando con pl.%1.json del catálogo oficial de Notepad++...").arg(archKey));
+
+        QString urlStr = QString("https://raw.githubusercontent.com/notepad-plus-plus/nppPluginList/master/src/pl.%1.json").arg(archKey);
+        QUrl url(urlStr);
         QNetworkRequest request(url);
+        request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (X11; Linux x86_64) Notepad++ Native Port");
         request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
 
         QNetworkReply* reply = _netManager->get(request);
-        connect(reply, &QNetworkReply::finished, [this, reply]() {
+        connect(reply, &QNetworkReply::finished, [this, reply, archKey]() {
             _progress->setVisible(false);
-            if (reply->error() == QNetworkReply::NoError) {
+            int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            if (reply->error() == QNetworkReply::NoError && (statusCode == 200 || statusCode == 0)) {
                 QByteArray data = reply->readAll();
-                parseCatalogJson(data);
+                parseCatalogJson(data, archKey);
             } else {
                 _lblStatus->setText("⚠️ Servidor offline / Usando catálogo local predeterminado de Notepad++.");
                 loadFallbackCatalog();
@@ -165,7 +199,7 @@ private:
         });
     }
 
-    void parseCatalogJson(const QByteArray& data) {
+    void parseCatalogJson(const QByteArray& data, const QString& archKey) {
         QJsonDocument doc = QJsonDocument::fromJson(data);
         if (!doc.isArray() && !doc.isObject()) {
             loadFallbackCatalog();
@@ -187,7 +221,7 @@ private:
             p.displayName  = obj.value("display-name").toString();
             p.version      = obj.value("version").toString();
             p.author       = obj.value("author").toString();
-            p.description  = obj.value("description").toString();
+            p.description  = obj.value("description").toString().trimmed();
             p.homepage     = obj.value("homepage").toString();
             p.repository   = obj.value("repository").toString();
             p.installed    = false;
@@ -198,7 +232,7 @@ private:
             }
         }
 
-        _lblStatus->setText(QString("✅ Catálogo oficial cargado: %1 plugins disponibles en línea.").arg(_plugins.size()));
+        _lblStatus->setText(QString("✅ Catálogo oficial [%1] conectado: %2 plugins disponibles.").arg(archKey).arg(_plugins.size()));
         refreshTable();
     }
 
@@ -301,9 +335,10 @@ private slots:
 
         QString actionText = (currentTab == 0) ? "instalados" : (currentTab == 1) ? "desinstalados" : "actualizados";
         QMessageBox::information(this, "Plugins Admin",
-            QString("¡Gestión del Catálogo Oficial Completada!\n\n"
-                    "%1 plugin(s) seleccionados (%2):\n%3\n\n"
+            QString("¡Gestión del Catálogo Oficial [%1] Completada!\n\n"
+                    "%2 plugin(s) seleccionados (%3):\n%4\n\n"
                     "Los plugins de la comunidad de Windows han sido procesados en la interfaz de usuario.")
+                    .arg(_comboArch->currentText())
                     .arg(selectedCount)
                     .arg(actionText)
                     .arg(selectedNames.join(", ")));
@@ -318,6 +353,7 @@ private:
     QPushButton*             _btnActionButton = nullptr;
     QLabel*                  _lblStatus        = nullptr;
     QProgressBar*            _progress        = nullptr;
+    QComboBox*               _comboArch       = nullptr;
     QNetworkAccessManager*   _netManager      = nullptr;
     std::vector<PluginInfo>  _plugins;
 };
