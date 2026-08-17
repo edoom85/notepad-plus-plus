@@ -105,7 +105,9 @@ public:
 
         // ── 2. Tool Bar ─────────────────────────────────────────────────────
         _toolbar = new NppToolBar("Main Toolbar", this);
+        _toolbar->setObjectName("MainToolBar");
         _toolbar->addStandardButtons();
+
         addToolBar(Qt::TopToolBarArea, _toolbar);
 
         connect(_toolbar, &NppToolBar::commandTriggered,
