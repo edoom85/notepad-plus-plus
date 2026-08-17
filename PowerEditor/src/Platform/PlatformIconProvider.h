@@ -131,10 +131,16 @@ public:
                 case 3: // LargeFilled (con relleno)
                     qrcPath = QString(":/icons/light/toolbar/filled/%1").arg(filename);
                     break;
-                case 4: // Default ("Iconos pequeños predeterminados" - Colores oficiales Notepad++)
-                default:
-                    qrcPath = QString(":/icons/light/toolbar/regular/%1").arg(filename);
+                case 4: // Default ("Iconos pequeños predeterminados" - Iconos 3D vintage oficiales de Notepad++)
+                default: {
+                    QString bmpName = getBmpFilename(type);
+                    if (!bmpName.isEmpty()) {
+                        qrcPath = QString(":/icons/standard/toolbar/%1").arg(bmpName);
+                    } else {
+                        qrcPath = QString(":/icons/light/toolbar/regular/%1").arg(filename);
+                    }
                     break;
+                }
             }
 
             QIcon icon = loadIco(qrcPath);
@@ -145,6 +151,7 @@ public:
             icon = loadIco(qrcPath);
             if (!icon.isNull()) return icon;
         }
+
 
 
         // 2. Fallback según tipo de acción
@@ -209,7 +216,46 @@ public:
     }
 
 private:
+    static QString getBmpFilename(IconType type) {
+        switch (type) {
+            case IconType::New:              return "newFile.bmp";
+            case IconType::Open:             return "openFile.bmp";
+            case IconType::Save:             return "saveFile.bmp";
+            case IconType::SaveAll:          return "saveAll.bmp";
+            case IconType::Close:            return "closeFile.bmp";
+            case IconType::CloseAll:         return "closeAll.bmp";
+            case IconType::Print:            return "print.bmp";
+            case IconType::Cut:              return "cut.bmp";
+            case IconType::Copy:             return "copy.bmp";
+            case IconType::Paste:            return "paste.bmp";
+            case IconType::Undo:             return "undo.bmp";
+            case IconType::Redo:             return "redo.bmp";
+            case IconType::Find:             return "find.bmp";
+            case IconType::Replace:          return "findReplace.bmp";
+            case IconType::ZoomIn:           return "zoomIn.bmp";
+            case IconType::ZoomOut:          return "zoomOut.bmp";
+            case IconType::SyncV:            return "syncV.bmp";
+            case IconType::SyncH:            return "syncH.bmp";
+            case IconType::UDL:              return "udl.bmp";
+            case IconType::DocMap:           return "docMap.bmp";
+            case IconType::DocList:          return "docList.bmp";
+            case IconType::FunctionList:    return "funcList.bmp";
+            case IconType::FileBrowser:      return "fileBrowser.bmp";
+            case IconType::Monitoring:       return "monitoring.bmp";
+            case IconType::AllChars:         return "allChars.bmp";
+            case IconType::IndentGuide:      return "indentGuide.bmp";
+            case IconType::Wrap:             return "wrap.bmp";
+            case IconType::StartRecord:      return "startRecord.bmp";
+            case IconType::StopRecord:       return "stopRecord.bmp";
+            case IconType::PlayRecord:       return "playRecord.bmp";
+            case IconType::SaveRecord:       return "saveRecord.bmp";
+            case IconType::PlayRecordM:      return "playRecord_m.bmp";
+            default: return "";
+        }
+    }
+
     static QIcon loadIco(const QString& path) {
+
         QIcon icon(path);
         if (!icon.availableSizes().isEmpty()) {
             return icon;
