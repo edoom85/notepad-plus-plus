@@ -1783,30 +1783,31 @@ private:
 
 
 
-        // Estilo adaptativo para menús (Modo Oscuro / Modo Claro) con área amplia de clic de mouse
+        // Estilo adaptativo ultra-elegante para menús (Modo Oscuro / Modo Claro)
         if (NppTheme::isDarkMode()) {
             menuBar()->setStyleSheet(
-                "QMenuBar { background: #333333; color: #D4D4D4; padding: 2px 4px; }"
-                "QMenuBar::item { background: transparent; color: #D4D4D4; padding: 6px 12px; margin: 1px 2px; border-radius: 3px; }"
-                "QMenuBar::item:hover, QMenuBar::item:selected { background: #505050; color: #FFFFFF; }"
+                "QMenuBar { background: #252526; color: #CCCCCC; font-size: 13px; padding: 3px 8px 3px 16px; border-bottom: 1px solid #333333; }"
+                "QMenuBar::item { background: transparent; color: #CCCCCC; padding: 4px 10px; margin: 1px 2px; border-radius: 4px; }"
+                "QMenuBar::item:hover, QMenuBar::item:selected { background: #37373D; color: #FFFFFF; }"
                 "QMenuBar::item:pressed { background: #094771; color: #FFFFFF; }"
-                "QMenu { background: #252526; color: #D4D4D4; border: 1px solid #3C3C3C; padding: 4px; }"
-                "QMenu::item { padding: 6px 28px 6px 10px; border-radius: 2px; }"
-                "QMenu::item:selected { background: #094771; color: #FFFFFF; }"
-                "QMenu::separator { height: 1px; background: #3C3C3C; margin: 4px 0px; }"
+                "QMenu { background: #252526; color: #CCCCCC; font-size: 13px; border: 1px solid #3F3F46; border-radius: 6px; padding: 4px 0px; }"
+                "QMenu::item { padding: 6px 28px 6px 12px; border-radius: 3px; margin: 2px 4px; }"
+                "QMenu::item:selected { background: #04395E; color: #FFFFFF; }"
+                "QMenu::separator { height: 1px; background: #3F3F46; margin: 4px 8px; }"
             );
         } else {
             menuBar()->setStyleSheet(
-                "QMenuBar { background: #F0F0F0; color: #000000; padding: 2px 4px; }"
-                "QMenuBar::item { background: transparent; color: #000000; padding: 6px 12px; margin: 1px 2px; border-radius: 3px; }"
-                "QMenuBar::item:hover, QMenuBar::item:selected { background: #E0E0E0; color: #000000; }"
+                "QMenuBar { background: #F3F3F3; color: #222222; font-size: 13px; padding: 3px 8px 3px 16px; border-bottom: 1px solid #E5E5E5; }"
+                "QMenuBar::item { background: transparent; color: #222222; padding: 4px 10px; margin: 1px 2px; border-radius: 4px; }"
+                "QMenuBar::item:hover, QMenuBar::item:selected { background: #E5E5E5; color: #000000; }"
                 "QMenuBar::item:pressed { background: #007ACC; color: #FFFFFF; }"
-                "QMenu { background: #FFFFFF; color: #000000; border: 1px solid #CCCCCC; padding: 4px; }"
-                "QMenu::item { padding: 6px 28px 6px 10px; border-radius: 2px; }"
+                "QMenu { background: #FFFFFF; color: #222222; font-size: 13px; border: 1px solid #CCCCCC; border-radius: 6px; padding: 4px 0px; }"
+                "QMenu::item { padding: 6px 28px 6px 12px; border-radius: 3px; margin: 2px 4px; }"
                 "QMenu::item:selected { background: #007ACC; color: #FFFFFF; }"
-                "QMenu::separator { height: 1px; background: #E0E0E0; margin: 4px 0px; }"
+                "QMenu::separator { height: 1px; background: #E5E5E5; margin: 4px 8px; }"
             );
         }
+
 
     }
 
