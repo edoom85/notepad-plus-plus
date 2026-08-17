@@ -159,8 +159,11 @@ public:
     static void applyTheme(QsciScintilla* editor, const QString& themeName) {
         if (!editor) return;
 
-        _currentThemeName = themeName;
-        ThemePalette pal = getPalette(themeName);
+        if (!themeName.isEmpty()) {
+            setThemeName(themeName);
+        }
+        ThemePalette pal = getPalette(_currentThemeName);
+
 
         editor->setPaper(pal.paperBg);
         editor->setColor(pal.textFg);
@@ -276,12 +279,44 @@ public:
 
     /// Obtiene el nombre del tema activo actual (ej. "Obsidian").
     static QString currentThemeName() {
+        if (_currentThemeName.isEmpty()) {
+            loadConfig();
+        }
         return _currentThemeName;
     }
 
+    static void setThemeName(const QString& themeName) {
+        if (!themeName.isEmpty()) {
+            _currentThemeName = themeName;
+            saveConfig();
+        }
+    }
+
+    static void loadConfig() {
+        QString configPath = QDir::homePath() + "/.config/notepadplusplus/theme.cfg";
+        QFile file(configPath);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QString name = QString::fromUtf8(file.readAll()).trimmed();
+            if (!name.isEmpty()) _currentThemeName = name;
+            file.close();
+        }
+        if (_currentThemeName.isEmpty()) _currentThemeName = "Obsidian";
+    }
+
+    static void saveConfig() {
+        QString dir = QDir::homePath() + "/.config/notepadplusplus";
+        QDir().mkpath(dir);
+        QFile file(dir + "/theme.cfg");
+        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            file.write(_currentThemeName.toUtf8());
+            file.close();
+        }
+    }
+
 private:
-    static inline QString _currentThemeName = "Obsidian";
+    static inline QString _currentThemeName = "";
 };
+
 
 #endif // NPP_PLATFORM_LINUX
 

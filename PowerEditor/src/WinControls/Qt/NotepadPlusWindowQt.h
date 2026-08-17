@@ -132,15 +132,11 @@ public:
         updateStatusBar();
 
         // ── 5. Restaurar sesión XML o crear documento vacío ─────────────────
-        QStringList sessionFiles;
+        QList<NppSessionManager::SessionTabData> sessionTabs;
         int activeIdx = 0;
-        if (NppSessionManager::loadSession(sessionFiles, activeIdx)) {
-            for (const QString& file : sessionFiles) {
-                if (QFile::exists(file)) {
-                    openFile(file.toStdString());
-                } else if (file.startsWith("new ") || file.startsWith("*new ")) {
-                    newDocument();
-                }
+        if (NppSessionManager::loadSession(sessionTabs, activeIdx)) {
+            for (const auto& tabData : sessionTabs) {
+                restoreTabFromSession(tabData);
             }
             if (_mainTabs->count() == 0) {
                 newDocument();
@@ -151,9 +147,13 @@ public:
             newDocument();
         }
 
+        applyCurrentThemeToAllTabs();
+
+
         connect(_mainTabs, &QTabWidget::currentChanged, [this](int) {
             saveCurrentSession();
         });
+
 
 
 
@@ -1746,20 +1746,57 @@ private:
     }
 
 public:
-    void saveCurrentSession() {
-        if (!_mainTabs || !_rememberSession) return;
-        QStringList sessionFiles;
+    void restoreTabFromSession(const NppSessionManager::SessionTabData& tabData) {
+        auto* widget = createEditor();
+        auto* editor = qobject_cast<QsciScintilla*>(widget);
 
-        for (int i = 0; i < _mainTabs->count(); ++i) {
-            NppString path = _mainTabs->tabFilePath(i);
-            if (!path.empty()) {
-                sessionFiles.append(QString::fromStdString(path));
-            } else {
-                sessionFiles.append(_mainTabs->tabText(i));
+        if (tabData.isUntitled) {
+            if (editor && !tabData.content.isEmpty()) {
+                editor->setText(tabData.content);
+                editor->setModified(tabData.isModified);
+            }
+            int idx = _mainTabs->addTab(widget, tabData.title.toStdString());
+            _mainTabs->setTabFilePath(idx, "");
+            _mainTabs->setTabModified(idx, tabData.isModified);
+        } else {
+            if (tabData.isModified && !tabData.content.isEmpty()) {
+                if (editor) {
+                    editor->setText(tabData.content);
+                    editor->setModified(true);
+                    auto detectedLang = NppLexerManager::detectFromExtension(tabData.filePath);
+                    NppLexerManager::applyLanguage(editor, detectedLang);
+                }
+                QFileInfo fi(tabData.filePath);
+                int idx = _mainTabs->addTab(widget, fi.fileName().toStdString());
+                _mainTabs->setTabFilePath(idx, tabData.filePath.toStdString());
+                _mainTabs->setTabModified(idx, true);
+            } else if (QFile::exists(tabData.filePath)) {
+                openFile(tabData.filePath.toStdString());
             }
         }
-        NppSessionManager::saveSession(sessionFiles, _mainTabs->currentIndex());
     }
+
+    void saveCurrentSession() {
+        if (!_mainTabs || !_rememberSession) return;
+        QList<NppSessionManager::SessionTabData> tabs;
+
+        for (int i = 0; i < _mainTabs->count(); ++i) {
+            auto* ed = qobject_cast<QsciScintilla*>(_mainTabs->widget(i));
+            NppSessionManager::SessionTabData data;
+            data.title = _mainTabs->tabText(i);
+            data.filePath = QString::fromStdString(_mainTabs->tabFilePath(i));
+            data.isModified = ed ? ed->isModified() : false;
+            data.isUntitled = data.filePath.isEmpty();
+
+            if (ed && (data.isUntitled || data.isModified)) {
+                data.content = ed->text();
+            }
+            tabs.append(data);
+        }
+        NppSessionManager::saveSession(tabs, _mainTabs->currentIndex());
+    }
+
+
 
 protected:
     void closeEvent(QCloseEvent* event) override {
@@ -1857,10 +1894,29 @@ private slots:
         menu.exec(globalPos);
     }
 
-    void onTabChanged(int /*index*/) {
+    void applyCurrentThemeToAllTabs() {
+        QString theme = NppLexerManager::currentThemeName();
+        for (int i = 0; i < _mainTabs->count(); ++i) {
+            if (auto* ed = qobject_cast<QsciScintilla*>(_mainTabs->widget(i))) {
+                NppLexerManager::applyTheme(ed, theme);
+            }
+        }
+        if (_subTabs) {
+            for (int i = 0; i < _subTabs->count(); ++i) {
+                if (auto* ed = qobject_cast<QsciScintilla*>(_subTabs->widget(i))) {
+                    NppLexerManager::applyTheme(ed, theme);
+                }
+            }
+        }
+    }
 
+    void onTabChanged(int /*index*/) {
+        if (auto* ed = activeEditor()) {
+            NppLexerManager::applyTheme(ed, NppLexerManager::currentThemeName());
+        }
         updateStatusBar();
     }
+
 
     void onToolbarCommand(int cmdId) {
         switch (cmdId) {
