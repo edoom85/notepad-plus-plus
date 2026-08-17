@@ -43,6 +43,9 @@
 #include <QUrl>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QTimer>
+#include <iostream>
+
 
 #include <Qsci/qsciscintilla.h>
 #include <Qsci/qscilexercpp.h>
@@ -110,6 +113,8 @@ public:
 
         addToolBar(Qt::TopToolBarArea, _toolbar);
 
+
+
         connect(_toolbar, &NppToolBar::commandTriggered,
                 this, &NotepadPlusWindowQt::onToolbarCommand);
 
@@ -132,8 +137,9 @@ public:
 
         // ── 4. Status Bar ───────────────────────────────────────────────────
         _statusBar = new NppStatusBar(this);
-        setStatusBar(_statusBar->statusBar());
+        setStatusBar(_statusBar);
         updateStatusBar();
+
 
         // ── 4b. Monitor de cambios externos en archivos (inotify) ────────────
         _fileMonitor = new NppFileMonitor(this);
@@ -374,11 +380,11 @@ public:
 
 private:
     void createMenus() {
-        menuBar()->setNativeMenuBar(false);
-
         // ── 1. Archivo ──
 
         QMenu* fileMenu = menuBar()->addMenu("&Archivo");
+
+
 
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::New),  "&Nuevo",          QKeySequence::New,  this, &NotepadPlusWindowQt::newDocument);
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Open), "&Abrir...",       QKeySequence::Open, this, &NotepadPlusWindowQt::onOpen);
@@ -1781,39 +1787,38 @@ private:
             dlg->exec();
         });
 
-
-
-        // Estilo adaptativo ultra-elegante para menús (Modo Oscuro / Modo Claro)
+        // Estilo adaptativo con padding: 2px 4px; margin: 0px 1px; exactamente según preferencia del usuario
         if (NppTheme::isDarkMode()) {
             menuBar()->setStyleSheet(
-                "QMenuBar { background: #252526; color: #CCCCCC; font-size: 13px; padding: 3px 8px 3px 16px; border-bottom: 1px solid #333333; }"
-                "QMenuBar::item { background: transparent; color: #CCCCCC; padding: 4px 10px; margin: 1px 2px; border-radius: 4px; }"
+                "QMenuBar { background: #252526; color: #CCCCCC; font-size: 13px; padding: 2px 4px; border-bottom: 1px solid #333333; }"
+                "QMenuBar::item { background: transparent; color: #CCCCCC; padding: 2px 4px; margin: 0px 1px; border-radius: 3px; }"
                 "QMenuBar::item:hover, QMenuBar::item:selected { background: #37373D; color: #FFFFFF; }"
                 "QMenuBar::item:pressed { background: #094771; color: #FFFFFF; }"
-                "QMenu { background: #252526; color: #CCCCCC; font-size: 13px; border: 1px solid #3F3F46; border-radius: 6px; padding: 4px 0px; }"
-                "QMenu::item { padding: 6px 28px 6px 12px; border-radius: 3px; margin: 2px 4px; }"
+                "QMenu { background: #252526; color: #CCCCCC; font-size: 13px; border: 1px solid #3F3F46; border-radius: 6px; padding: 2px 0px; }"
+                "QMenu::item { padding: 4px 18px 4px 8px; border-radius: 3px; margin: 1px 2px; }"
                 "QMenu::item:selected { background: #04395E; color: #FFFFFF; }"
-                "QMenu::separator { height: 1px; background: #3F3F46; margin: 4px 8px; }"
+                "QMenu::separator { height: 1px; background: #3F3F46; margin: 3px 4px; }"
             );
         } else {
             menuBar()->setStyleSheet(
-                "QMenuBar { background: #F3F3F3; color: #222222; font-size: 13px; padding: 3px 8px 3px 16px; border-bottom: 1px solid #E5E5E5; }"
-                "QMenuBar::item { background: transparent; color: #222222; padding: 4px 10px; margin: 1px 2px; border-radius: 4px; }"
+                "QMenuBar { background: #F3F3F3; color: #222222; font-size: 13px; padding: 2px 4px; border-bottom: 1px solid #E5E5E5; }"
+                "QMenuBar::item { background: transparent; color: #222222; padding: 2px 4px; margin: 0px 1px; border-radius: 3px; }"
                 "QMenuBar::item:hover, QMenuBar::item:selected { background: #E5E5E5; color: #000000; }"
                 "QMenuBar::item:pressed { background: #007ACC; color: #FFFFFF; }"
-                "QMenu { background: #FFFFFF; color: #222222; font-size: 13px; border: 1px solid #CCCCCC; border-radius: 6px; padding: 4px 0px; }"
-                "QMenu::item { padding: 6px 28px 6px 12px; border-radius: 3px; margin: 2px 4px; }"
+                "QMenu { background: #FFFFFF; color: #222222; font-size: 13px; border: 1px solid #CCCCCC; border-radius: 6px; padding: 2px 0px; }"
+                "QMenu::item { padding: 4px 18px 4px 8px; border-radius: 3px; margin: 1px 2px; }"
                 "QMenu::item:selected { background: #007ACC; color: #FFFFFF; }"
-                "QMenu::separator { height: 1px; background: #E5E5E5; margin: 4px 8px; }"
+                "QMenu::separator { height: 1px; background: #E5E5E5; margin: 3px 4px; }"
             );
         }
 
 
+
+
     }
 
-
-
     // ── Crear editor QsciScintilla real ─────────────────────────────────────
+
     QWidget* createEditor() {
         auto* editor = new QsciScintilla(nullptr);
 

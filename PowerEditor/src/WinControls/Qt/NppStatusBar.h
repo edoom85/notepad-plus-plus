@@ -26,21 +26,16 @@
 ///   - Hasta 5 partes (secciones)
 ///   - setText(partIndex, text) para actualizar cada parte
 ///   - Indicadores de tipo de documento, encoding, posición, etc.
-class NppStatusBar : public QWidget {
+class NppStatusBar : public QStatusBar {
     Q_OBJECT
 
 public:
     static constexpr int MAX_PARTS = 5;
 
     explicit NppStatusBar(QWidget* parent = nullptr)
-        : QWidget(parent)
+        : QStatusBar(parent)
     {
-        _statusBar = new QStatusBar(this);
-        _statusBar->setSizeGripEnabled(true);
-
-        auto* layout = new QHBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);
-        layout->addWidget(_statusBar);
+        setSizeGripEnabled(true);
 
         // Crear las 5 secciones como QLabel
         for (int i = 0; i < MAX_PARTS; ++i) {
@@ -50,14 +45,14 @@ public:
                 "QLabel { padding: 0 8px; color: #D4D4D4; }");
             if (i == 0) {
                 // La primera parte se expande (como en Npp original)
-                _statusBar->addWidget(_parts[i], 1);
+                addWidget(_parts[i], 1);
             } else {
-                _statusBar->addPermanentWidget(_parts[i], 0);
+                addPermanentWidget(_parts[i], 0);
             }
         }
 
         // Estilo oscuro por defecto
-        _statusBar->setStyleSheet(
+        setStyleSheet(
             "QStatusBar { background: #007ACC; color: #FFFFFF; }"
             "QStatusBar::item { border: none; }"
         );
@@ -81,18 +76,17 @@ public:
         _parts[partIndex]->setText(text);
     }
 
-
-    /// Obtiene el QStatusBar subyacente (para agregar widgets personalizados).
-    QStatusBar* statusBar() const { return _statusBar; }
+    /// Obtiene el QStatusBar subyacente.
+    QStatusBar* statusBar() { return this; }
 
     /// Muestra un mensaje temporal en la barra (desaparece después de ms).
     void showTemporaryMessage(const QString& msg, int timeoutMs = 3000) {
-        _statusBar->showMessage(msg, timeoutMs);
+        showMessage(msg, timeoutMs);
     }
 
 private:
-    QStatusBar*                        _statusBar = nullptr;
     std::array<QLabel*, MAX_PARTS>     _parts = {};
 };
+
 
 #endif // NPP_PLATFORM_LINUX
