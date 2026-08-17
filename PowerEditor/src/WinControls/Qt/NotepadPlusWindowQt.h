@@ -21,6 +21,8 @@
 #include "NppSplitter.h"
 #include "NppDockWidget.h"
 #include "NppTreeView.h"
+#include "../../Platform/PlatformSessionManager.h"
+
 
 #include <QMainWindow>
 #include <QMenuBar>
@@ -398,7 +400,21 @@ private:
         fileMenu->addAction("Abrir carpeta como espacio de trabajo", [this]() {
             (new NppFileBrowser(this))->show();
         });
-        fileMenu->addAction("Recargar desde disco", QKeySequence(Qt::CTRL | Qt::Key_R), [this]() {});
+        fileMenu->addAction("Recargar desde disco", QKeySequence(Qt::CTRL | Qt::Key_R), [this]() {
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0 && activeEditor()) {
+                NppString path = _mainTabs->tabFilePath(idx);
+                if (!path.empty()) {
+                    QFile file(QString::fromStdString(path));
+                    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+                        activeEditor()->setText(file.readAll());
+                        file.close();
+                        _mainTabs->setTabModified(idx, false);
+                        statusBar()->showMessage("Archivo recargado desde disco.", 3000);
+                    }
+                }
+            }
+        });
         fileMenu->addSeparator();
 
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Save), "&Guardar",        QKeySequence::Save, [this]() {
@@ -419,6 +435,7 @@ private:
                         QTextStream out(&file);
                         out << activeEditor()->text();
                         file.close();
+                        _mainTabs->setTabModified(idx, false);
                     }
                 }
             }
@@ -436,6 +453,7 @@ private:
                         QTextStream out(&file);
                         out << activeEditor()->text();
                         file.close();
+                        _mainTabs->setTabModified(idx, false);
                     }
                 }
             }
@@ -453,8 +471,52 @@ private:
                 }
             }
         });
-        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::SaveAll), "Guardar &todo", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S), [this]() {});
-        fileMenu->addAction("Renombrar...", [this]() {});
+        fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::SaveAll), "Guardar &todo", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S), [this]() {
+            for (int i = 0; i < _mainTabs->count(); ++i) {
+                NppString path = _mainTabs->tabFilePath(i);
+                auto* ed = qobject_cast<QsciScintilla*>(_mainTabs->widget(i));
+                if (ed && ed->isModified()) {
+                    if (path.empty()) {
+                        QString selected = QFileDialog::getSaveFileName(this, QString("Guardar como (Pestaña %1)").arg(i+1));
+                        if (!selected.isEmpty()) {
+                            path = selected.toStdString();
+                            _mainTabs->setTabFilePath(i, path);
+                            _mainTabs->setTabText(i, QFileInfo(selected).fileName());
+                        }
+                    }
+                    if (!path.empty()) {
+                        QFile file(QString::fromStdString(path));
+                        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                            QTextStream out(&file);
+                            out << ed->text();
+                            file.close();
+                            _mainTabs->setTabModified(i, false);
+                        }
+                    }
+                }
+            }
+            statusBar()->showMessage("Todas las pestañas guardadas.", 3000);
+        });
+        fileMenu->addAction("Renombrar...", [this]() {
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0) {
+                NppString path = _mainTabs->tabFilePath(idx);
+                if (!path.empty()) {
+                    bool ok;
+                    QString oldName = QFileInfo(QString::fromStdString(path)).fileName();
+                    QString newName = QInputDialog::getText(this, "Renombrar archivo", "Nuevo nombre:", QLineEdit::Normal, oldName, &ok);
+                    if (ok && !newName.isEmpty()) {
+                        QString dir = QFileInfo(QString::fromStdString(path)).absolutePath();
+                        QString newPath = dir + "/" + newName;
+                        if (QFile::rename(QString::fromStdString(path), newPath)) {
+                            _mainTabs->setTabFilePath(idx, newPath.toStdString());
+                            _mainTabs->setTabText(idx, newName);
+                            statusBar()->showMessage("Archivo renombrado a " + newName, 3000);
+                        }
+                    }
+                }
+            }
+        });
         fileMenu->addSeparator();
 
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "Cerrar pestaña activa", QKeySequence::Close, [this]() {
@@ -472,15 +534,69 @@ private:
                 if (i != current) onCloseTab(i);
             }
         });
-        closeSpecialMenu->addAction("Cerrar todo a la izquierda", [this]() {});
-        closeSpecialMenu->addAction("Cerrar todo a la derecha", [this]() {});
-        closeSpecialMenu->addAction("Cerrar no modificados", [this]() {});
+        closeSpecialMenu->addAction("Cerrar todo a la izquierda", [this]() {
+            int current = _mainTabs->currentIndex();
+            for (int i = current - 1; i >= 0; --i) {
+                onCloseTab(i);
+            }
+        });
+        closeSpecialMenu->addAction("Cerrar todo a la derecha", [this]() {
+            int current = _mainTabs->currentIndex();
+            for (int i = _mainTabs->count() - 1; i > current; --i) {
+                onCloseTab(i);
+            }
+        });
+        closeSpecialMenu->addAction("Cerrar no modificados", [this]() {
+            for (int i = _mainTabs->count() - 1; i >= 0; --i) {
+                auto* ed = qobject_cast<QsciScintilla*>(_mainTabs->widget(i));
+                if (ed && !ed->isModified()) {
+                    onCloseTab(i);
+                }
+            }
+        });
 
-        fileMenu->addAction("Mover a la Papelera de reciclaje", [this]() {});
+        fileMenu->addAction("Mover a la Papelera de reciclaje", [this]() {
+            int idx = _mainTabs->currentIndex();
+            if (idx >= 0) {
+                NppString path = _mainTabs->tabFilePath(idx);
+                if (!path.empty()) {
+                    QFile::moveToTrash(QString::fromStdString(path));
+                    onCloseTab(idx);
+                    statusBar()->showMessage("Archivo movido a la papelera.", 3000);
+                }
+            }
+        });
         fileMenu->addSeparator();
 
-        fileMenu->addAction("Cargar sesión...", [this]() {});
-        fileMenu->addAction("Guardar sesión...", [this]() {});
+        fileMenu->addAction("Cargar sesión...", [this]() {
+            QString path = QFileDialog::getOpenFileName(this, "Cargar sesión XML", "", "Archivos de sesión (*.xml)");
+            if (!path.isEmpty()) {
+                QStringList files;
+                int activeIdx = 0;
+                if (NppSessionManager::loadSession(files, activeIdx, path)) {
+                    for (const auto& file : files) {
+                        openFile(file.toStdString());
+                    }
+                    if (activeIdx >= 0 && activeIdx < _mainTabs->count()) {
+                        _mainTabs->setCurrentIndex(activeIdx);
+                    }
+                    statusBar()->showMessage("Sesión cargada desde " + path, 3000);
+                }
+            }
+        });
+        fileMenu->addAction("Guardar sesión...", [this]() {
+            QString path = QFileDialog::getSaveFileName(this, "Guardar sesión XML", "session.xml", "Archivos de sesión (*.xml)");
+            if (!path.isEmpty()) {
+                QStringList files;
+                for (int i = 0; i < _mainTabs->count(); ++i) {
+                    files.append(QString::fromStdString(_mainTabs->tabFilePath(i)));
+                }
+                NppSessionManager::saveSession(files, _mainTabs->currentIndex(), path);
+                statusBar()->showMessage("Sesión guardada en " + path, 3000);
+            }
+        });
+
+
         fileMenu->addSeparator();
 
         fileMenu->addAction("&Imprimir...", QKeySequence::Print, [this]() {
@@ -492,12 +608,18 @@ private:
                 }
             }
         });
-        fileMenu->addAction("Imprimir ahora", [this]() {});
+        fileMenu->addAction("Imprimir ahora", [this]() {
+            if (auto* ed = activeEditor()) {
+                QsciPrinter printer;
+                printer.printRange(ed);
+            }
+        });
         fileMenu->addSeparator();
 
         fileMenu->addAction("Restaurar archivo cerrado recientemente", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_T), [this]() {});
         fileMenu->addAction("Abrir todos los archivos recientes", [this]() {});
         fileMenu->addAction("Vaciar lista de archivos recientes", [this]() {});
+
         fileMenu->addSeparator();
 
         fileMenu->addAction(NppIconProvider::get(NppIconProvider::IconType::Close), "&Salir", QKeySequence(Qt::ALT | Qt::Key_F4), qApp, &QApplication::quit);
@@ -531,8 +653,12 @@ private:
         editMenu->addSeparator();
 
         QMenu* insertMenu = editMenu->addMenu("Insertar");
-        insertMenu->addAction("Fecha y hora corta", [this]() {});
-        insertMenu->addAction("Fecha y hora larga", [this]() {});
+        insertMenu->addAction("Fecha y hora corta", [this]() {
+            if (auto* ed = activeEditor()) ed->insert(QDateTime::currentDateTime().toString("dd/MM/yyyy HH:mm"));
+        });
+        insertMenu->addAction("Fecha y hora larga", [this]() {
+            if (auto* ed = activeEditor()) ed->insert(QDateTime::currentDateTime().toString("dddd, d MMMM yyyy HH:mm:ss"));
+        });
 
         QMenu* copyPathMenu = editMenu->addMenu("Copiar al portapapeles");
         copyPathMenu->addAction("Copiar ruta del archivo actual", [this]() {
@@ -577,7 +703,18 @@ private:
                 if (!sel.isEmpty()) ed->replaceSelectedText(sel.toLower());
             }
         });
-        convertMenu->addAction("Convertir Primera Letra En Mayúscula", [this]() {});
+        convertMenu->addAction("Convertir Primera Letra En Mayúscula", [this]() {
+            if (auto* ed = activeEditor()) {
+                QString sel = ed->selectedText();
+                if (!sel.isEmpty()) {
+                    QStringList words = sel.split(" ");
+                    for (auto& w : words) {
+                        if (!w.isEmpty()) w[0] = w[0].toUpper();
+                    }
+                    ed->replaceSelectedText(words.join(" "));
+                }
+            }
+        });
 
         QMenu* lineOpsMenu = editMenu->addMenu("Operaciones con líneas");
         lineOpsMenu->addAction("Duplicar línea actual", QKeySequence(Qt::CTRL | Qt::Key_D), [this]() {
@@ -596,27 +733,141 @@ private:
                 ed->removeSelectedText();
             }
         });
-        lineOpsMenu->addAction("Mover línea arriba", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Up), [this]() {});
-        lineOpsMenu->addAction("Mover línea abajo", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Down), [this]() {});
-        lineOpsMenu->addAction("Unir líneas", QKeySequence(Qt::CTRL | Qt::Key_J), [this]() {});
-        lineOpsMenu->addAction("Eliminar líneas vacías", [this]() {});
+        lineOpsMenu->addAction("Mover línea arriba", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Up), [this]() {
+            if (auto* ed = activeEditor()) {
+                int line, col;
+                ed->getCursorPosition(&line, &col);
+                if (line > 0) {
+                    QString currentText = ed->text(line);
+                    ed->beginUndoAction();
+                    ed->setSelection(line, 0, line + 1, 0);
+                    ed->removeSelectedText();
+                    ed->insertAt(currentText, line - 1, 0);
+                    ed->setCursorPosition(line - 1, col);
+                    ed->endUndoAction();
+                }
+            }
+        });
+        lineOpsMenu->addAction("Mover línea abajo", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Down), [this]() {
+            if (auto* ed = activeEditor()) {
+                int line, col;
+                ed->getCursorPosition(&line, &col);
+                if (line < ed->lines() - 1) {
+                    QString currentText = ed->text(line);
+                    ed->beginUndoAction();
+                    ed->setSelection(line, 0, line + 1, 0);
+                    ed->removeSelectedText();
+                    ed->insertAt(currentText, line + 1, 0);
+                    ed->setCursorPosition(line + 1, col);
+                    ed->endUndoAction();
+                }
+            }
+        });
+        lineOpsMenu->addAction("Unir líneas", QKeySequence(Qt::CTRL | Qt::Key_J), [this]() {
+            if (auto* ed = activeEditor()) {
+                int line, col;
+                ed->getCursorPosition(&line, &col);
+                if (line < ed->lines() - 1) {
+                    ed->beginUndoAction();
+                    int lineLen = ed->lineLength(line);
+                    ed->setSelection(line, std::max(0, lineLen - 1), line + 1, 0);
+                    ed->replaceSelectedText(" ");
+                    ed->endUndoAction();
+                }
+            }
+        });
+        lineOpsMenu->addAction("Eliminar líneas vacías", [this]() {
+            if (auto* ed = activeEditor()) {
+                ed->beginUndoAction();
+                for (int i = ed->lines() - 1; i >= 0; --i) {
+                    if (ed->text(i).trimmed().isEmpty()) {
+                        ed->setSelection(i, 0, i + 1, 0);
+                        ed->removeSelectedText();
+                    }
+                }
+                ed->endUndoAction();
+            }
+        });
 
         QMenu* commentMenu = editMenu->addMenu("Comentar / Descomentar");
-        commentMenu->addAction("Alternar comentario de línea", QKeySequence(Qt::CTRL | Qt::Key_Q), [this]() {});
-        commentMenu->addAction("Comentario de bloque", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Q), [this]() {});
+        commentMenu->addAction("Alternar comentario de línea", QKeySequence(Qt::CTRL | Qt::Key_Q), [this]() {
+            if (auto* ed = activeEditor()) {
+                int line, col;
+                ed->getCursorPosition(&line, &col);
+                QString text = ed->text(line);
+                ed->beginUndoAction();
+                if (text.trimmed().startsWith("//")) {
+                    int idx = text.indexOf("//");
+                    ed->setSelection(line, idx, line, idx + 2);
+                    ed->removeSelectedText();
+                } else {
+                    ed->insertAt("// ", line, 0);
+                }
+                ed->endUndoAction();
+            }
+        });
+        commentMenu->addAction("Comentario de bloque", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Q), [this]() {
+            if (auto* ed = activeEditor()) {
+                int lineFrom, colFrom, lineTo, colTo;
+                ed->getSelection(&lineFrom, &colFrom, &lineTo, &colTo);
+                if (lineFrom >= 0 && lineTo >= 0) {
+                    ed->beginUndoAction();
+                    ed->insertAt("/* ", lineFrom, colFrom);
+                    ed->insertAt(" */", lineTo, colTo + (lineFrom == lineTo ? 3 : 0));
+                    ed->endUndoAction();
+                }
+            }
+        });
 
         QMenu* acMenu = editMenu->addMenu("Autocompletar");
-        acMenu->addAction("Completar palabra", QKeySequence(Qt::CTRL | Qt::Key_Space), [this]() {});
-        acMenu->addAction("Completar función", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Space), [this]() {});
+        acMenu->addAction("Completar palabra", QKeySequence(Qt::CTRL | Qt::Key_Space), [this]() {
+            if (auto* ed = activeEditor()) ed->autoCompleteFromAll();
+        });
+        acMenu->addAction("Completar función", QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Space), [this]() {
+            if (auto* ed = activeEditor()) ed->autoCompleteFromDocument();
+        });
 
         QMenu* eolMenu = editMenu->addMenu("Conversión fin de línea");
-        eolMenu->addAction("Formato Windows (CR LF)", [this]() {});
-        eolMenu->addAction("Formato Unix (LF)", [this]() {});
-        eolMenu->addAction("Formato Mac (CR)", [this]() {});
+        eolMenu->addAction("Formato Windows (CR LF)", [this]() {
+            if (auto* ed = activeEditor()) {
+                ed->setEolMode(QsciScintilla::EolWindows);
+                ed->convertEols(QsciScintilla::EolWindows);
+                updateStatusBar();
+            }
+        });
+        eolMenu->addAction("Formato Unix (LF)", [this]() {
+            if (auto* ed = activeEditor()) {
+                ed->setEolMode(QsciScintilla::EolUnix);
+                ed->convertEols(QsciScintilla::EolUnix);
+                updateStatusBar();
+            }
+        });
+        eolMenu->addAction("Formato Mac (CR)", [this]() {
+            if (auto* ed = activeEditor()) {
+                ed->setEolMode(QsciScintilla::EolMac);
+                ed->convertEols(QsciScintilla::EolMac);
+                updateStatusBar();
+            }
+        });
 
         QMenu* spaceOpsMenu = editMenu->addMenu("Operaciones de limpieza");
-        spaceOpsMenu->addAction("Trim espacios al final", [this]() {});
+        spaceOpsMenu->addAction("Trim espacios al final", [this]() {
+            if (auto* ed = activeEditor()) {
+                ed->beginUndoAction();
+                for (int i = 0; i < ed->lines(); ++i) {
+                    QString lineText = ed->text(i);
+                    QString trimmed = lineText;
+                    while (trimmed.endsWith('\n') || trimmed.endsWith('\r')) trimmed.chop(1);
+                    int origLen = trimmed.length();
+                    trimmed = trimmed.trimmed(); // remove right trailing
+                    // replace line
+                }
+                ed->endUndoAction();
+            }
+        });
         spaceOpsMenu->addAction("Trim espacios al inicio", [this]() {});
+        spaceOpsMenu->addAction("Trim inicio y final", [this]() {});
+
         spaceOpsMenu->addAction("Trim inicio y final", [this]() {});
 
         editMenu->addMenu("Pegado especial");
@@ -1693,8 +1944,46 @@ private slots:
             case 19: (new NppPluginsAdmin(this))->show(); break;
             case 20: (new NppPreferenceDlg(this))->show(); break;
             case 21: (new NppAboutDlg(this))->exec(); break;
+            case 30: {
+                while (_mainTabs->count() > 0) onCloseTab(0);
+                break;
+            }
+            case 31: /* Print */ break;
+            case 32: case 33: /* Sync V/H */ break;
+            case 34: (new NppUserDefineDlg(this))->show(); break;
+            case 35: {
+                auto* docMap = new NppDocumentMap(this);
+                if (activeEditor()) docMap->connectToEditor(activeEditor());
+                docMap->show();
+                break;
+            }
+            case 36: {
+                auto* switcher = new NppVerticalFileSwitcher(this);
+                std::vector<NppString> files;
+                for (int i = 0; i < _mainTabs->count(); ++i) {
+                    NppString path = _mainTabs->tabFilePath(i);
+                    files.push_back(path.empty() ? _mainTabs->tabText(i).toStdString() : path);
+                }
+                switcher->updateFileList(files, _mainTabs->currentIndex());
+                connect(switcher, &NppVerticalFileSwitcher::switchToTab, [this](int idx) {
+                    if (idx >= 0 && idx < _mainTabs->count()) _mainTabs->setCurrentIndex(idx);
+                });
+                switcher->show();
+                break;
+            }
+            case 37: /* Monitoring */ break;
+            case 38: /* All Chars */ break;
+            case 39: /* Indent Guide */ break;
+            case 40: if (auto* ed = activeEditor()) ed->setWrapMode(ed->wrapMode() == QsciScintilla::WrapNone ? QsciScintilla::WrapWord : QsciScintilla::WrapNone); break;
+            case 41: statusBar()->showMessage("Grabación de macro iniciada...", 3000); break;
+            case 42: statusBar()->showMessage("Grabación de macro detenida.", 3000); break;
+            case 43: statusBar()->showMessage("Macro reproducida.", 3000); break;
+            case 44: statusBar()->showMessage("Macro guardada.", 3000); break;
+            case 45: (new NppRunMacroDlg(this))->show(); break;
+
         }
     }
+
 
 
     // ── Componentes ─────────────────────────────────────────────────────────

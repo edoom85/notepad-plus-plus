@@ -1,8 +1,5 @@
-// WinControls/Qt/NppToolBar.h — ToolBar portable Qt6
+// WinControls/Qt/NppToolBar.h — ToolBar portable Qt6 con paridad 1:1 de botones de Windows
 // Reemplaza WinControls/ToolBar/ToolBar.cpp/.h en Linux
-//
-// En Windows: ToolBar usa TBSTYLE_FLAT + TB_ADDBUTTONS (controles comunes)
-// En Linux:   QToolBar con QAction y soporte para iconos SVG/PNG
 //
 // Copyright (C) Notepad++ contributors. GPL v3+
 
@@ -11,7 +8,6 @@
 #include "../Platform/PlatformTypes.h"
 #include "../Platform/PlatformString.h"
 #include "../../Platform/PlatformIconProvider.h"
-
 
 #ifdef NPP_PLATFORM_LINUX
 
@@ -23,11 +19,8 @@
 #include <QString>
 #include <QStyle>
 #include <vector>
-#include <functional>
 
-/// Barra de herramientas portable Qt6 para Notepad++ Linux.
-/// Los botones se crean con addButton() y cada uno tiene un ID de comando
-/// que corresponde al mismo command ID que en la versión Windows.
+/// Barra de herramientas portable Qt6 para Notepad++ Linux con paridad 1:1 de botones.
 class NppToolBar : public QToolBar {
     Q_OBJECT
 
@@ -40,7 +33,6 @@ public:
         setToolButtonStyle(Qt::ToolButtonIconOnly);
         setFloatable(false);
 
-        // Estilo oscuro
         setStyleSheet(
             "QToolBar {"
             "  background: #333333;"
@@ -63,15 +55,13 @@ public:
         );
     }
 
-    /// Estructura para definir un botón de toolbar.
     struct ButtonDef {
-        int         cmdId;       // ID de comando (debe coincidir con Win32 IDM_*)
-        QString     tooltip;     // Texto del tooltip
-        QIcon       icon;        // Icono del botón
+        int         cmdId;       
+        QString     tooltip;     
+        QIcon       icon;        
         bool        isSeparator = false;
     };
 
-    /// Añade un botón a la toolbar. Retorna la QAction creada.
     QAction* addButton(const ButtonDef& def) {
         if (def.isSeparator) {
             addSeparator();
@@ -81,7 +71,6 @@ public:
         action->setData(def.cmdId);
         action->setToolTip(def.tooltip);
 
-        // Conectar a la señal commandTriggered con el cmdId
         connect(action, &QAction::triggered, [this, cmdId = def.cmdId]() {
             emit commandTriggered(cmdId);
         });
@@ -90,10 +79,8 @@ public:
         return action;
     }
 
-    /// Añade un separador.
     void addToolBarSeparator() { addSeparator(); }
 
-    /// Habilita/deshabilita un botón por su command ID.
     void enableButton(int cmdId, bool enable) {
         for (auto* a : _actions) {
             if (a->data().toInt() == cmdId) {
@@ -103,7 +90,6 @@ public:
         }
     }
 
-    /// Marca/desmarca un botón como "checked" (toggle) por su command ID.
     void checkButton(int cmdId, bool checked) {
         for (auto* a : _actions) {
             if (a->data().toInt() == cmdId) {
@@ -114,7 +100,6 @@ public:
         }
     }
 
-    /// Refresca dinámicamente los iconos de todos los botones cargando el estilo .ico activo.
     void refreshIcons() {
         for (auto* action : _actions) {
             int cmdId = action->data().toInt();
@@ -125,29 +110,47 @@ public:
                 case 3:  type = NppIconProvider::IconType::Save; break;
                 case 4:  type = NppIconProvider::IconType::SaveAll; break;
                 case 5:  type = NppIconProvider::IconType::Close; break;
-                case 6:  type = NppIconProvider::IconType::Undo; break;
-                case 7:  type = NppIconProvider::IconType::Redo; break;
+                case 30: type = NppIconProvider::IconType::CloseAll; break;
+                case 31: type = NppIconProvider::IconType::Print; break;
+
                 case 8:  type = NppIconProvider::IconType::Cut; break;
                 case 9:  type = NppIconProvider::IconType::Copy; break;
                 case 10: type = NppIconProvider::IconType::Paste; break;
+
+                case 6:  type = NppIconProvider::IconType::Undo; break;
+                case 7:  type = NppIconProvider::IconType::Redo; break;
+
                 case 11: type = NppIconProvider::IconType::Find; break;
                 case 12: type = NppIconProvider::IconType::Replace; break;
+
                 case 13: type = NppIconProvider::IconType::ZoomIn; break;
                 case 14: type = NppIconProvider::IconType::ZoomOut; break;
-                case 15: type = NppIconProvider::IconType::FileBrowser; break;
+
+                case 32: type = NppIconProvider::IconType::SyncV; break;
+                case 33: type = NppIconProvider::IconType::SyncH; break;
+
+                case 34: type = NppIconProvider::IconType::UDL; break;
+                case 35: type = NppIconProvider::IconType::DocMap; break;
+                case 36: type = NppIconProvider::IconType::DocList; break;
                 case 16: type = NppIconProvider::IconType::FunctionList; break;
-                case 17: type = NppIconProvider::IconType::ProjectPanel; break;
-                case 18: type = NppIconProvider::IconType::ClipboardHistory; break;
-                case 19: type = NppIconProvider::IconType::Plugins; break;
-                case 20: type = NppIconProvider::IconType::Settings; break;
-                case 21: type = NppIconProvider::IconType::About; break;
+                case 15: type = NppIconProvider::IconType::FileBrowser; break;
+                case 37: type = NppIconProvider::IconType::Monitoring; break;
+
+                case 38: type = NppIconProvider::IconType::AllChars; break;
+                case 39: type = NppIconProvider::IconType::IndentGuide; break;
+                case 40: type = NppIconProvider::IconType::Wrap; break;
+
+                case 41: type = NppIconProvider::IconType::StartRecord; break;
+                case 42: type = NppIconProvider::IconType::StopRecord; break;
+                case 43: type = NppIconProvider::IconType::PlayRecord; break;
+                case 44: type = NppIconProvider::IconType::SaveRecord; break;
+                case 45: type = NppIconProvider::IconType::PlayRecordM; break;
                 default: continue;
             }
             action->setIcon(NppIconProvider::get(type));
         }
     }
 
-    /// Cambia el estilo y tamaño de iconos de la barra de herramientas.
     void setIconSizePreset(int presetIndex, bool isDarkMode = true) {
         int pixels = (presetIndex == 1 || presetIndex == 3) ? 32 : 16;
         setIconSize(QSize(pixels, pixels));
@@ -155,41 +158,59 @@ public:
         refreshIcons();
     }
 
-
-    /// Crea la barra de herramientas completa de Notepad++ con iconos garantizados.
+    /// Crea la barra de herramientas completa 1:1 de Notepad++ Windows.
     void addStandardButtons() {
         addButton({1,  "Nuevo documento",                  NppIconProvider::get(NppIconProvider::IconType::New)});
         addButton({2,  "Abrir archivo...",                 NppIconProvider::get(NppIconProvider::IconType::Open)});
         addButton({3,  "Guardar",                          NppIconProvider::get(NppIconProvider::IconType::Save)});
         addButton({4,  "Guardar todo",                     NppIconProvider::get(NppIconProvider::IconType::SaveAll)});
         addButton({5,  "Cerrar documento actual",          NppIconProvider::get(NppIconProvider::IconType::Close)});
+        addButton({30, "Cerrar todo",                      NppIconProvider::get(NppIconProvider::IconType::CloseAll)});
+        addButton({31, "Imprimir...",                      NppIconProvider::get(NppIconProvider::IconType::Print)});
         addToolBarSeparator();
-        addButton({6,  "Deshacer",                         NppIconProvider::get(NppIconProvider::IconType::Undo)});
-        addButton({7,  "Rehacer",                          NppIconProvider::get(NppIconProvider::IconType::Redo)});
-        addToolBarSeparator();
+
         addButton({8,  "Cortar",                           NppIconProvider::get(NppIconProvider::IconType::Cut)});
         addButton({9,  "Copiar",                           NppIconProvider::get(NppIconProvider::IconType::Copy)});
         addButton({10, "Pegar",                            NppIconProvider::get(NppIconProvider::IconType::Paste)});
         addToolBarSeparator();
+
+        addButton({6,  "Deshacer",                         NppIconProvider::get(NppIconProvider::IconType::Undo)});
+        addButton({7,  "Rehacer",                          NppIconProvider::get(NppIconProvider::IconType::Redo)});
+        addToolBarSeparator();
+
         addButton({11, "Buscar...",                        NppIconProvider::get(NppIconProvider::IconType::Find)});
         addButton({12, "Reemplazar...",                    NppIconProvider::get(NppIconProvider::IconType::Replace)});
         addToolBarSeparator();
+
         addButton({13, "Acercar Zoom",                     NppIconProvider::get(NppIconProvider::IconType::ZoomIn)});
         addButton({14, "Alejar Zoom",                      NppIconProvider::get(NppIconProvider::IconType::ZoomOut)});
         addToolBarSeparator();
-        addButton({15, "Explorador de Archivos",           NppIconProvider::get(NppIconProvider::IconType::FileBrowser)});
-        addButton({16, "Lista de Funciones",               NppIconProvider::get(NppIconProvider::IconType::FunctionList)});
-        addButton({17, "Panel de Proyectos",               NppIconProvider::get(NppIconProvider::IconType::ProjectPanel)});
-        addButton({18, "Historial del Portapapeles",       NppIconProvider::get(NppIconProvider::IconType::ClipboardHistory)});
-        addButton({19, "Administrador de Plugins",         NppIconProvider::get(NppIconProvider::IconType::Plugins)});
+
+        addButton({32, "Sincronización Vertical",           NppIconProvider::get(NppIconProvider::IconType::SyncV)});
+        addButton({33, "Sincronización Horizontal",         NppIconProvider::get(NppIconProvider::IconType::SyncH)});
         addToolBarSeparator();
-        addButton({20, "Preferencias...",                  NppIconProvider::get(NppIconProvider::IconType::Settings)});
-        addButton({21, "Acerca de Notepad++",              NppIconProvider::get(NppIconProvider::IconType::About)});
+
+        addButton({34, "Lenguaje del usuario (UDL)",       NppIconProvider::get(NppIconProvider::IconType::UDL)});
+        addButton({35, "Mapa del Documento",              NppIconProvider::get(NppIconProvider::IconType::DocMap)});
+        addButton({36, "Lista de Documentos",              NppIconProvider::get(NppIconProvider::IconType::DocList)});
+        addButton({16, "Lista de Funciones",               NppIconProvider::get(NppIconProvider::IconType::FunctionList)});
+        addButton({15, "Explorador de Archivos",           NppIconProvider::get(NppIconProvider::IconType::FileBrowser)});
+        addButton({37, "Monitorización (tail -f)",         NppIconProvider::get(NppIconProvider::IconType::Monitoring)});
+        addToolBarSeparator();
+
+        addButton({38, "Mostrar todos los caracteres",      NppIconProvider::get(NppIconProvider::IconType::AllChars)});
+        addButton({39, "Guías de sangría",                 NppIconProvider::get(NppIconProvider::IconType::IndentGuide)});
+        addButton({40, "Ajuste de línea (Word Wrap)",      NppIconProvider::get(NppIconProvider::IconType::Wrap)});
+        addToolBarSeparator();
+
+        addButton({41, "Iniciar grabación de macro",      NppIconProvider::get(NppIconProvider::IconType::StartRecord)});
+        addButton({42, "Detener grabación de macro",      NppIconProvider::get(NppIconProvider::IconType::StopRecord)});
+        addButton({43, "Reproducir macro",                 NppIconProvider::get(NppIconProvider::IconType::PlayRecord)});
+        addButton({44, "Guardar macro grabada",           NppIconProvider::get(NppIconProvider::IconType::SaveRecord)});
+        addButton({45, "Ejecutar macro N veces...",        NppIconProvider::get(NppIconProvider::IconType::PlayRecordM)});
     }
 
-
 signals:
-    /// Emitida cuando se hace clic en un botón (con su command ID).
     void commandTriggered(int cmdId);
 
 private:

@@ -27,25 +27,42 @@ public:
         Save,
         SaveAll,
         Close,
-        Undo,
-        Redo,
+        CloseAll,
+        Print,
         Cut,
         Copy,
         Paste,
+        Undo,
+        Redo,
         Find,
         Replace,
         ZoomIn,
         ZoomOut,
-        Settings,
-        About,
-        FileBrowser,
+        SyncV,
+        SyncH,
+        UDL,
+        DocMap,
+        DocList,
         FunctionList,
+        FileBrowser,
+        Monitoring,
+        AllChars,
+        IndentGuide,
+        Wrap,
+        StartRecord,
+        StopRecord,
+        PlayRecord,
+        SaveRecord,
+        PlayRecordM,
         ProjectPanel,
         ClipboardHistory,
-        Run,
         Plugins,
+        Settings,
+        About,
+        Run,
         AppLogo
     };
+
 
     static inline int  s_presetIndex = 4; // 0: SmallReg, 1: LargeReg, 2: SmallFilled, 3: LargeFilled, 4: Default
     static inline bool s_isDarkMode  = true;
@@ -67,17 +84,33 @@ public:
             case IconType::Save:             filename = "save_off.ico"; break;
             case IconType::SaveAll:          filename = "saveall_off.ico"; break;
             case IconType::Close:            filename = "close_off.ico"; break;
-            case IconType::Undo:             filename = "undo_off.ico"; break;
-            case IconType::Redo:             filename = "redo_off.ico"; break;
+            case IconType::CloseAll:         filename = "closeall_off.ico"; break;
+            case IconType::Print:            filename = "print_off.ico"; break;
             case IconType::Cut:              filename = "cut_off.ico"; break;
             case IconType::Copy:             filename = "copy_off.ico"; break;
             case IconType::Paste:            filename = "paste_off.ico"; break;
+            case IconType::Undo:             filename = "undo_off.ico"; break;
+            case IconType::Redo:             filename = "redo_off.ico"; break;
             case IconType::Find:             filename = "find_off.ico"; break;
             case IconType::Replace:          filename = "findrep_off.ico"; break;
             case IconType::ZoomIn:           filename = "zoomIn_off.ico"; break;
             case IconType::ZoomOut:          filename = "zoomOut_off.ico"; break;
-            case IconType::FileBrowser:      filename = "fileBrowser_off.ico"; break;
+            case IconType::SyncV:            filename = "syncV_off.ico"; break;
+            case IconType::SyncH:            filename = "syncH_off.ico"; break;
+            case IconType::UDL:              filename = "udl_off.ico"; break;
+            case IconType::DocMap:           filename = "docMap_off.ico"; break;
+            case IconType::DocList:          filename = "docList_off.ico"; break;
             case IconType::FunctionList:    filename = "funcList_off.ico"; break;
+            case IconType::FileBrowser:      filename = "fileBrowser_off.ico"; break;
+            case IconType::Monitoring:       filename = "monitoring_off.ico"; break;
+            case IconType::AllChars:         filename = "allChars_off.ico"; break;
+            case IconType::IndentGuide:      filename = "indentGuide_off.ico"; break;
+            case IconType::Wrap:             filename = "wrap_off.ico"; break;
+            case IconType::StartRecord:      filename = "startrecord_off.ico"; break;
+            case IconType::StopRecord:       filename = "stoprecord_off.ico"; break;
+            case IconType::PlayRecord:       filename = "playrecord_off.ico"; break;
+            case IconType::SaveRecord:       filename = "saverecord_off.ico"; break;
+            case IconType::PlayRecordM:      filename = "playrecord_m_off.ico"; break;
             case IconType::ProjectPanel:    filename = "docList_off.ico"; break;
             case IconType::ClipboardHistory: filename = "docMap_off.ico"; break;
             default: break;
@@ -88,14 +121,15 @@ public:
             QString mode = s_isDarkMode ? "dark" : "light";
             QString styleName = isFilled ? "filled" : "regular";
 
+            // Intentar ruta principal
             QString qrcPath = QString(":/icons/%1/toolbar/%2/%3").arg(mode, styleName, filename);
-            QIcon icon(qrcPath);
+            QIcon icon = loadIco(qrcPath);
             if (!icon.isNull()) return icon;
 
-            // Intentar fallback al tema claro regular
+            // Intentar fallback a light regular
             qrcPath = QString(":/icons/light/toolbar/regular/%1").arg(filename);
-            QIcon fbIcon(qrcPath);
-            if (!fbIcon.isNull()) return fbIcon;
+            icon = loadIco(qrcPath);
+            if (!icon.isNull()) return icon;
         }
 
         // 2. Fallback según tipo de acción
@@ -110,6 +144,10 @@ public:
                 return fetchThemeOrStandard("document-save-all", QStyle::SP_DriveFDIcon, QColor(0x4E, 0xC9, 0xB0), "💾💾");
             case IconType::Close:
                 return fetchThemeOrStandard("window-close", QStyle::SP_DialogCloseButton, QColor(0xF4, 0x47, 0x47), "❌");
+            case IconType::CloseAll:
+                return fetchThemeOrStandard("window-close", QStyle::SP_DialogCloseButton, QColor(0xF4, 0x47, 0x47), "❌❌");
+            case IconType::Print:
+                return fetchThemeOrStandard("document-print", QStyle::SP_FileDialogListView, QColor(0x9B, 0x9B, 0x9B), "🖨");
             case IconType::Undo:
                 return fetchThemeOrStandard("edit-undo", QStyle::SP_ArrowLeft, QColor(0xDC, 0xDC, 0xAA), "↩");
             case IconType::Redo:
@@ -133,8 +171,8 @@ public:
             case IconType::About:
                 return fetchThemeOrStandard("help-about", QStyle::SP_MessageBoxInformation, QColor(0x56, 0x9C, 0xD6), "ℹ");
             case IconType::AppLogo: {
-                QIcon icon(":/Platform/npp_icon.png");
-                if (icon.isNull()) icon = QIcon(":/icons/npp_256.ico");
+                QIcon icon = loadIco(":/Platform/npp_icon.png");
+                if (icon.isNull()) icon = loadIco(":/icons/npp_256.ico");
                 if (icon.isNull()) icon = fetchThemeOrStandard("notepad++", QStyle::SP_TitleBarMenuButton, QColor(0x90, 0xEE, 0x90), "🦎");
                 return icon;
             }
@@ -156,14 +194,22 @@ public:
     }
 
 private:
+    static QIcon loadIco(const QString& path) {
+        QIcon icon(path);
+        if (!icon.availableSizes().isEmpty()) {
+            return icon;
+        }
+        return QIcon();
+    }
+
     static QIcon fetchThemeOrStandard(const QString& themeName, QStyle::StandardPixmap sp, const QColor& accentColor, const QString& symbol) {
         if (QIcon::hasThemeIcon(themeName)) {
             QIcon icon = QIcon::fromTheme(themeName);
-            if (!icon.isNull()) return icon;
+            if (!icon.availableSizes().isEmpty()) return icon;
         }
 
         QIcon stdIcon = QApplication::style()->standardIcon(sp);
-        if (!stdIcon.isNull()) return stdIcon;
+        if (!stdIcon.availableSizes().isEmpty()) return stdIcon;
 
         return createFallbackIcon(accentColor, symbol);
     }

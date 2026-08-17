@@ -122,9 +122,29 @@ public:
         setStyleSheet("QTabWidget::pane { border: none; }");
     }
 
+    static QIcon getTabIcon(bool modified, bool readOnly = false, bool monitoring = false, bool isDarkMode = true) {
+        if (monitoring) {
+            QString path = isDarkMode ? ":/icons/dark/tabbar/monitoring.ico" : ":/icons/standard/tabbar/monitoring.ico";
+            QIcon icon(path);
+            if (!icon.availableSizes().isEmpty()) return icon;
+        }
+        if (readOnly) {
+            QString path = isDarkMode ? ":/icons/dark/tabbar/readonly.ico" : ":/icons/standard/tabbar/readonly.ico";
+            QIcon icon(path);
+            if (!icon.availableSizes().isEmpty()) return icon;
+        }
+        if (modified) {
+            QString path = isDarkMode ? ":/icons/dark/tabbar/unsaved.ico" : ":/icons/standard/tabbar/unsaved.ico";
+            QIcon icon(path);
+            if (!icon.availableSizes().isEmpty()) return icon;
+            return QIcon(":/icons/standard/tabbar/unsaved.ico");
+        }
+        return QIcon(":/icons/standard/tabbar/saved.ico");
+    }
+
     /// Añadir una pestaña con nombre y widget editor.
     int addTab(QWidget* editor, const NppString& name) {
-        return QTabWidget::addTab(editor, QIcon(":/icons/standard/tabbar/saved.ico"), QString::fromStdString(name));
+        return QTabWidget::addTab(editor, getTabIcon(false), QString::fromStdString(name));
     }
 
     /// Marcar pestaña como modificada (cambia icono e indicador *).
@@ -133,12 +153,13 @@ public:
         QString name = tabText(index);
         if (modified) {
             if (!name.startsWith("*")) setTabText(index, "*" + name);
-            setTabIcon(index, QIcon(":/icons/standard/tabbar/unsaved.ico"));
+            setTabIcon(index, getTabIcon(true));
         } else {
             if (name.startsWith("*")) setTabText(index, name.mid(1));
-            setTabIcon(index, QIcon(":/icons/standard/tabbar/saved.ico"));
+            setTabIcon(index, getTabIcon(false));
         }
     }
+
 
 
     /// Obtener ruta de archivo asociada a una pestaña (almacenada como data).
