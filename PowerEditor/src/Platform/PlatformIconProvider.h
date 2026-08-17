@@ -66,11 +66,16 @@ public:
 
     static inline int  s_presetIndex = 4; // 0: SmallReg, 1: LargeReg, 2: SmallFilled, 3: LargeFilled, 4: Default
     static inline bool s_isDarkMode  = true;
+    static inline QMap<QString, QIcon> s_iconCache;
 
     static void setToolbarStyle(int presetIndex, bool isDarkMode = true) {
-        s_presetIndex = presetIndex;
-        s_isDarkMode  = isDarkMode;
+        if (s_presetIndex != presetIndex || s_isDarkMode != isDarkMode) {
+            s_presetIndex = presetIndex;
+            s_isDarkMode  = isDarkMode;
+            s_iconCache.clear();
+        }
     }
+
 
     /// Obtiene un QIcon garantizado para el tipo de acción solicitado.
     static QIcon get(IconType type) {
@@ -255,6 +260,11 @@ private:
     }
 
     static QIcon loadIco(const QString& path) {
+        auto it = s_iconCache.find(path);
+        if (it != s_iconCache.end()) {
+            return it.value();
+        }
+
         if (path.endsWith(".bmp", Qt::CaseInsensitive)) {
             QImage img(path);
             if (!img.isNull()) {
@@ -271,16 +281,20 @@ private:
                         }
                     }
                 }
-                return QIcon(QPixmap::fromImage(img));
+                QIcon icon(QPixmap::fromImage(img));
+                s_iconCache.insert(path, icon);
+                return icon;
             }
         }
 
         QIcon icon(path);
         if (!icon.availableSizes().isEmpty()) {
+            s_iconCache.insert(path, icon);
             return icon;
         }
         return QIcon();
     }
+
 
 
     static QIcon fetchThemeOrStandard(const QString& themeName, QStyle::StandardPixmap sp, const QColor& accentColor, const QString& symbol) {
